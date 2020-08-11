@@ -14,7 +14,7 @@
 #   limitations under the License.
 #
 #
-import pygame, os, subprocess
+import pygame, os
 from OneTrack import MAIN as Main
 from ENGINE import shape
 
@@ -27,9 +27,9 @@ class EditableNumberView:
         self.IsActive = True
         self.Color = (155, 155, 155)
         self.AlgarimsWidth = 0
+        self.AllowNotNumbers = False
 
     def Render(self, DISPLAY):
-
         for i, Algarims in enumerate(self.SplitedAlgarims):
             self.Color = (155, 155, 155)
 
@@ -37,7 +37,7 @@ class EditableNumberView:
                 self.Color = (255, 255, 255)
 
             if not self.IsActive:
-                self.Color = (155, 155, 155)
+                self.Color = (100, 100, 100)
 
             Main.DefaultContents.FontRender(DISPLAY, "/PressStart2P.ttf", 12, str(Algarims), self.Color, self.Rectangle[0] + self.AlgarimsWidth * i, self.Rectangle[1])
 
@@ -57,44 +57,28 @@ class EditableNumberView:
             if event.key == pygame.K_LEFT:
                 self.SelectedCharIndex -= 1
 
-                if self.SelectedCharIndex <= 0:
-                    self.SelectedCharIndex = 0
+                if self.SelectedCharIndex <= -1:
+                    self.SelectedCharIndex = len(self.SplitedAlgarims) - 1
 
             if event.key == pygame.K_RIGHT:
                 self.SelectedCharIndex += 1
 
                 if self.SelectedCharIndex >= len(self.SplitedAlgarims):
-                    self.SelectedCharIndex = len(self.SplitedAlgarims) - 1
+                    self.SelectedCharIndex = 0
 
-            if event.key == pygame.K_0:
-                self.ChangeValueInPos(self.SelectedCharIndex, 0)
+            PressedKey = pygame.key.name(event.key).upper()
+            if len(PressedKey) == 1:
+                if self.AllowNotNumbers:
+                    self.ChangeValueInPos(self.SelectedCharIndex, PressedKey)
 
-            if event.key == pygame.K_1:
-                self.ChangeValueInPos(self.SelectedCharIndex, 1)
+                elif PressedKey.isdigit():
+                    self.ChangeValueInPos(self.SelectedCharIndex, PressedKey)
 
-            if event.key == pygame.K_2:
-                self.ChangeValueInPos(self.SelectedCharIndex, 2)
 
-            if event.key == pygame.K_3:
-                self.ChangeValueInPos(self.SelectedCharIndex, 3)
+            if event.key == pygame.K_DELETE:
+                for i in range(0, 4):
+                    self.ChangeValueInPos(i, "-")
 
-            if event.key == pygame.K_4:
-                self.ChangeValueInPos(self.SelectedCharIndex, 4)
-
-            if event.key == pygame.K_5:
-                self.ChangeValueInPos(self.SelectedCharIndex, 5)
-
-            if event.key == pygame.K_6:
-                self.ChangeValueInPos(self.SelectedCharIndex, 6)
-
-            if event.key == pygame.K_7:
-                self.ChangeValueInPos(self.SelectedCharIndex, 7)
-
-            if event.key == pygame.K_8:
-                self.ChangeValueInPos(self.SelectedCharIndex, 8)
-
-            if event.key == pygame.K_9:
-                self.ChangeValueInPos(self.SelectedCharIndex, 9)
 
     def ChangeValueInPos(self, Index, NewValue):
         self.SplitedAlgarims[Index] = NewValue
@@ -113,7 +97,8 @@ class TrackBlock:
         self.TextHeight = Main.DefaultContents.GetFont_height("/PressStart2P.ttf", 12, "0000")
         self.Scroll = 0
         self.FrequencyNumber = EditableNumberView(pygame.Rect(self.Rectangle[0], self.Rectangle[1], self.TextWidth, self.TextHeight), str(self.TrackData[0]))
-        self.DurationNumber = EditableNumberView(pygame.Rect(self.Rectangle[0] + self.TextWidth, self.Rectangle[1], self.TextWidth, self.TextHeight), str(self.TrackData[1]))
+        self.DurationNumber = EditableNumberView(pygame.Rect(self.Rectangle[0] + self.TextWidth - 5, self.Rectangle[1], self.TextWidth, self.TextHeight), str(self.TrackData[1]))
+        self.DurationNumber.AllowNotNumbers = True
         self.Active = False
         self.SelectedField = 0
         self.MaxFields = 1
@@ -121,14 +106,11 @@ class TrackBlock:
     def Render(self, DISPLAY):
         # Render the Frequency Region
         shape.Shape_Rectangle(DISPLAY, (100, 94, 85), (self.Rectangle[0] - 2, self.Rectangle[1] - 2, self.Rectangle[2] + 4, self.Rectangle[3] + 4), 0, 0, 5, 0, 5, 0)
-        #Main.DefaultContents.FontRender(DISPLAY, "/PressStart2P.ttf", 12, str(self.TrackData[0]), (230, 230, 230), self.Rectangle[0], self.Ypos)
         self.FrequencyNumber.Render(DISPLAY)
-
 
         # Render the Duration Region
         DurationX = (self.Rectangle[0] + self.TextWidth)
         shape.Shape_Rectangle(DISPLAY, (20, 34, 55), (DurationX, self.Rectangle[1] - 2, (self.TextWidth) + 4, self.Rectangle[3] + 4), 0, 0, 0, 5, 0, 5)
-        #Main.DefaultContents.FontRender(DISPLAY, "/PressStart2P.ttf", 12, str(self.TrackData[1]), (230, 230, 230), DurationX + 5, self.Ypos)
         self.DurationNumber.Render(DISPLAY)
 
 
@@ -154,17 +136,18 @@ class TrackBlock:
             return
         if self.SelectedField == 0:
             self.FrequencyNumber.EventUpdate(event)
+
         elif self.SelectedField == 1:
             self.DurationNumber.EventUpdate(event)
 
         if event.type == pygame.KEYUP:
-            if event.key == pygame.K_a:
+            if event.key == pygame.K_PAGEDOWN:
                 self.SelectedField -= 1
 
                 if self.SelectedField <= 0:
                     self.SelectedField = 0
 
-            if event.key == pygame.K_d:
+            if event.key == pygame.K_PAGEUP:
                 self.SelectedField += 1
 
                 if self.SelectedField >= self.MaxFields:
@@ -179,6 +162,9 @@ class TrackList:
         self.SelectedTrack = 0
         self.PlayMode_TrackDelay = 0
         self.PlayMode_CurrentTonePlayed = False
+        self.BPM = 100
+        self.Hz = 60
+        self.PlayMode_LastSoundChannel = -1
 
         for i, data in enumerate(MusicData):
             if len(data) > 1:
@@ -189,6 +175,7 @@ class TrackList:
     def Render(self, DISPLAY):
         TracksSurface = pygame.Surface((self.Rectangle[2], self.Rectangle[3]))
         for track in self.Tracks:
+
             if track.Ypos >= TracksSurface.get_height() + track.TextHeight or track.Ypos <= -track.TextHeight:
                 continue
 
@@ -198,9 +185,6 @@ class TrackList:
                 track.Active = True
                 PointerRect = (2, track.Ypos, 4, track.Rectangle[3])
                 shape.Shape_Rectangle(TracksSurface, (230, 50, 75), PointerRect)
-
-                if self.PlayMode:
-                    self.Scroll = -(self.SelectedTrack * track.Rectangle[3]) + 5
 
             else:
                 track.Active = False
@@ -214,31 +198,61 @@ class TrackList:
             track.Update()
 
         if self.PlayMode:
-            self.PlayMode_TrackDelay += 0.01
+            self.PlayMode_TrackDelay += 0.1
             CurrentTrackObj = self.Tracks[self.SelectedTrack]
-            if self.PlayMode_TrackDelay >= float("0.{0}".format(CurrentTrackObj.TrackData[1].replace("0", ""))):
+            BMP = self.BPM / self.Hz
+
+            if self.PlayMode_TrackDelay >= BMP:
                 self.SelectedTrack += 1
                 self.PlayMode_TrackDelay = 0
-                PlayTone((CurrentTrackObj.TrackData[0], float("0.{0}".format(CurrentTrackObj.TrackData[1].replace("0", "")))))
-                print((CurrentTrackObj.TrackData[0], float("0.{0}".format(CurrentTrackObj.TrackData[1].replace("0", "")))))
+                CurrentTrackData = CurrentTrackObj.TrackData
+
+                if CurrentTrackData[0] == "----":
+                    if "-" in CurrentTrackData[1]:
+                        Main.DefaultContents.StopAllChannels()
+
+                    elif "F" in CurrentTrackData[1]:
+                        SplitedAgrs = list(CurrentTrackData[1])
+                        FadeTime = ""
+                        for arg in range(1, len(SplitedAgrs) - 1):
+                            FadeTime += str(arg)
+                        FadeTime = int(FadeTime)
+
+                        Main.DefaultContents.FadeoutSound(self.PlayMode_LastSoundChannel, FadeTime)
+
+                    elif CurrentTrackData[1] == "END-":
+                        self.EndPlayMode()
+
+                else:
+                    SoundDuration = 0
+                    SoundTune = 0
+
+                    try:
+                        SoundDuration = float("0.{0}".format(CurrentTrackObj.TrackData[1].replace("0", "")))
+                    except ValueError:
+                        pass
+
+                    try:
+                        SoundTune = int(CurrentTrackData[0])
+                    except ValueError:
+                        pass
+
+                    self.PlayMode_LastSoundChannel = Main.DefaultContents.PlayTune(SoundTune, SoundDuration)
 
                 if self.SelectedTrack >= len(self.Tracks):
-                    self.SelectedTrack = 0
-                    self.PlayMode = 0
-                    self.PlayMode_TrackDelay = 0
-                    self.PlayMode_CurrentTonePlayed = False
-                    self.Scroll = 0
+                    self.EndPlayMode()
+
+    def EndPlayMode(self):
+        self.SelectedTrack = 0
+        self.PlayMode = 0
+        self.PlayMode_TrackDelay = 0
+        self.PlayMode_CurrentTonePlayed = False
+        self.Scroll = 25
+        self.PlayMode_LastSoundChannel = -1
 
     def EventUpdate(self, event):
         for track in self.Tracks:
             track.EventUpdate(event)
-
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            if event.button == 4:
-                self.Scroll -= 5
-
-            elif event.button == 5:
-                self.Scroll += 5
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
@@ -246,41 +260,33 @@ class TrackList:
                     self.PlayMode = True
                     self.PlayMode_TrackDelay = 0
                     self.PlayMode_CurrentTonePlayed = False
-                    self.Scroll = 0
 
                 else:
                     self.PlayMode = False
                     self.PlayMode_TrackDelay = 0
                     self.PlayMode_CurrentTonePlayed = False
-                    self.Scroll = 0
 
             # -- Disable Edit Controls when in Play Mode -- #
             if not self.PlayMode:
                 if event.key == pygame.K_DOWN:
+                    self.Scroll -= 12
                     self.SelectedTrack += 1
                     if self.SelectedTrack >= len(self.Tracks):
                         self.SelectedTrack = 0
+                        self.Scroll = 14
 
                 if event.key == pygame.K_UP:
+                    self.Scroll += 12
                     if self.SelectedTrack <= 0:
                         self.SelectedTrack = len(self.Tracks)
+                        self.Scroll = -len(self.Tracks) * 12
 
                     self.SelectedTrack -= 1
 
-                if event.key == pygame.K_q:
+                if event.key == pygame.K_F1:
                     if len(self.Tracks) > 1:
                         self.Tracks.pop()
 
-                if event.key == pygame.K_e:
-                    self.Tracks.append(TrackBlock(("0000", "0001")))
+                if event.key == pygame.K_F2:
+                    self.Tracks.append(TrackBlock(("----", "----")))
 
-
-
-def PlayTone(Args):
-    CorrectTone = int(Args[0])
-
-    if not float(Args[1]) < 0.05:
-        CommandSyntax = "play -nq -t alsa synth {1} sine {0}".format(CorrectTone, str(Args[1]))
-
-        # -- Run the Command -- #
-        subprocess.Popen(CommandSyntax, shell=True)

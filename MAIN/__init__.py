@@ -28,6 +28,7 @@ def Initialize(DISPLAY):
 
     DefaultContents = cntMng.ContentManager()
     DefaultContents.SetFontPath("Data/Font")
+    DefaultContents.InitSoundSystem()
 
     MAIN.ReceiveCommand(5, "OneTrack v1.0")
 
