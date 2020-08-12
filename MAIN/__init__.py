@@ -19,6 +19,7 @@ from ENGINE import cntMng
 from ENGINE import MAIN
 from ENGINE import appData
 from OneTrack.MAIN import UI
+from OneTrack.MAIN import SaveFileDialog
 
 DefaultContents = cntMng.ContentManager
 track_list = UI.TrackList
@@ -29,6 +30,7 @@ DropDownFileMenu = UI.DropDownMenu
 
 FileMenuEnabled = False
 
+
 def Initialize(DISPLAY):
     global DefaultContents
     global track_list
@@ -37,9 +39,12 @@ def Initialize(DISPLAY):
 
     DefaultContents = cntMng.ContentManager()
     DefaultContents.SetFontPath("Data/Font")
+    DefaultContents.LoadSpritesInFolder("Data/Sprite")
     DefaultContents.InitSoundSystem()
 
-    MAIN.ReceiveCommand(5, "OneTrack v1.0")
+    MAIN.ReceiveCommand(5, "OneTrack v1.2")
+
+
 
     track_list = UI.TrackList()
     LoadMusicData()
@@ -53,6 +58,8 @@ def Initialize(DISPLAY):
     DropDownFileMenuList = ("Load", "Save", "New File")
 
     DropDownFileMenu = UI.DropDownMenu(pygame.Rect(10, 35, 120, 65), DropDownFileMenuList)
+
+    SaveFileDialog.Initialize()
 
 def GameDraw(DISPLAY):
     global track_list
@@ -68,20 +75,30 @@ def GameDraw(DISPLAY):
     if FileMenuEnabled:
         DropDownFileMenu.Render(DISPLAY)
 
+    SaveFileDialog.Draw(DISPLAY)
 
 def SaveMusicData():
     global track_list
 
-    pass
+    pickle.dump(track_list.PatternList, open("./default", "wb"))
 
 def LoadMusicData():
     global track_list
 
-    track_list.LoadMusicData(appData.ReadAppData_WithTry("/default", str, "0000:0000;0000:0000").split(';'))
+    # -- Load the List to RAM -- #
+    patterns_list = pickle.load(open("./default", "rb"))
+
+    # -- Clear the Current Patterns -- #
+    track_list.PatternList.clear()
+
+    # -- Add Objects One-By-One -- #
+    for obj in patterns_list:
+        track_list.PatternList.append(obj)
+
+    # -- Set to the Pattern 0 -- #
+    track_list.SetCurrentPattern_ByID(0)
 
 def NewMusicFile():
-    SaveMusicData()
-
     track_list.NewMusicFile()
 
 
@@ -90,38 +107,32 @@ def Update():
     global TopBarControls
     global DropDownFileMenu
     global FileMenuEnabled
-    global TrackMenuEnabled
 
     TopBarControls.Update()
     track_list.Update()
+    SaveFileDialog.Update()
 
     if FileMenuEnabled:
         DropDownFileMenu.Update()
 
     #region Top Bar Update
-    if TopBarControls.ClickedButtonText == "File":
-        TrackMenuEnabled = False
+    if TopBarControls.ClickedButtonIndex == 0:
         if not FileMenuEnabled:
             FileMenuEnabled = True
 
         else:
             FileMenuEnabled = False
 
-    if TopBarControls.ClickedButtonText == "Track":
-        FileMenuEnabled = False
-        if not TrackMenuEnabled:
-            TrackMenuEnabled = True
-
-        else:
-            TrackMenuEnabled = False
-    #endregion
-
     #region File DropDown Menu
     if FileMenuEnabled:
         if DropDownFileMenu.SelectedItem == "Save":
             DropDownFileMenu.SelectedItem = ""
             FileMenuEnabled = False
-            SaveMusicData()
+
+            if not SaveFileDialog.Enabled:
+                SaveFileDialog.Enabled = True
+            else:
+                SaveFileDialog.Enabled = False
 
         if DropDownFileMenu.SelectedItem == "Load":
             DropDownFileMenu.SelectedItem = ""
@@ -145,3 +156,5 @@ def EventUpdate(event):
     track_list.EventUpdate(event)
 
     if FileMenuEnabled: DropDownFileMenu.EventUpdate(event)
+
+    SaveFileDialog.EventUpdate(event)

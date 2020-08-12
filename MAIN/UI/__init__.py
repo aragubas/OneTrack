@@ -424,18 +424,17 @@ class Button:
         self.CursorSettedToggle = False
         self.ButtonDowed = False
         self.ColisionRectangle = self.Rectangle
-        self.CustomColisionRectangle = CustomColisionRectangle
         self.BackgroundColor = Button_BackgroundColor
         self.SurfaceUpdated = False
         self.LastRect = pygame.Rect(0, 0, 0, 0)
         self.Surface = pygame.Surface((Rectangle[2], Rectangle[3]))
+        self.ColisionXOffset = 0
+        self.ColisionYOffset = 0
+
 
     def Update(self, event):
         # -- Set the Custom Colision Rectangle -- #
-        if not self.CustomColisionRectangle:
-            self.ColisionRectangle = self.Rectangle
-        else:
-            self.ColisionRectangle = pygame.Rect(self.ColisionRectangle[0], self.ColisionRectangle[1], self.Rectangle[2], self.Rectangle[3])
+        self.ColisionRectangle = pygame.Rect(self.ColisionXOffset + self.Rectangle[0], self.ColisionYOffset + self.Rectangle[1], self.Rectangle[2], self.Rectangle[3])
 
         if self.IsButtonEnabled:  # -- Only update the button, when is enabled.
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # Set the button to the DOWN state
@@ -474,10 +473,10 @@ class Button:
         self.Rectangle[3] = Value
 
     def Set_ColisionX(self, Value):
-        self.ColisionRectangle[0] = Value
+        self.ColisionXOffset = Value
 
     def Set_ColisionY(self, Value):
-        self.ColisionRectangle[1] = Value
+        self.ColisionYOffset = Value
 
     def Set_Text(self, Value):
         self.ButtonText = Value
@@ -530,7 +529,6 @@ class DropDownMenu:
         for i, item in enumerate(ItemsList):
             self.MenuItems.append(Button(pygame.Rect(self.Rectangle[0] + 5, self.Rectangle[1] + 5 * i + 32, 0, 0), item, 12))
 
-
     def Render(self, DISPLAY):
         BluredBackground = pygame.Surface((self.Rectangle[2], self.Rectangle[3]))
         BluredBackground.blit(DISPLAY, (0, 0), self.Rectangle)
@@ -557,21 +555,235 @@ class ButtonsBar:
     def __init__(self, Rectangle, ButtonsList):
         self.Rectangle = Rectangle
         self.ButtonsList = ButtonsList
-        self.ClickedButtonText = ""
+        self.ClickedButtonIndex = ""
+        self.ColisionXOffset = 0
+        self.ColisionYOffset = 0
 
     def Render(self, DISPLAY):
         for button in self.ButtonsList:
             button.Render(DISPLAY)
 
-        self.ClickedButtonText = ""
+        self.ClickedButtonIndex = -1
 
     def Update(self):
         for i, button in enumerate(self.ButtonsList):
-            button.Rectangle[0] = i * button.Rectangle[2] + 2
+            button.Rectangle[0] = i * button.Rectangle[2]
+
+            button.ColisionXOffset = self.ColisionXOffset
+            button.ColisionYOffset = self.ColisionYOffset
 
             if button.ButtonState == 2:
-                self.ClickedButtonText = button.ButtonText
+                self.ClickedButtonIndex = i
 
     def EventUpdate(self, event):
         for button in self.ButtonsList:
             button.Update(event)
+
+
+class Window:
+    def __init__(self, Rectangle, Title, Resiziable):
+        self.WindowRectangle = Rectangle
+        self.Title = Title
+        self.TitleBarRectangle = pygame.Rect(self.WindowRectangle[0], self.WindowRectangle[1], self.WindowRectangle[2], 20)
+        self.ResizeRectangle = pygame.Rect(self.WindowRectangle[0] + self.WindowRectangle[3] - 16, self.WindowRectangle[1] + self.WindowRectangle[3] - 16, 16, 16)
+        self.Window_IsBeingGrabbed = False
+        self.Window_IsBeingResized = False
+        self.Window_MinimunW = Rectangle[2]
+        self.Window_MinimunH = Rectangle[3]
+        self.Resiziable = Resiziable
+        self.WindowOriginalRect = pygame.Rect(0, 0, 0, 0)
+        self.OriginalMinumunHeight = 0
+        self.OriginalResiziable = False
+        self.WindowSurface_Rect = (0, 0, 200, 200)
+        self.Minimizable = True
+        self.SurfaceSizeFixed = False
+
+    def Render(self, DISPLAY):
+        # -- Window Rectangle -- #
+        self.WindowRectangle[0] = self.TitleBarRectangle[0]
+        self.WindowRectangle[1] = self.TitleBarRectangle[1]
+        # -- Title Bar Rectangle -- #
+        self.TitleBarRectangle = pygame.Rect(self.WindowRectangle[0], self.WindowRectangle[1], self.WindowRectangle[2], 20)
+
+        # -- Resize Button Rectangle -- #
+        if self.Resiziable:
+            self.ResizeRectangle = pygame.Rect(self.WindowRectangle[0] + self.WindowRectangle[2] - 10,
+                                               self.WindowRectangle[1] + self.WindowRectangle[3], 10, 10)
+        # -- Update Window Surface Destination -- #
+        self.WindowSurface_Rect = (self.WindowRectangle[0], self.WindowRectangle[1] + 20, self.WindowRectangle[2], self.WindowRectangle[3] - 20)
+
+        # -- Update Window Border -- #
+        if not self.Resiziable:
+            WindowBorderRectangle = self.WindowRectangle
+        else:
+            WindowBorderRectangle = (self.WindowRectangle[0], self.WindowRectangle[1], self.WindowRectangle[2], self.WindowRectangle[3] + 12)
+
+        # -- Draw the Window Blurred Background -- #
+        WindowSurface = pygame.Surface((WindowBorderRectangle[2], WindowBorderRectangle[3]))
+
+        BluredBackground = pygame.Surface((WindowBorderRectangle[2], WindowBorderRectangle[3]))
+        BluredBackground.blit(DISPLAY, (0, 0), self.WindowRectangle)
+        fx.BlurredRectangle(BluredBackground, (0, 0, WindowBorderRectangle[2], WindowBorderRectangle[3]), 75, 100, (100, 100, 100))
+        WindowSurface.blit(BluredBackground, (0, 0))
+
+        # -- Draw the Resize Block -- #
+        if self.Resiziable:
+            Main.DefaultContents.ImageRender(WindowSurface, "/window/resize.png", self.WindowRectangle[2] - 12, self.WindowRectangle[3], self.ResizeRectangle[2], self.ResizeRectangle[3], True)
+
+        # -- Draw the window title -- #
+        fx.BlurredRectangle(WindowSurface, (0, 0, self.TitleBarRectangle[2], self.TitleBarRectangle[3] + 2), 5, 100, (100, 100, 100))
+        Main.DefaultContents.FontRender(WindowSurface, "/Ubuntu_Thin.ttf", 20, self.Title, (250, 250, 255), self.TitleBarRectangle[2] / 2 - Main.DefaultContents.GetFont_width("/Ubuntu_Thin.ttf", 20, self.Title) / 2, -1)
+
+        # -- Draw the Window Border -- #
+        shape.Shape_Rectangle(WindowSurface, (0, 0, 0), (0, 0, WindowBorderRectangle[2], WindowBorderRectangle[3]), 1)
+
+        DISPLAY.blit(WindowSurface, (self.WindowRectangle[0], self.WindowRectangle[1]))
+
+    def EventUpdate(self, event):
+        # -- Grab the Window -- #
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if self.TitleBarRectangle.collidepoint(pygame.mouse.get_pos()):
+                self.Window_IsBeingGrabbed = True
+
+            if self.ResizeRectangle.collidepoint(pygame.mouse.get_pos()) and self.Resiziable:
+                self.Window_IsBeingResized = True
+        # -- Ungrab the Window -- #
+        if event.type == pygame.MOUSEBUTTONUP:
+            if self.Window_IsBeingResized:
+                self.Window_IsBeingResized = False
+
+            if self.Window_IsBeingGrabbed:
+                self.Window_IsBeingGrabbed = False
+
+        # -- Grab Window -- #
+        if self.Window_IsBeingGrabbed:
+            self.TitleBarRectangle[0] = pygame.mouse.get_pos()[0] - self.WindowRectangle[2] / 2
+            self.TitleBarRectangle[1] = pygame.mouse.get_pos()[1] - self.TitleBarRectangle[3] / 2
+
+        # -- Resize Window -- #
+        if self.Window_IsBeingResized and self.Resiziable:
+            # -- Limit Window Size -- #
+            if self.WindowRectangle[2] >= self.Window_MinimunW:
+                self.WindowRectangle[2] = pygame.mouse.get_pos()[0] - self.WindowRectangle[0]
+
+            if self.WindowRectangle[3] >= self.Window_MinimunH: # <- Resize the Window
+                self.WindowRectangle[3] = pygame.mouse.get_pos()[1] - self.WindowRectangle[1]
+
+        # -- Dont Allow the Window to be resized lower than Minimum Size -- #
+        if self.WindowRectangle[2] < self.Window_MinimunW:
+            self.WindowRectangle[2] = self.Window_MinimunW
+
+        if self.WindowRectangle[3] < self.Window_MinimunH:
+            self.WindowRectangle[3] = self.Window_MinimunH
+
+class VerticalListWithDescription:
+    def __init__(self, Rectangle):
+        self.Rectangle = Rectangle
+        self.ItemsName = list()
+        self.ItemsDescription = list()
+        self.ItemOrderID = list()
+        self.ItemSprite = list()
+        self.ItemSelected = list()
+        self.LastItemClicked = "null"
+        self.LastItemOrderID = None
+        self.ScrollY = 0
+        self.ListSurface = pygame.Surface
+        self.ClickedItem = ""
+        self.ColisionXOffset = 0
+        self.ColisionYOffset = 0
+        self.ButtonUpRectangle = pygame.Rect(0, 0, 32, 32)
+        self.ButtonDownRectangle = pygame.Rect(34, 0, 32, 32)
+        self.ListSurfaceUpdated = False
+
+    def Render(self,DISPLAY):
+        self.ListSurface = pygame.Surface((self.Rectangle[2], self.Rectangle[3]), pygame.SRCALPHA)
+
+        for i, itemNam in enumerate(self.ItemsName):
+            ItemRect = (self.Rectangle[0], self.ScrollY + self.Rectangle[1] + 42 * i, self.Rectangle[2], 40)
+
+            BackgroundColor = (20, 42, 59, 50)
+            ItemNameFontColor = (250, 250, 250)
+            BorderColor = (32, 164, 243)
+            TextsX = 5
+            if self.ItemSprite[i] != "null":
+                TextsX = 45
+
+            if self.LastItemClicked == itemNam: # -- When the Item is Selected
+                BackgroundColor = (20, 42, 59, 100)
+                ItemNameFontColor = (255, 255, 255)
+                BorderColor = (46, 196, 182)
+
+            if self.ItemSelected[i]:  # -- When the Item is Clicked
+                BackgroundColor = (30, 52, 69, 150)
+                ItemNameFontColor = (250, 250, 250)
+                BorderColor = (255, 51, 102)
+
+            # -- Background -- #
+            shape.Shape_Rectangle(self.ListSurface, BackgroundColor, ItemRect)
+
+            # -- Indicator Bar -- #
+            shape.Shape_Rectangle(self.ListSurface, BorderColor, ItemRect, 1)
+
+            # -- Render Item Name -- #
+            Main.DefaultContents.FontRender(self.ListSurface, "/Ubuntu_Bold.ttf", 14, itemNam, ItemNameFontColor, TextsX + ItemRect[0], ItemRect[1] + 5)
+
+            # -- Render Item Description -- #
+            Main.DefaultContents.FontRender(self.ListSurface, "/Ubuntu.ttf", 12, self.ItemsDescription[i], ItemNameFontColor, TextsX + ItemRect[0], ItemRect[1] + 25)
+
+            # -- Render the Item Sprite -- #
+            if self.ItemSprite[i] != "null":
+                Main.DefaultContents.ImageRender(self.ListSurface, self.ItemSprite[i], ItemRect[0] + 4, ItemRect[1] + 4, 36, 32)
+
+        # -- Blit All Work to Screen -- #
+        DISPLAY.blit(self.ListSurface,(self.Rectangle[0], self.Rectangle[1]))
+
+    def Update(self, event):
+        ColisionRect = pygame.Rect(self.ColisionXOffset + self.Rectangle[0], self.ColisionYOffset + self.Rectangle[1], self.Rectangle[2], self.Rectangle[3])
+
+        if ColisionRect.collidepoint(pygame.mouse.get_pos()):
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 5:
+                    self.ScrollY += 5
+                    return
+
+                elif event.button == 4:
+                    self.ScrollY -= 5
+                    return
+
+            # -- Select the Clicked Item -- #
+            for i, itemNam in enumerate(self.ItemsName):
+                ItemRect = pygame.Rect(self.ColisionXOffset + self.Rectangle[0], self.ColisionYOffset + self.ScrollY + self.Rectangle[1] + 42 * i, self.Rectangle[2], 40)
+
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    if ItemRect.collidepoint(pygame.mouse.get_pos()):
+                        self.LastItemClicked = itemNam
+                        self.ItemSelected[i] = True
+                        self.LastItemOrderID = self.ItemOrderID[i]
+                if event.type == pygame.MOUSEBUTTONUP:
+                    self.ItemSelected[i] = False
+
+    def Set_X(self, Value):
+        self.Rectangle[0] = int(Value)
+
+    def Set_Y(self, Value):
+        self.Rectangle[1] = int(Value)
+
+    def Set_W(self, Value):
+        self.Rectangle[2] = int(Value)
+
+    def Set_H(self, Value):
+        self.Rectangle[3] = int(Value)
+
+    def AddItem(self,ItemName, ItemDescription, ItemSprite="null"):
+        self.ItemsName.append(ItemName)
+        self.ItemsDescription.append(ItemDescription)
+        self.ItemSprite.append(ItemSprite)
+        self.ItemSelected.append(False)
+        self.ItemOrderID.append((len(self.ItemOrderID) - 2) + 1)
+
+    def ClearItems(self):
+        self.ItemsName.clear()
+        self.ItemsDescription.clear()
+        self.ItemSprite.clear()
+        self.ItemSelected.clear()
+        self.ItemOrderID.clear()
