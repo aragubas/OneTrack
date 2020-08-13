@@ -18,6 +18,7 @@ import pygame, os, pickle, io
 from ENGINE import cntMng
 from ENGINE import MAIN
 from ENGINE import appData
+import ENGINE as tge
 from OneTrack.MAIN import UI
 from OneTrack.MAIN import SaveFileDialog
 
@@ -77,16 +78,16 @@ def GameDraw(DISPLAY):
 
     SaveFileDialog.Draw(DISPLAY)
 
-def SaveMusicData():
+def SaveMusicData(FilePath):
     global track_list
 
-    pickle.dump(track_list.PatternList, open("./default", "wb"))
+    pickle.dump(track_list.PatternList, open(FilePath, "wb"))
 
 def LoadMusicData():
     global track_list
 
     # -- Load the List to RAM -- #
-    patterns_list = pickle.load(open("./default", "rb"))
+    patterns_list = pickle.load(open(tge.TaiyouPath_AppDataFolder + "/default.sav", "rb"))
 
     # -- Clear the Current Patterns -- #
     track_list.PatternList.clear()

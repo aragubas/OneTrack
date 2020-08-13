@@ -234,7 +234,7 @@ class Pattern:
                     if "-" in CurrentTrackData[1]:
                         Main.DefaultContents.StopAllChannels()
 
-                    elif "F" in CurrentTrackData[1]:
+                    elif CurrentTrackData[1].startswith("F"):
                         SplitedAgrs = list(CurrentTrackData[1])
                         FadeTime = ""
 
@@ -246,7 +246,7 @@ class Pattern:
 
                         Main.DefaultContents.FadeoutSound(self.PlayMode_LastSoundChannel, FadeTime)
 
-                    elif "J" in CurrentTrackData[1]:
+                    elif CurrentTrackData[1].startswith("J"):
                         SplitedAgrs = list(CurrentTrackData[1])
                         print(SplitedAgrs)
                         JmpTrackID = ""
@@ -257,10 +257,10 @@ class Pattern:
                                 JmpTrackID += arg
 
                         JmpTrackID = int(JmpTrackID)
-
                         Main.track_list.PatternJump(JmpTrackID)
+                        self.EndPlayMode()
 
-                    elif CurrentTrackData[1] == "END-":
+                    elif CurrentTrackData[1].startswith("END"):
                         self.EndPlayMode()
 
                 else:
@@ -412,8 +412,8 @@ class TrackList:
                 self.SetCurrentPattern_ByID(PatternID)
 
 class Button:
-    def __init__(self, Rectangle, ButtonText, TextSize, CustomColisionRectangle=False):
-        self.Rectangle = Rectangle
+    def __init__(self, Rectangle, ButtonText, TextSize):
+        self.Rectangle = pygame.Rect(Rectangle[0], Rectangle[1], Rectangle[2], Rectangle[3])
         self.ButtonText = ButtonText
         self.TextSize = TextSize
         self.ButtonState = 0 # 0 - INACTIVE, 1 - DOWN, 2 - UP
@@ -430,7 +430,6 @@ class Button:
         self.Surface = pygame.Surface((Rectangle[2], Rectangle[3]))
         self.ColisionXOffset = 0
         self.ColisionYOffset = 0
-
 
     def Update(self, event):
         # -- Set the Custom Colision Rectangle -- #
@@ -483,7 +482,7 @@ class Button:
 
     def Render(self, DISPLAY):
         # -- Update the Surface -- #
-        self.Rectangle = pygame.rect.Rect(self.Rectangle[0], self.Rectangle[1], Main.DefaultContents.GetFont_width(self.FontFile, self.TextSize, self.ButtonText) + 5, Main.DefaultContents.GetFont_height(self.FontFile, self.TextSize, self.ButtonText) + 6)
+        self.Rectangle = pygame.Rect(self.Rectangle[0], self.Rectangle[1], Main.DefaultContents.GetFont_width(self.FontFile, self.TextSize, self.ButtonText) + 5, Main.DefaultContents.GetFont_height(self.FontFile, self.TextSize, self.ButtonText) + 6)
 
         # -- Update the Rect Wheen Needed -- #
         if self.Rectangle == self.LastRect:
@@ -553,7 +552,7 @@ class DropDownMenu:
 
 class ButtonsBar:
     def __init__(self, Rectangle, ButtonsList):
-        self.Rectangle = Rectangle
+        self.Rectangle = pygame.Rect(Rectangle[0], Rectangle[1], Rectangle[2], Rectangle[3])
         self.ButtonsList = ButtonsList
         self.ClickedButtonIndex = ""
         self.ColisionXOffset = 0
@@ -567,7 +566,12 @@ class ButtonsBar:
 
     def Update(self):
         for i, button in enumerate(self.ButtonsList):
-            button.Rectangle[0] = i * button.Rectangle[2]
+            if i == 0:
+                button.Rectangle[0] = self.Rectangle[0]
+
+            else:
+                button.Rectangle[0] = (self.ButtonsList[i - 1].Rectangle[2]) + 5
+
 
             button.ColisionXOffset = self.ColisionXOffset
             button.ColisionYOffset = self.ColisionYOffset

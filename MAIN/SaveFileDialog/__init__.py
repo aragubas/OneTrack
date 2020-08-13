@@ -18,12 +18,14 @@ import pygame
 from OneTrack.MAIN import UI
 from ENGINE import utils
 import ENGINE as tge
+import OneTrack.MAIN as Main
 
 # -- Window's Controls -- #
 Window = UI.Window
-Enabled = False
+Enabled = True
 FolderList = UI.VerticalListWithDescription
 OptionsBar = UI.ButtonsBar
+SelectedFile = ""
 
 def Initialize():
     global Window
@@ -43,7 +45,10 @@ def Initialize():
 
         FolderList.AddItem(ItemName, ItemDescription)
 
-    ButtonsList = (UI.Button((0, 0, 0, 0), "Select", 14, True), UI.Button((0, 0, 0, 0), "New", 14, True))
+    ButtonsList = list()
+
+    ButtonsList.append(UI.Button(pygame.Rect(0, 0, 0, 0), "Select", 14))
+    ButtonsList.append(UI.Button((0, 0, 0, 0), "New", 14))
 
     OptionsBar = UI.ButtonsBar((0, 0, 0, 0), ButtonsList)
 
@@ -84,6 +89,22 @@ def Update():
     #-------------------------------
     OptionsBar.ColisionXOffset = Window.WindowSurface_Rect[0]
     OptionsBar.ColisionYOffset = Window.WindowSurface_Rect[1]
+
+    SelectedFile = FolderList.LastItemClicked
+
+    if OptionsBar.ClickedButtonIndex == 0:
+        OptionsBar.ClickedButtonIndex = -1
+        print("Select Button Event")
+
+        Main.SaveMusicData(tge.TaiyouPath_AppDataFolder + SelectedFile)
+
+        Enabled = False
+
+
+
+    if OptionsBar.ClickedButtonIndex == 1:
+        OptionsBar.ClickedButtonIndex = -1
+        print("New Button Event")
 
 def EventUpdate(event):
     global Enabled
