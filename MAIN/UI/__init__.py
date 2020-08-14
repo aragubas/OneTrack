@@ -16,9 +16,11 @@
 #
 import pygame, os
 from OneTrack import MAIN as Main
+from OneTrack.MAIN.Screens import Editor
 from ENGINE import shape
 from ENGINE import fx
 from ENGINE import appData
+from ENGINE import utils
 
 # -- Color List -- #
 TrackBlock_FrequencyBGColor_Active = (100, 94, 85)
@@ -196,8 +198,7 @@ class Pattern:
             self.AddBlankTrack()
 
     def AddBlankTrack(self):
-        self.Tracks.append(TrackBlock(("0000", "0000")))
-
+        self.Tracks.append(TrackBlock(("0000", "0001")))
 
     def Draw(self, DISPLAY):
         for track in self.Tracks:
@@ -223,7 +224,8 @@ class Pattern:
         if self.PlayMode:
             self.PlayMode_TrackDelay += 1
             CurrentTrackObj = self.Tracks[self.SelectedTrack]
-            BMP = self.BPM / self.Hz
+            BMP = abs(1000 / self.BPM)
+            print(BMP)
 
             if self.PlayMode_TrackDelay >= BMP:
                 self.SelectedTrack += 1
@@ -231,7 +233,7 @@ class Pattern:
                 CurrentTrackData = CurrentTrackObj.TrackData
 
                 if CurrentTrackData[0] == "----":
-                    if "-" in CurrentTrackData[1]:
+                    if "----" in CurrentTrackData[1]:
                         Main.DefaultContents.StopAllChannels()
 
                     elif CurrentTrackData[1].startswith("F"):
@@ -257,7 +259,7 @@ class Pattern:
                                 JmpTrackID += arg
 
                         JmpTrackID = int(JmpTrackID)
-                        Main.track_list.PatternJump(JmpTrackID)
+                        Editor.track_list.PatternJump(JmpTrackID)
                         self.EndPlayMode()
 
                     elif CurrentTrackData[1].startswith("END"):
@@ -277,10 +279,8 @@ class Pattern:
                     except ValueError:
                         pass
 
-                    print(SoundTune)
-                    print(SoundDuration)
-
-                    self.PlayMode_LastSoundChannel = Main.DefaultContents.PlayTune(SoundTune, SoundDuration)
+                    if not SoundTune == 0:
+                        self.PlayMode_LastSoundChannel = Main.DefaultContents.PlayTune(SoundTune, SoundDuration)
 
                 if self.SelectedTrack >= len(self.Tracks):
                     self.EndPlayMode()
@@ -324,7 +324,7 @@ class Pattern:
 
                 if event.key == pygame.K_F1:
                     if len(self.Tracks) > 1:
-                        self.Tracks[self.SelectedTrack] = TrackBlock(("0000", "0000"))
+                        self.Tracks[self.SelectedTrack] = TrackBlock(("0000", "0001"))
 
                 if event.key == pygame.K_F2:
                     if len(self.Tracks) < 24:
@@ -364,9 +364,10 @@ class TrackList:
         self.CurrentPattern = self.PatternList[PatternID]
 
     def PatternJump(self, PatternID):
-        self.CurrentPattern = self.PatternList[PatternID]
-        self.CurrentPattern.PlayMode = True
-        self.CurrentPattern.SelectedTrack = 0
+        if PatternID < len(self.PatternList):
+            self.CurrentPattern = self.PatternList[PatternID]
+            self.CurrentPattern.PlayMode = True
+            self.CurrentPattern.SelectedTrack = 0
 
 
     def Render(self, DISPLAY):
@@ -570,8 +571,7 @@ class ButtonsBar:
                 button.Rectangle[0] = self.Rectangle[0]
 
             else:
-                button.Rectangle[0] = (self.ButtonsList[i - 1].Rectangle[2]) + 5
-
+                button.Rectangle[0] = (self.ButtonsList[i - 1].Rectangle[0] + self.ButtonsList[i - 1].Rectangle[2]) + 5
 
             button.ColisionXOffset = self.ColisionXOffset
             button.ColisionYOffset = self.ColisionYOffset
@@ -585,7 +585,7 @@ class ButtonsBar:
 
 
 class Window:
-    def __init__(self, Rectangle, Title, Resiziable):
+    def __init__(self, Rectangle, Title, Resiziable, Movable=True):
         self.WindowRectangle = Rectangle
         self.Title = Title
         self.TitleBarRectangle = pygame.Rect(self.WindowRectangle[0], self.WindowRectangle[1], self.WindowRectangle[2], 20)
@@ -595,12 +595,14 @@ class Window:
         self.Window_MinimunW = Rectangle[2]
         self.Window_MinimunH = Rectangle[3]
         self.Resiziable = Resiziable
-        self.WindowOriginalRect = pygame.Rect(0, 0, 0, 0)
         self.OriginalMinumunHeight = 0
         self.OriginalResiziable = False
         self.WindowSurface_Rect = (0, 0, 200, 200)
-        self.Minimizable = True
         self.SurfaceSizeFixed = False
+        self.Moveable = Movable
+        self.Opacity = 255
+        self.WindowSurface = pygame.Surface((5, 5))
+        self.LastWindowRect = pygame.Rect((0, 0, 0, 0))
 
     def Render(self, DISPLAY):
         # -- Window Rectangle -- #
@@ -623,25 +625,28 @@ class Window:
             WindowBorderRectangle = (self.WindowRectangle[0], self.WindowRectangle[1], self.WindowRectangle[2], self.WindowRectangle[3] + 12)
 
         # -- Draw the Window Blurred Background -- #
-        WindowSurface = pygame.Surface((WindowBorderRectangle[2], WindowBorderRectangle[3]))
+        if not self.WindowRectangle == self.LastWindowRect:
+            self.LastWindowRect = self.WindowRectangle
+            self.WindowSurface = pygame.Surface((WindowBorderRectangle[2], WindowBorderRectangle[3]))
+        self.WindowSurface.set_alpha(self.Opacity)
 
         BluredBackground = pygame.Surface((WindowBorderRectangle[2], WindowBorderRectangle[3]))
         BluredBackground.blit(DISPLAY, (0, 0), self.WindowRectangle)
         fx.BlurredRectangle(BluredBackground, (0, 0, WindowBorderRectangle[2], WindowBorderRectangle[3]), 75, 100, (100, 100, 100))
-        WindowSurface.blit(BluredBackground, (0, 0))
+        self.WindowSurface.blit(BluredBackground, (0, 0))
 
         # -- Draw the Resize Block -- #
         if self.Resiziable:
-            Main.DefaultContents.ImageRender(WindowSurface, "/window/resize.png", self.WindowRectangle[2] - 12, self.WindowRectangle[3], self.ResizeRectangle[2], self.ResizeRectangle[3], True)
+            Main.DefaultContents.ImageRender(self.WindowSurface, "/window/resize.png", self.WindowRectangle[2] - 12, self.WindowRectangle[3], self.ResizeRectangle[2], self.ResizeRectangle[3], True)
 
         # -- Draw the window title -- #
-        fx.BlurredRectangle(WindowSurface, (0, 0, self.TitleBarRectangle[2], self.TitleBarRectangle[3] + 2), 5, 100, (100, 100, 100))
-        Main.DefaultContents.FontRender(WindowSurface, "/Ubuntu_Thin.ttf", 20, self.Title, (250, 250, 255), self.TitleBarRectangle[2] / 2 - Main.DefaultContents.GetFont_width("/Ubuntu_Thin.ttf", 20, self.Title) / 2, -1)
+        fx.BlurredRectangle(self.WindowSurface, (0, 0, self.TitleBarRectangle[2], self.TitleBarRectangle[3] + 2), 5, 100, (100, 100, 100))
+        Main.DefaultContents.FontRender(self.WindowSurface, "/Ubuntu_Thin.ttf", 20, self.Title, (250, 250, 255), self.TitleBarRectangle[2] / 2 - Main.DefaultContents.GetFont_width("/Ubuntu_Thin.ttf", 20, self.Title) / 2, -1)
 
         # -- Draw the Window Border -- #
-        shape.Shape_Rectangle(WindowSurface, (0, 0, 0), (0, 0, WindowBorderRectangle[2], WindowBorderRectangle[3]), 1)
+        shape.Shape_Rectangle(self.WindowSurface, (0, 0, 0), (0, 0, WindowBorderRectangle[2], WindowBorderRectangle[3]), 1)
 
-        DISPLAY.blit(WindowSurface, (self.WindowRectangle[0], self.WindowRectangle[1]))
+        DISPLAY.blit(self.WindowSurface, (self.WindowRectangle[0], self.WindowRectangle[1]))
 
     def EventUpdate(self, event):
         # -- Grab the Window -- #
@@ -660,7 +665,7 @@ class Window:
                 self.Window_IsBeingGrabbed = False
 
         # -- Grab Window -- #
-        if self.Window_IsBeingGrabbed:
+        if self.Window_IsBeingGrabbed and self.Moveable:
             self.TitleBarRectangle[0] = pygame.mouse.get_pos()[0] - self.WindowRectangle[2] / 2
             self.TitleBarRectangle[1] = pygame.mouse.get_pos()[1] - self.TitleBarRectangle[3] / 2
 
@@ -682,7 +687,8 @@ class Window:
 
 class VerticalListWithDescription:
     def __init__(self, Rectangle):
-        self.Rectangle = Rectangle
+        self.Rectangle = pygame.Rect(Rectangle[0], Rectangle[1], Rectangle[2], Rectangle[3])
+        self.LastRectangle = pygame.Rect(0, 0, 0, 0)
         self.ItemsName = list()
         self.ItemsDescription = list()
         self.ItemOrderID = list()
@@ -700,7 +706,13 @@ class VerticalListWithDescription:
         self.ListSurfaceUpdated = False
 
     def Render(self,DISPLAY):
-        self.ListSurface = pygame.Surface((self.Rectangle[2], self.Rectangle[3]), pygame.SRCALPHA)
+        if not self.Rectangle[2] == self.LastRectangle[2] or not self.Rectangle[3] == self.LastRectangle[3]:
+            self.LastRectangle[2] = self.Rectangle[2]
+            self.LastRectangle[3] = self.Rectangle[3]
+
+            self.ListSurface = pygame.Surface((self.Rectangle[2], self.Rectangle[3]), pygame.SRCALPHA)
+
+        self.ListSurface.fill((0, 0, 0, 0))
 
         for i, itemNam in enumerate(self.ItemsName):
             ItemRect = (self.Rectangle[0], self.ScrollY + self.Rectangle[1] + 42 * i, self.Rectangle[2], 40)

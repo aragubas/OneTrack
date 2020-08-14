@@ -37,8 +37,8 @@ def Initialize():
     global OptionsBar
     global AnimationController
 
-    Window = UI.Window(pygame.Rect(-600, -420, 600, 420), "Save Music File", False, False)
-    FolderList = UI.VerticalListWithDescription(pygame.Rect(0, 24, 600, 400))
+    Window = UI.Window(pygame.Rect(-600, -420, 600, 420), "Load Music File", False, False)
+    FolderList = UI.VerticalListWithDescription(pygame.Rect(0, 24, 600, 420))
 
     AllFilesInDir = utils.Directory_FilesList(tge.TaiyouPath_AppDataFolder)
 
@@ -47,16 +47,15 @@ def Initialize():
         FileName = file.replace(tge.TaiyouPath_AppDataFolder, "")
 
         ItemName = FileName
-        ItemDescription = "Saved on: {0}".format(FileAllPath)
+        ItemDescription = "Located on: {0}".format(FileAllPath)
 
         FolderList.AddItem(ItemName, ItemDescription)
 
     ButtonsList = list()
 
     ButtonsList.append(UI.Button(pygame.Rect(0, 0, 0, 0), "Select", 14))
-    ButtonsList.append(UI.Button((0, 0, 0, 0), "New", 14))
 
-    OptionsBar = UI.ButtonsBar((3, -10, 0, 0), ButtonsList)
+    OptionsBar = UI.ButtonsBar((0, 0, 0, 0), ButtonsList)
     AnimationController = utils.AnimationController(3.5, multiplierRestart=True)
 
 def Draw(DISPLAY):
@@ -105,11 +104,11 @@ def UpdateWindow():
 
         Enabled = False
 
+
 def Update():
-    global Enabled
     global FolderList
-    global SelectedFile
-    global Window
+    global OptionsBar
+    global Enabled
 
     if not Enabled: return
     UpdateWindow()
@@ -130,20 +129,17 @@ def Update():
 
     if OptionsBar.ClickedButtonIndex == 0:
         OptionsBar.ClickedButtonIndex = -1
+        print("Select Button Event")
 
-        Main.SaveMusicData(tge.TaiyouPath_AppDataFolder + SelectedFile)
+        Main.LoadMusicData(tge.TaiyouPath_AppDataFolder + SelectedFile)
 
         AnimationController.Enabled = True
-
-    if OptionsBar.ClickedButtonIndex == 1:
-        OptionsBar.ClickedButtonIndex = -1
 
 def EventUpdate(event):
     global Enabled
     global Window
     global FolderList
     global OptionsBar
-
     if not Enabled: return
 
     if event.type == pygame.KEYUP:
