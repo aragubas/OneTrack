@@ -32,14 +32,13 @@ def Initialize(DISPLAY):
     DefaultContents.LoadSpritesInFolder("Data/Sprite")
     DefaultContents.InitSoundSystem()
 
-    MAIN.ReceiveCommand(5, "OneTrack v1.3")
+    MAIN.ReceiveCommand(5, "OneTrack v1.4")
+    MAIN.ReceiveCommand(0, 60)
 
     Editor.Initialize(DISPLAY)
 
 def GameDraw(DISPLAY):
     global CurrentScreenToUpdate
-
-    DISPLAY.fill((40, 30, 35))
 
     CurrentScreenToUpdate.GameDraw(DISPLAY)
 

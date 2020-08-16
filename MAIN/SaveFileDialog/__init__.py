@@ -19,10 +19,12 @@ from OneTrack.MAIN import UI
 from ENGINE import utils
 import ENGINE as tge
 import OneTrack.MAIN.Screens.Editor as Main
+from ENGINE import fx
+
 
 # -- Window's Controls -- #
 Window = UI.Window
-Enabled = False
+Enabled = True
 FolderList = UI.VerticalListWithDescription
 OptionsBar = UI.ButtonsBar
 SelectedFile = ""
@@ -30,26 +32,21 @@ AnimationController = utils.AnimationController
 AnimationNumb = 0
 WindowDrawnSurface = pygame.Surface((0, 0))
 LastWindowRect = pygame.Rect((0, 0, 0, 0))
+BluredScreen_Surface = pygame.Surface((5, 5))
+
+Inputbox_FileName = UI.InputBox
+EnterFileNameEnabled = False
 
 def Initialize():
     global Window
     global FolderList
     global OptionsBar
     global AnimationController
+    global Inputbox_FileName
 
     Window = UI.Window(pygame.Rect(-600, -420, 600, 420), "Save Music File", False, False)
     FolderList = UI.VerticalListWithDescription(pygame.Rect(0, 24, 600, 400))
-
-    AllFilesInDir = utils.Directory_FilesList(tge.TaiyouPath_AppDataFolder)
-
-    for file in AllFilesInDir:
-        FileAllPath = file
-        FileName = file.replace(tge.TaiyouPath_AppDataFolder, "")
-
-        ItemName = FileName
-        ItemDescription = "Saved on: {0}".format(FileAllPath)
-
-        FolderList.AddItem(ItemName, ItemDescription)
+    UpdateFileList()
 
     ButtonsList = list()
 
@@ -59,18 +56,42 @@ def Initialize():
     OptionsBar = UI.ButtonsBar((3, -10, 0, 0), ButtonsList)
     AnimationController = utils.AnimationController(3.5, multiplierRestart=True)
 
+    Inputbox_FileName = UI.InputBox(5, 25, 250, 25, "Default", 14)
+
+def UpdateFileList():
+    global FolderList
+
+    print("Save : Updating File List...")
+    FolderList.ClearItems()
+    AllFilesInDir = utils.Directory_FilesList(tge.TaiyouPath_AppDataFolder)
+
+    for file in AllFilesInDir:
+        FileAllPath = file
+        FileName = file.replace(tge.TaiyouPath_AppDataFolder, "")
+
+        ItemName = FileName[1:]
+        ItemDescription = "Saved on: {0}".format(FileAllPath)
+
+        FolderList.AddItem(ItemName, ItemDescription)
+
+
 def Draw(DISPLAY):
     global Enabled
     global Window
     global FolderList
     global OptionsBar
     global WindowDrawnSurface
+    global BluredScreen_Surface
 
     if not Enabled: return
+    # Render the Blured Screen
+
+    DISPLAY.blit(BluredScreen_Surface, (0, 0))
 
     Window.Render(DISPLAY)
     if not LastWindowRect == Window.WindowRectangle:
         WindowDrawnSurface = pygame.Surface((Window.WindowRectangle[2], Window.WindowRectangle[3]), pygame.SRCALPHA)
+
     WindowDrawnSurface.set_alpha(AnimationController.Value)
 
     # -- Render the Folder List -- #
@@ -79,6 +100,9 @@ def Draw(DISPLAY):
     # -- Render the Buttons List -- #
     OptionsBar.Render(WindowDrawnSurface)
 
+    if EnterFileNameEnabled:
+        Inputbox_FileName.Render(WindowDrawnSurface)
+
     DISPLAY.blit(WindowDrawnSurface, (Window.WindowSurface_Rect[0], Window.WindowSurface_Rect[1]))
 
 def UpdateWindow():
@@ -86,6 +110,7 @@ def UpdateWindow():
     global Window
     global AnimationController
     global AnimationNumb
+    global UpdateGUIPos
 
     AnimationController.Update()
 
@@ -102,6 +127,7 @@ def UpdateWindow():
         AnimationController.ValueMultiplier = 0
         AnimationController.DisableSignal = False
         AnimationNumb = 0
+        Main.DisableControls = False
 
         Enabled = False
 
@@ -110,46 +136,70 @@ def Update():
     global FolderList
     global SelectedFile
     global Window
-
+    global EnterFileNameEnabled
+    global BluredScreen_Surface
+    global UpdateGUIPos
     if not Enabled: return
     UpdateWindow()
 
+    if AnimationController.Enabled:
+        BluredScreen_Surface = fx.Surface_Blur(Main.CopyOfScreen, max(1.0, AnimationController.Value - 150))
+
+    #-------------------------------
     FolderList.Set_W(Window.WindowRectangle[2])
     FolderList.Set_H(Window.WindowRectangle[3] - 200)
-
-    # -------------------------------------------------
     FolderList.ColisionXOffset = Window.WindowSurface_Rect[0] + FolderList.Rectangle[0]
     FolderList.ColisionYOffset = Window.WindowSurface_Rect[1] + FolderList.Rectangle[1]
-
-    OptionsBar.Update()
     #-------------------------------
     OptionsBar.ColisionXOffset = Window.WindowSurface_Rect[0]
     OptionsBar.ColisionYOffset = Window.WindowSurface_Rect[1]
+    #--------------------------------
+    Inputbox_FileName.ColisionOffsetX = Window.WindowSurface_Rect[0]
+    Inputbox_FileName.ColisionOffsetY = Window.WindowSurface_Rect[1]
 
-    SelectedFile = FolderList.LastItemClicked
+    OptionsBar.Update()
 
-    if OptionsBar.ClickedButtonIndex == 0:
-        OptionsBar.ClickedButtonIndex = -1
+    if not EnterFileNameEnabled:
+        SelectedFile = FolderList.LastItemClicked
 
-        Main.SaveMusicData(tge.TaiyouPath_AppDataFolder + SelectedFile)
+        if OptionsBar.ClickedButtonIndex == 0:
+            OptionsBar.ClickedButtonIndex = -1
 
-        AnimationController.Enabled = True
+            Main.SaveMusicData(tge.TaiyouPath_AppDataFolder + SelectedFile)
 
-    if OptionsBar.ClickedButtonIndex == 1:
-        OptionsBar.ClickedButtonIndex = -1
+            AnimationController.Enabled = True
+
+        if OptionsBar.ClickedButtonIndex == 1:
+            OptionsBar.ClickedButtonIndex = -1
+
+            EnterFileNameEnabled = True
+    else:
+        if OptionsBar.ClickedButtonIndex == 1:
+            OptionsBar.ClickedButtonIndex = -1
+
+            # -- Write the File -- #
+            Main.SaveMusicData(tge.TaiyouPath_AppDataFolder + "/" + Inputbox_FileName.text)
+
+            UpdateFileList()
+            EnterFileNameEnabled = False
 
 def EventUpdate(event):
     global Enabled
     global Window
     global FolderList
     global OptionsBar
+    global EnterFileNameEnabled
 
     if not Enabled: return
+    Window.EventUpdate(event)
+    OptionsBar.EventUpdate(event)
 
     if event.type == pygame.KEYUP:
         if event.key == pygame.K_ESCAPE:
             AnimationController.Enabled = True
 
-    FolderList.Update(event)
-    Window.EventUpdate(event)
-    OptionsBar.EventUpdate(event)
+
+    if not EnterFileNameEnabled:
+        FolderList.Update(event)
+    else:
+        Inputbox_FileName.Update(event)

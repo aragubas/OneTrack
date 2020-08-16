@@ -19,6 +19,7 @@ from OneTrack.MAIN import UI
 from ENGINE import utils
 import ENGINE as tge
 import OneTrack.MAIN.Screens.Editor as Main
+from ENGINE import fx
 
 # -- Window's Controls -- #
 Window = UI.Window
@@ -30,6 +31,7 @@ AnimationController = utils.AnimationController
 AnimationNumb = 0
 WindowDrawnSurface = pygame.Surface((0, 0))
 LastWindowRect = pygame.Rect((0, 0, 0, 0))
+BluredScreen_Surface = pygame.Surface((5, 5))
 
 def Initialize():
     global Window
@@ -42,14 +44,7 @@ def Initialize():
 
     AllFilesInDir = utils.Directory_FilesList(tge.TaiyouPath_AppDataFolder)
 
-    for file in AllFilesInDir:
-        FileAllPath = file
-        FileName = file.replace(tge.TaiyouPath_AppDataFolder, "")
-
-        ItemName = FileName
-        ItemDescription = "Located on: {0}".format(FileAllPath)
-
-        FolderList.AddItem(ItemName, ItemDescription)
+    UpdateFileList()
 
     ButtonsList = list()
 
@@ -58,14 +53,35 @@ def Initialize():
     OptionsBar = UI.ButtonsBar((0, 0, 0, 0), ButtonsList)
     AnimationController = utils.AnimationController(3.5, multiplierRestart=True)
 
+def UpdateFileList():
+    global FolderList
+
+    print("Save : Updating File List...")
+    FolderList.ClearItems()
+    AllFilesInDir = utils.Directory_FilesList(tge.TaiyouPath_AppDataFolder)
+
+    for file in AllFilesInDir:
+        FileAllPath = file
+        FileName = file.replace(tge.TaiyouPath_AppDataFolder, "")
+
+        ItemName = FileName[1:]
+        ItemDescription = "Saved on: {0}".format(FileAllPath)
+
+        FolderList.AddItem(ItemName, ItemDescription)
+
+
 def Draw(DISPLAY):
     global Enabled
     global Window
     global FolderList
     global OptionsBar
     global WindowDrawnSurface
+    global BluredScreen_Surface
 
     if not Enabled: return
+    # Render the Blured Screen
+
+    DISPLAY.blit(BluredScreen_Surface, (0, 0))
 
     Window.Render(DISPLAY)
     if not LastWindowRect == Window.WindowRectangle:
@@ -101,6 +117,7 @@ def UpdateWindow():
         AnimationController.ValueMultiplier = 0
         AnimationController.DisableSignal = False
         AnimationNumb = 0
+        Main.DisableControls = False
 
         Enabled = False
 
@@ -109,9 +126,14 @@ def Update():
     global FolderList
     global OptionsBar
     global Enabled
+    global BluredScreen_Surface
 
     if not Enabled: return
     UpdateWindow()
+
+    if AnimationController.Enabled:
+        BluredScreen_Surface = fx.Surface_Blur(Main.CopyOfScreen, max(1.0, AnimationController.Value - 150))
+
 
     FolderList.Set_W(Window.WindowRectangle[2])
     FolderList.Set_H(Window.WindowRectangle[3] - 200)
@@ -131,7 +153,7 @@ def Update():
         OptionsBar.ClickedButtonIndex = -1
         print("Select Button Event")
 
-        Main.LoadMusicData(tge.TaiyouPath_AppDataFolder + SelectedFile)
+        Main.LoadMusicData(tge.TaiyouPath_AppDataFolder + "/" + SelectedFile)
 
         AnimationController.Enabled = True
 

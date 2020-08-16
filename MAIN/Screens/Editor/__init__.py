@@ -31,7 +31,8 @@ TopBarControls = UI.ButtonsBar
 DropDownFileMenu = UI.DropDownMenu
 
 FileMenuEnabled = False
-
+DisableControls = True
+CopyOfScreen = pygame.Surface((5, 5))
 
 def Initialize(DISPLAY):
     global DefaultContents
@@ -39,9 +40,7 @@ def Initialize(DISPLAY):
     global TopBarControls
     global DropDownFileMenu
 
-    track_list = UI.TrackList()
     NewMusicFile()
-    track_list.Rectangle = pygame.Rect(0, 100, 800, 400)
 
     ButtonsList = list()
     ButtonsList.append(UI.Button(pygame.Rect(0, 0, 0, 0), "File", 14))
@@ -59,13 +58,20 @@ def GameDraw(DISPLAY):
     global track_list
     global TopBarControls
     global DropDownFileMenu
+    global CopyOfScreen
+    global DisableControls
 
-    track_list.Render(DISPLAY)
-    TopBarControls.Render(DISPLAY)
+    if not DisableControls:
+        DISPLAY.fill((40, 30, 35))
 
-    # -- Render DropDown Menus -- #
-    if FileMenuEnabled:
-        DropDownFileMenu.Render(DISPLAY)
+        track_list.Render(DISPLAY)
+        TopBarControls.Render(DISPLAY)
+
+        # -- Render DropDown Menus -- #
+        if FileMenuEnabled:
+            DropDownFileMenu.Render(DISPLAY)
+
+        CopyOfScreen = DISPLAY.copy()
 
     SaveFileDialog.Draw(DISPLAY)
     OpenFileDialog.Draw(DISPLAY)
@@ -92,53 +98,61 @@ def LoadMusicData(FileName):
     track_list.SetCurrentPattern_ByID(0)
 
 def NewMusicFile():
-    track_list.NewMusicFile()
+    global track_list
+    del track_list
+    tge.utils.GarbageCollector_Collect()
 
+    track_list = UI.TrackList()
+    track_list.Rectangle = pygame.Rect(0, 100, 800, 400)
 
 def Update():
     global track_list
     global TopBarControls
     global DropDownFileMenu
     global FileMenuEnabled
-
-    TopBarControls.Update()
-    track_list.Update()
+    global DisableControls
 
     SaveFileDialog.Update()
     OpenFileDialog.Update()
 
-    if FileMenuEnabled:
-        DropDownFileMenu.Update()
+    if not DisableControls:
+        TopBarControls.Update()
+        track_list.Update()
 
-    #region Top Bar Update
-    if TopBarControls.ClickedButtonIndex == 0:
-        if not FileMenuEnabled:
-            FileMenuEnabled = True
+        if FileMenuEnabled:
+            DropDownFileMenu.Update()
 
-        else:
-            FileMenuEnabled = False
+        #region Top Bar Update
+        if TopBarControls.ClickedButtonIndex == 0:
+            if not FileMenuEnabled:
+                FileMenuEnabled = True
 
-    #region File DropDown Menu
-    if FileMenuEnabled:
-        if DropDownFileMenu.SelectedItem == "Save":
-            DropDownFileMenu.SelectedItem = ""
-            FileMenuEnabled = False
+            else:
+                FileMenuEnabled = False
 
-            SaveFileDialog.Enabled = True
+        #region File DropDown Menu
+        if FileMenuEnabled:
+            if DropDownFileMenu.SelectedItem == "Save":
+                DropDownFileMenu.SelectedItem = ""
+                FileMenuEnabled = False
+                DisableControls = True
 
-        if DropDownFileMenu.SelectedItem == "Load":
-            DropDownFileMenu.SelectedItem = ""
-            FileMenuEnabled = False
+                SaveFileDialog.Enabled = True
 
-            OpenFileDialog.Enabled = True
+            if DropDownFileMenu.SelectedItem == "Load":
+                DropDownFileMenu.SelectedItem = ""
+                FileMenuEnabled = False
+                DisableControls = True
 
-        if DropDownFileMenu.SelectedItem == "New File":
-            DropDownFileMenu.SelectedItem = ""
-            FileMenuEnabled = False
+                OpenFileDialog.Enabled = True
 
-            NewMusicFile()
+            if DropDownFileMenu.SelectedItem == "New File":
+                DropDownFileMenu.SelectedItem = ""
+                FileMenuEnabled = False
 
-    #endregion
+                NewMusicFile()
+
+        #endregion
 
 
 def EventUpdate(event):
@@ -146,11 +160,13 @@ def EventUpdate(event):
     global TopBarControls
     global DropDownFileMenu
     global FileMenuEnabled
+    global DisableControls
 
-    TopBarControls.EventUpdate(event)
-    track_list.EventUpdate(event)
+    if not DisableControls:
+        TopBarControls.EventUpdate(event)
+        track_list.EventUpdate(event)
 
-    if FileMenuEnabled: DropDownFileMenu.EventUpdate(event)
+        if FileMenuEnabled: DropDownFileMenu.EventUpdate(event)
 
     SaveFileDialog.EventUpdate(event)
     OpenFileDialog.EventUpdate(event)

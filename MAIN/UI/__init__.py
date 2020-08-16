@@ -23,21 +23,24 @@ from ENGINE import appData
 from ENGINE import utils
 
 # -- Color List -- #
-TrackBlock_FrequencyBGColor_Active = (100, 94, 85)
-TrackBlock_DurationBGColor_Active = (20, 34, 55)
-TrackBlock_FrequencyBGColor_Deactive = (80, 70, 60)
-TrackBlock_DurationBGColor_Deactive = (0, 10, 30)
+TrackBlock_FrequencyBGColor_Active = (90, 84, 75)
+TrackBlock_DurationBGColor_Active = (40, 54, 75)
+TrackBlock_FrequencyBGColor_Deactive = (30, 20, 37)
+TrackBlock_DurationBGColor_Deactive = (0, 0, 10)
 #-----------------------#
 EditableNumberView_ColorSelected = (255, 255, 255)
-EditableNumberView_ColorActive = (155, 155, 155)
-EditableNumberView_ColorDeactive = (90, 90, 90)
+EditableNumberView_ColorActive = (100, 100, 100)
+EditableNumberView_ColorDeactive = (50, 50, 50)
 #-----------------------#
 Button_Active_IndicatorColor = (46, 196, 182)
 Button_Active_BackgroundColor = (15, 27, 44, 150)
 Button_Inactive_IndicatorColor = (255, 51, 102)
 Button_Inactive_BackgroundColor = (1, 22, 39, 150)
 Button_BackgroundColor = (12, 22, 14)
-
+#-----------------------#
+InputBox_COLOR_INACTIVE = (1, 22, 39)
+InputBox_COLOR_ACTIVE = (15, 27, 44)
+InputBox_FontFile = "/Ubuntu.ttf"
 
 
 class EditableNumberView:
@@ -142,7 +145,7 @@ class TrackBlock:
         self.DurationNumber.Render(DISPLAY)
 
     def Update(self):
-        self.Rectangle = pygame.Rect(10, self.Scroll + (self.TextHeight + 10) * self.Instance, self.TextWidth, self.TextHeight)
+        self.Rectangle = pygame.Rect(self.Rectangle[0], self.Scroll + (self.TextHeight + 10) * self.Instance, self.TextWidth, self.TextHeight)
 
         self.DurationNumber.Rectangle = pygame.Rect(self.Rectangle[0] + self.TextWidth + 5, self.Rectangle[1], self.TextWidth, self.TextHeight)
         self.FrequencyNumber.Rectangle = pygame.Rect(self.Rectangle[0], self.Rectangle[1], self.TextWidth, self.TextHeight)
@@ -180,9 +183,8 @@ class TrackBlock:
                 if self.SelectedField >= self.MaxFields:
                     self.SelectedField = self.MaxFields
 
-class Pattern:
-    def __init__(self, PatternID, Rectangle):
-        self.PatternID = PatternID
+class TrackColection:
+    def __init__(self, Rectangle):
         self.Tracks = list()
         self.Scroll = 0
         self.PlayMode = False
@@ -190,20 +192,27 @@ class Pattern:
         self.PlayMode_TrackDelay = 0
         self.PlayMode_CurrentTonePlayed = False
         self.BPM = 100
-        self.Hz = 60
+        self.Hz = 30
         self.PlayMode_LastSoundChannel = -1
-        self.Rectangle = Rectangle
+        self.Rectangle = pygame.Rect(Rectangle[0], Rectangle[1], Rectangle[2], Rectangle[3])
+        self.Active = False
+        self.ScreenSize = (0, 0)
 
         for _ in range(24):
             self.AddBlankTrack()
+
+        for track in self.Tracks:
+            track.Rectangle[0] = self.Rectangle[0]
 
     def AddBlankTrack(self):
         self.Tracks.append(TrackBlock(("0000", "0001")))
 
     def Draw(self, DISPLAY):
+        self.ScreenSize = (DISPLAY.get_width(), DISPLAY.get_height())
+
         for track in self.Tracks:
             if track.Instance == self.SelectedTrack:
-                PointerRect = (2, track.Rectangle[1], 4, track.Rectangle[3])
+                PointerRect = (self.Rectangle[0] - 8, track.Rectangle[1], 4, track.Rectangle[3])
                 shape.Shape_Rectangle(DISPLAY, (230, 50, 75), PointerRect)
 
                 self.Scroll = self.Rectangle[3] / 4 - (self.SelectedTrack * track.Rectangle[3])
@@ -213,19 +222,24 @@ class Pattern:
 
             track.Render(DISPLAY)
 
+            track.Rectangle[0] = self.Rectangle[0]
+
             track.Active = track.Instance == self.SelectedTrack
+
+            if not self.Active:
+                track.Active = False
 
     def Update(self):
         for i, track in enumerate(self.Tracks):
             track.Scroll = self.Scroll
             track.Instance = i
+
             track.Update()
 
         if self.PlayMode:
             self.PlayMode_TrackDelay += 1
             CurrentTrackObj = self.Tracks[self.SelectedTrack]
             BMP = abs(1000 / self.BPM)
-            print(BMP)
 
             if self.PlayMode_TrackDelay >= BMP:
                 self.SelectedTrack += 1
@@ -294,8 +308,9 @@ class Pattern:
         self.PlayMode_LastSoundChannel = -1
 
     def EventUpdate(self, event):
-        for track in self.Tracks:
-            track.EventUpdate(event)
+        if self.Active:
+            for track in self.Tracks:
+                track.EventUpdate(event)
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
@@ -303,6 +318,7 @@ class Pattern:
                     self.PlayMode = True
                     self.PlayMode_TrackDelay = 0
                     self.PlayMode_CurrentTonePlayed = False
+                    self.SelectedTrack = 0
 
                 else:
                     self.PlayMode = False
@@ -310,7 +326,7 @@ class Pattern:
                     self.PlayMode_CurrentTonePlayed = False
 
             # -- Disable Edit Controls when in Play Mode -- #
-            if not self.PlayMode:
+            if not self.PlayMode and self.Active:
                 if event.key == pygame.K_DOWN:
                     self.SelectedTrack += 1
                     if self.SelectedTrack >= len(self.Tracks):
@@ -330,6 +346,49 @@ class Pattern:
                     if len(self.Tracks) < 24:
                         self.AddBlankTrack()
 
+class Pattern:
+    def __init__(self, PatternID, Rectangle):
+        self.PatternID = PatternID
+        self.Tracks = list()
+        self.ActiveTrackID = 0
+
+        self.Tracks.append(TrackColection(Rectangle))
+        self.Tracks.append(TrackColection(Rectangle))
+
+        for i, track in enumerate(self.Tracks):
+            # -- Update Tracks Position -- #
+            track.Rectangle[0] = 10 + i * track.Rectangle[2] / 2.5
+
+    def Draw(self, DISPLAY):
+        for track in self.Tracks:
+            track.Draw(DISPLAY)
+
+    def Update(self):
+        for i, track in enumerate(self.Tracks):
+            track.Update()
+
+            track.Active = i == self.ActiveTrackID
+
+            # -- Update Tracks Position -- #
+            track.Rectangle[0] = 10 + i * track.Rectangle[2] / 2.5
+
+    def EventUpdate(self, event):
+        for track in self.Tracks:
+            track.EventUpdate(event)
+
+        if event.type == pygame.KEYUP:
+            if event.key == pygame.K_F9:
+                self.ActiveTrackID -= 1
+
+                if self.ActiveTrackID < 0:
+                    self.ActiveTrackID = len(self.Tracks)
+
+            if event.key == pygame.K_F10:
+                self.ActiveTrackID += 1
+
+                if self.ActiveTrackID >= len(self.Tracks):
+                    self.ActiveTrackID = 0
+
 class TrackList:
     def __init__(self):
         self.Rectangle = pygame.Rect(5, 120, 300, 400)
@@ -341,22 +400,11 @@ class TrackList:
 
         self.AddNewPattern()
 
-    def LoadMusicData(self, MusFileName):
-        pass
-
-    def SaveMusicData(self, MusFileName):
-        pass
-
-    def NewMusicFile(self):
-        self.PatternList.clear()
-
-        self.CurrentPattern = None
-        self.AddNewPattern()
-
     def AddNewPattern(self):
+        print("Added new pattern")
         NewPatternID = len(self.PatternList)
         print(NewPatternID)
-        self.PatternList.append(Pattern(len(self.PatternList), self.Rectangle))
+        self.PatternList.append(Pattern(len(self.PatternList), pygame.Rect(5, 120, 300, 400)))
 
         self.SetCurrentPattern_ByID(NewPatternID)
 
@@ -369,13 +417,12 @@ class TrackList:
             self.CurrentPattern.PlayMode = True
             self.CurrentPattern.SelectedTrack = 0
 
-
     def Render(self, DISPLAY):
         self.TracksSurface.fill((0, 0, 0, 0))
         self.CurrentPattern.Draw(self.TracksSurface)
 
         # -- Render the Pattern Name -- #
-        fx.BlurredRectangle(self.TracksSurface, (0, 0, DISPLAY.get_width(), 24), 20, 100, (55, 55, 55))
+        shape.Shape_Rectangle(self.TracksSurface, (120, 120, 120), (0, 0, DISPLAY.get_width(), 24))
         Main.DefaultContents.FontRender(self.TracksSurface, "/PressStart2P.ttf", 14, "Pattern: {0}/{1}".format(self.CurrentPatternID, len(self.PatternList) - 1), (255, 255, 255), 5, 5)
 
         DISPLAY.blit(self.TracksSurface, (self.Rectangle[0], self.Rectangle[1]))
@@ -803,3 +850,82 @@ class VerticalListWithDescription:
         self.ItemSprite.clear()
         self.ItemSelected.clear()
         self.ItemOrderID.clear()
+
+class InputBox:
+    def __init__(self, x, y, w, h, text='LO', FontSize=12):
+        self.rect = pygame.Rect(x, y, w, h)
+        self.colisionRect = pygame.Rect(x, y, w, h)
+        self.color = InputBox_COLOR_ACTIVE
+        self.text = text
+        self.active = False
+        self.DefaultText = text
+        self.LastHeight = 1
+        self.CustomWidth = False
+        self.width = 1
+        self.FontSize = FontSize
+        self.CharacterLimit = 0
+        self.ColisionOffsetX = 0
+        self.ColisionOffsetY = 0
+
+
+    def Set_X(self, Value):
+        if not self.rect[0] == Value:
+            self.rect = pygame.Rect(Value, self.rect[1], self.rect[2], self.rect[3])
+
+    def Set_Y(self, Value):
+        if not self.rect[1] == Value:
+            self.rect = pygame.Rect(self.rect[0], Value, self.rect[2], self.rect[3])
+
+    def Update(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            # If the user clicked on the input_box rect.
+            if self.colisionRect.collidepoint(event.pos):
+                # Toggle the active variable.
+                self.active = not self.active
+            else:
+                self.active = False
+            # Change the current color of the input box.
+            self.color = InputBox_COLOR_ACTIVE if self.active else InputBox_COLOR_INACTIVE
+        if event.type == pygame.KEYDOWN:
+            if self.active:
+                if event.key == pygame.K_BACKSPACE:
+                    if len(self.text) > 0:
+                        self.text = self.text[:-1]
+                    else:
+                        self.text = self.DefaultText
+
+                else:
+                    if not self.CharacterLimit == 0:
+                        if len(self.text) < self.CharacterLimit:
+                            self.text += event.unicode
+                    else:
+                        self.text += event.unicode
+
+    def Render(self, screen):
+        # -- Resize the Textbox -- #
+        try:
+            if not self.CustomWidth:
+                self.width = max(100, Main.DefaultContents.GetFont_width(InputBox_FontFile, self.FontSize, self.text) + 10)
+            self.rect[2] = self.width
+            self.rect[3] = Main.DefaultContents.GetFont_height(InputBox_FontFile, self.FontSize, self.text)
+            self.LastHeight = self.rect[3]
+        except:
+            if not self.CustomWidth:
+                self.rect[2] = 100
+            self.rect[3] = self.LastHeight
+
+        self.colisionRect = pygame.Rect(self.rect[0] + self.ColisionOffsetX, self.rect[1] + self.ColisionOffsetY, self.rect[2], self.rect[3])
+
+        # Blit the rect.
+        shape.Shape_Rectangle(screen, (15, 15, 15), self.rect)
+
+        if self.text == self.DefaultText:
+            Main.DefaultContents.FontRender(screen, InputBox_FontFile, self.FontSize, self.text, (140, 140, 140), self.rect[0], self.rect[1])
+        else:
+            if not self.text == "":
+                Main.DefaultContents.FontRender(screen, InputBox_FontFile, self.FontSize, self.text, (240, 240, 240), self.rect[0], self.rect[1])
+
+        if not self.active:
+            shape.Shape_Rectangle(screen, (255, 51, 102), (self.rect[0], self.rect[1] - 1, self.rect[2], 1))
+        else:
+            shape.Shape_Rectangle(screen, (46, 196, 182), (self.rect[0], self.rect[1] - 1, self.rect[2], 1))
