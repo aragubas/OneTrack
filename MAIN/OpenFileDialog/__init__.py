@@ -32,6 +32,7 @@ AnimationNumb = 0
 WindowDrawnSurface = pygame.Surface((0, 0))
 LastWindowRect = pygame.Rect((0, 0, 0, 0))
 BluredScreen_Surface = pygame.Surface((5, 5))
+FileListUpdate = False
 
 def Initialize():
     global Window
@@ -41,8 +42,6 @@ def Initialize():
 
     Window = UI.Window(pygame.Rect(-600, -420, 600, 420), "Load Music File", False, False)
     FolderList = UI.VerticalListWithDescription(pygame.Rect(0, 24, 600, 420))
-
-    AllFilesInDir = utils.Directory_FilesList(tge.TaiyouPath_AppDataFolder)
 
     UpdateFileList()
 
@@ -101,6 +100,7 @@ def UpdateWindow():
     global Window
     global AnimationController
     global AnimationNumb
+    global FileListUpdate
 
     AnimationController.Update()
 
@@ -118,6 +118,7 @@ def UpdateWindow():
         AnimationController.DisableSignal = False
         AnimationNumb = 0
         Main.DisableControls = False
+        FileListUpdate = False
 
         Enabled = False
 
@@ -127,8 +128,13 @@ def Update():
     global OptionsBar
     global Enabled
     global BluredScreen_Surface
+    global FileListUpdate
 
     if not Enabled: return
+    if not FileListUpdate:
+        FileListUpdate = True
+        UpdateFileList()
+
     UpdateWindow()
 
     if AnimationController.Enabled:
@@ -153,9 +159,10 @@ def Update():
         OptionsBar.ClickedButtonIndex = -1
         print("Select Button Event")
 
-        Main.LoadMusicData(tge.TaiyouPath_AppDataFolder + "/" + SelectedFile)
+        if not SelectedFile == "null":
+            Main.LoadMusicData(tge.TaiyouPath_AppDataFolder + "/" + SelectedFile)
 
-        AnimationController.Enabled = True
+            AnimationController.Enabled = True
 
 def EventUpdate(event):
     global Enabled

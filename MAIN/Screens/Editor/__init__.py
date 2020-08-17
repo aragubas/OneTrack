@@ -31,7 +31,7 @@ TopBarControls = UI.ButtonsBar
 DropDownFileMenu = UI.DropDownMenu
 
 FileMenuEnabled = False
-DisableControls = True
+DisableControls = False
 CopyOfScreen = pygame.Surface((5, 5))
 
 def Initialize(DISPLAY):
@@ -93,6 +93,7 @@ def LoadMusicData(FileName):
     # -- Add Objects One-By-One -- #
     for obj in patterns_list:
         track_list.PatternList.append(obj)
+        print(obj)
 
     # -- Set to the Pattern 0 -- #
     track_list.SetCurrentPattern_ByID(0)

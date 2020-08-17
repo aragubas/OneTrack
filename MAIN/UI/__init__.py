@@ -27,6 +27,9 @@ TrackBlock_FrequencyBGColor_Active = (90, 84, 75)
 TrackBlock_DurationBGColor_Active = (40, 54, 75)
 TrackBlock_FrequencyBGColor_Deactive = (30, 20, 37)
 TrackBlock_DurationBGColor_Deactive = (0, 0, 10)
+TrackBlock_InstanceLabelActiveColor = (255, 255, 255)
+TrackBlock_InstanceLabelDeactiveColor = (55, 55, 55)
+
 #-----------------------#
 EditableNumberView_ColorSelected = (255, 255, 255)
 EditableNumberView_ColorActive = (100, 100, 100)
@@ -41,7 +44,8 @@ Button_BackgroundColor = (12, 22, 14)
 InputBox_COLOR_INACTIVE = (1, 22, 39)
 InputBox_COLOR_ACTIVE = (15, 27, 44)
 InputBox_FontFile = "/Ubuntu.ttf"
-
+#-------------------------#
+TrackPointerColor = (250, 70, 95)
 
 class EditableNumberView:
     def __init__(self, Rectangle, Value):
@@ -144,6 +148,12 @@ class TrackBlock:
         shape.Shape_Rectangle(DISPLAY, DurationBGColor, (DurationX, self.Rectangle[1] - 2, (self.TextWidth) + 4, self.Rectangle[3] + 4), 0, 0, 0, 5, 0, 5)
         self.DurationNumber.Render(DISPLAY)
 
+        LabelColor = TrackBlock_InstanceLabelActiveColor
+        if not self.Active:
+            LabelColor = TrackBlock_InstanceLabelDeactiveColor
+
+        Main.DefaultContents.FontRender(DISPLAY, "/PressStart2P.ttf", 12, str(self.Instance).zfill(2), LabelColor, (DurationX + self.TextWidth) + 5, self.Rectangle[1])
+
     def Update(self):
         self.Rectangle = pygame.Rect(self.Rectangle[0], self.Scroll + (self.TextHeight + 10) * self.Instance, self.TextWidth, self.TextHeight)
 
@@ -191,8 +201,7 @@ class TrackColection:
         self.SelectedTrack = 0
         self.PlayMode_TrackDelay = 0
         self.PlayMode_CurrentTonePlayed = False
-        self.BPM = 100
-        self.Hz = 30
+        self.BPM = 150
         self.PlayMode_LastSoundChannel = -1
         self.Rectangle = pygame.Rect(Rectangle[0], Rectangle[1], Rectangle[2], Rectangle[3])
         self.Active = False
@@ -211,9 +220,10 @@ class TrackColection:
         self.ScreenSize = (DISPLAY.get_width(), DISPLAY.get_height())
 
         for track in self.Tracks:
+            # -- Render the Track Pointer -- #
             if track.Instance == self.SelectedTrack:
                 PointerRect = (self.Rectangle[0] - 8, track.Rectangle[1], 4, track.Rectangle[3])
-                shape.Shape_Rectangle(DISPLAY, (230, 50, 75), PointerRect)
+                shape.Shape_Rectangle(DISPLAY, TrackPointerColor, PointerRect)
 
                 self.Scroll = self.Rectangle[3] / 4 - (self.SelectedTrack * track.Rectangle[3])
 
@@ -226,7 +236,7 @@ class TrackColection:
 
             track.Active = track.Instance == self.SelectedTrack
 
-            if not self.Active:
+            if not self.Active and not self.PlayMode:
                 track.Active = False
 
     def Update(self):
@@ -370,7 +380,7 @@ class Pattern:
             track.Active = i == self.ActiveTrackID
 
             # -- Update Tracks Position -- #
-            track.Rectangle[0] = 10 + i * track.Rectangle[2] / 2.5
+            track.Rectangle[0] = 10 + i * track.Rectangle[2] / 2
 
     def EventUpdate(self, event):
         for track in self.Tracks:

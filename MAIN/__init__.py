@@ -32,7 +32,7 @@ def Initialize(DISPLAY):
     DefaultContents.LoadSpritesInFolder("Data/Sprite")
     DefaultContents.InitSoundSystem()
 
-    MAIN.ReceiveCommand(5, "OneTrack v1.4")
+    MAIN.ReceiveCommand(5, "OneTrack v1.5")
     MAIN.ReceiveCommand(0, 60)
 
     Editor.Initialize(DISPLAY)

@@ -24,7 +24,7 @@ from ENGINE import fx
 
 # -- Window's Controls -- #
 Window = UI.Window
-Enabled = True
+Enabled = False
 FolderList = UI.VerticalListWithDescription
 OptionsBar = UI.ButtonsBar
 SelectedFile = ""
@@ -36,6 +36,7 @@ BluredScreen_Surface = pygame.Surface((5, 5))
 
 Inputbox_FileName = UI.InputBox
 EnterFileNameEnabled = False
+FileListUpdate = False
 
 def Initialize():
     global Window
@@ -74,7 +75,6 @@ def UpdateFileList():
 
         FolderList.AddItem(ItemName, ItemDescription)
 
-
 def Draw(DISPLAY):
     global Enabled
     global Window
@@ -110,7 +110,7 @@ def UpdateWindow():
     global Window
     global AnimationController
     global AnimationNumb
-    global UpdateGUIPos
+    global FileListUpdate
 
     AnimationController.Update()
 
@@ -128,6 +128,7 @@ def UpdateWindow():
         AnimationController.DisableSignal = False
         AnimationNumb = 0
         Main.DisableControls = False
+        FileListUpdate = False
 
         Enabled = False
 
@@ -138,12 +139,18 @@ def Update():
     global Window
     global EnterFileNameEnabled
     global BluredScreen_Surface
-    global UpdateGUIPos
+    global FileListUpdate
+
     if not Enabled: return
+    if not FileListUpdate:
+        FileListUpdate = True
+        UpdateFileList()
+
     UpdateWindow()
 
     if AnimationController.Enabled:
         BluredScreen_Surface = fx.Surface_Blur(Main.CopyOfScreen, max(1.0, AnimationController.Value - 150))
+
 
     #-------------------------------
     FolderList.Set_W(Window.WindowRectangle[2])
@@ -165,9 +172,11 @@ def Update():
         if OptionsBar.ClickedButtonIndex == 0:
             OptionsBar.ClickedButtonIndex = -1
 
-            Main.SaveMusicData(tge.TaiyouPath_AppDataFolder + SelectedFile)
+            if not SelectedFile == "null":
+                Main.SaveMusicData(tge.TaiyouPath_AppDataFolder + SelectedFile)
+                print("Music Data has been saved. on\n{0}".format(SelectedFile))
 
-            AnimationController.Enabled = True
+                AnimationController.Enabled = True
 
         if OptionsBar.ClickedButtonIndex == 1:
             OptionsBar.ClickedButtonIndex = -1
@@ -178,10 +187,14 @@ def Update():
             OptionsBar.ClickedButtonIndex = -1
 
             # -- Write the File -- #
-            Main.SaveMusicData(tge.TaiyouPath_AppDataFolder + "/" + Inputbox_FileName.text)
+            if not Inputbox_FileName.text == "":
+                Inputbox_FileName.text = Inputbox_FileName.text.replace(" ", "_")
+                Main.SaveMusicData(tge.TaiyouPath_AppDataFolder + "/" + Inputbox_FileName.text)
+                print("Music Data has been created. on\n{0}".format(Inputbox_FileName.text))
 
-            UpdateFileList()
-            EnterFileNameEnabled = False
+                UpdateFileList()
+                EnterFileNameEnabled = False
+                AnimationController.Enabled = True
 
 def EventUpdate(event):
     global Enabled
@@ -197,7 +210,6 @@ def EventUpdate(event):
     if event.type == pygame.KEYUP:
         if event.key == pygame.K_ESCAPE:
             AnimationController.Enabled = True
-
 
     if not EnterFileNameEnabled:
         FolderList.Update(event)
