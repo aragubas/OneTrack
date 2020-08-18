@@ -111,6 +111,7 @@ def UpdateWindow():
     global AnimationController
     global AnimationNumb
     global FileListUpdate
+    global SelectedFile
 
     AnimationController.Update()
 
@@ -129,7 +130,7 @@ def UpdateWindow():
         AnimationNumb = 0
         Main.DisableControls = False
         FileListUpdate = False
-
+        SelectedFile = "null"
         Enabled = False
 
 def Update():
@@ -173,7 +174,7 @@ def Update():
             OptionsBar.ClickedButtonIndex = -1
 
             if not SelectedFile == "null":
-                Main.SaveMusicData(tge.TaiyouPath_AppDataFolder + SelectedFile)
+                Main.SaveMusicData(tge.TaiyouPath_AppDataFolder + "/" + SelectedFile)
                 print("Music Data has been saved. on\n{0}".format(SelectedFile))
 
                 AnimationController.Enabled = True

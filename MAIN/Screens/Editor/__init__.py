@@ -22,6 +22,8 @@ import ENGINE as tge
 from OneTrack.MAIN import UI
 from OneTrack.MAIN import SaveFileDialog
 from OneTrack.MAIN import OpenFileDialog
+from OneTrack.MAIN.Screens.Editor import EditBPMSquare
+
 
 DefaultContents = cntMng.ContentManager
 track_list = UI.TrackList
@@ -33,6 +35,7 @@ DropDownFileMenu = UI.DropDownMenu
 FileMenuEnabled = False
 DisableControls = False
 CopyOfScreen = pygame.Surface((5, 5))
+BPM = 150
 
 def Initialize(DISPLAY):
     global DefaultContents
@@ -53,6 +56,7 @@ def Initialize(DISPLAY):
 
     SaveFileDialog.Initialize()
     OpenFileDialog.Initialize()
+    EditBPMSquare.Initialize()
 
 def GameDraw(DISPLAY):
     global track_list
@@ -60,6 +64,7 @@ def GameDraw(DISPLAY):
     global DropDownFileMenu
     global CopyOfScreen
     global DisableControls
+    global EditBPMSquare
 
     if not DisableControls:
         DISPLAY.fill((40, 30, 35))
@@ -71,7 +76,11 @@ def GameDraw(DISPLAY):
         if FileMenuEnabled:
             DropDownFileMenu.Render(DISPLAY)
 
+        EditBPMSquare.Draw(DISPLAY)
+
         CopyOfScreen = DISPLAY.copy()
+
+
 
     SaveFileDialog.Draw(DISPLAY)
     OpenFileDialog.Draw(DISPLAY)
@@ -112,6 +121,7 @@ def Update():
     global DropDownFileMenu
     global FileMenuEnabled
     global DisableControls
+    global EditBPMSquare
 
     SaveFileDialog.Update()
     OpenFileDialog.Update()
@@ -119,6 +129,7 @@ def Update():
     if not DisableControls:
         TopBarControls.Update()
         track_list.Update()
+        EditBPMSquare.Update()
 
         if FileMenuEnabled:
             DropDownFileMenu.Update()
@@ -162,12 +173,15 @@ def EventUpdate(event):
     global DropDownFileMenu
     global FileMenuEnabled
     global DisableControls
+    global EditBPMSquare
 
     if not DisableControls:
         TopBarControls.EventUpdate(event)
         track_list.EventUpdate(event)
 
         if FileMenuEnabled: DropDownFileMenu.EventUpdate(event)
+
+    EditBPMSquare.EventUpdate(event)
 
     SaveFileDialog.EventUpdate(event)
     OpenFileDialog.EventUpdate(event)

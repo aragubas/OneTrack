@@ -101,6 +101,7 @@ def UpdateWindow():
     global AnimationController
     global AnimationNumb
     global FileListUpdate
+    global SelectedFile
 
     AnimationController.Update()
 
@@ -119,6 +120,7 @@ def UpdateWindow():
         AnimationNumb = 0
         Main.DisableControls = False
         FileListUpdate = False
+        SelectedFile = "null"
 
         Enabled = False
 

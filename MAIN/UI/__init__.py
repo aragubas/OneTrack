@@ -106,7 +106,7 @@ class EditableNumberView:
                     self.ChangeValueInPos(self.SelectedCharIndex, PressedKey)
 
             if event.key == pygame.K_DELETE:
-                for i in range(0, 4):
+                for i in range(0, 5):
                     self.ChangeValueInPos(i, "-")
 
     def ChangeValueInPos(self, Index, NewValue):
@@ -120,10 +120,10 @@ class TrackBlock:
     def __init__(self, TrackData):
         self.TrackData = list(TrackData)
         self.Instance = -1
-        self.TextWidth = Main.DefaultContents.GetFont_width("/PressStart2P.ttf", 12, "0000")
-        self.TextHeight = Main.DefaultContents.GetFont_height("/PressStart2P.ttf", 12, "0000")
+        self.TextWidth = Main.DefaultContents.GetFont_width("/PressStart2P.ttf", 12, "00000")
+        self.TextHeight = Main.DefaultContents.GetFont_height("/PressStart2P.ttf", 12, "00000")
         self.Scroll = 0
-        self.Rectangle = pygame.Rect(5, self.Scroll + (self.TextHeight + 10) * self.Instance, Main.DefaultContents.GetFont_width("/PressStart2P.ttf", 12, "0000"), Main.DefaultContents.GetFont_height("/PressStart2P.ttf", 12, "0000"))
+        self.Rectangle = pygame.Rect(5, self.Scroll + (self.TextHeight + 10) * self.Instance, Main.DefaultContents.GetFont_width("/PressStart2P.ttf", 12, "00000"), Main.DefaultContents.GetFont_height("/PressStart2P.ttf", 12, "00000"))
         self.FrequencyNumber = EditableNumberView(pygame.Rect(self.Rectangle[0], self.Rectangle[1], self.TextWidth, self.TextHeight), str(self.TrackData[0]))
         self.DurationNumber = EditableNumberView(pygame.Rect(self.Rectangle[0] + self.TextWidth - 5, self.Rectangle[1], self.TextWidth, self.TextHeight), str(self.TrackData[1]))
         self.DurationNumber.AllowNotNumbers = True
@@ -201,7 +201,6 @@ class TrackColection:
         self.SelectedTrack = 0
         self.PlayMode_TrackDelay = 0
         self.PlayMode_CurrentTonePlayed = False
-        self.BPM = 150
         self.PlayMode_LastSoundChannel = -1
         self.Rectangle = pygame.Rect(Rectangle[0], Rectangle[1], Rectangle[2], Rectangle[3])
         self.Active = False
@@ -214,7 +213,7 @@ class TrackColection:
             track.Rectangle[0] = self.Rectangle[0]
 
     def AddBlankTrack(self):
-        self.Tracks.append(TrackBlock(("0000", "0001")))
+        self.Tracks.append(TrackBlock(("00000", "00100")))
 
     def Draw(self, DISPLAY):
         self.ScreenSize = (DISPLAY.get_width(), DISPLAY.get_height())
@@ -249,63 +248,70 @@ class TrackColection:
         if self.PlayMode:
             self.PlayMode_TrackDelay += 1
             CurrentTrackObj = self.Tracks[self.SelectedTrack]
-            BMP = abs(1000 / self.BPM)
+            BMP = abs(1000 / Editor.BPM)
 
             if self.PlayMode_TrackDelay >= BMP:
                 self.SelectedTrack += 1
                 self.PlayMode_TrackDelay = 0
-                CurrentTrackData = CurrentTrackObj.TrackData
 
-                if CurrentTrackData[0] == "----":
-                    if "----" in CurrentTrackData[1]:
+                # -- Play Command -- #
+                if CurrentTrackObj.TrackData[0] == "-----":
+                    # -- StopSoundChannels Command -- #
+                    if "-----" in CurrentTrackObj.TrackData[1]:
                         Main.DefaultContents.StopAllChannels()
 
-                    elif CurrentTrackData[1].startswith("F"):
-                        SplitedAgrs = list(CurrentTrackData[1])
+                    # -- Fade Command -- #
+                    elif CurrentTrackObj.TrackData[1].startswith("F"):
+                        SplitedAgrs = list(CurrentTrackObj.TrackData[1])
                         FadeTime = ""
 
                         for i, arg in enumerate(SplitedAgrs):
                             if i > 1:
                                 FadeTime += arg
-
-                        FadeTime = int(FadeTime)
+                        FadeTime = int(FadeTime.replace("-", ""))
 
                         Main.DefaultContents.FadeoutSound(self.PlayMode_LastSoundChannel, FadeTime)
 
-                    elif CurrentTrackData[1].startswith("J"):
-                        SplitedAgrs = list(CurrentTrackData[1])
-                        print(SplitedAgrs)
+                    # -- Pattern Jump Command -- #
+                    elif CurrentTrackObj.TrackData[1].startswith("J"):
+                        SplitedAgrs = list(CurrentTrackObj.TrackData[1])
                         JmpTrackID = ""
 
                         for i, arg in enumerate(SplitedAgrs):
                             if i > 1:
-                                print(arg)
                                 JmpTrackID += arg
+                        JmpTrackID = int(JmpTrackID.replace("-", ""))
 
-                        JmpTrackID = int(JmpTrackID)
                         Editor.track_list.PatternJump(JmpTrackID)
                         self.EndPlayMode()
 
-                    elif CurrentTrackData[1].startswith("END"):
+                    # -- END Command -- #
+                    elif CurrentTrackObj.TrackData[1].startswith("END"):
                         self.EndPlayMode()
 
-                else:
+                else:  # -- If not, Play Note -- #
                     SoundDuration = 0
                     SoundTune = 0
 
+                    # -- Convert the Time to the Correct Time -- #
                     try:
-                        SoundDuration = float("0.{0}".format(CurrentTrackObj.TrackData[1].replace("0", "")))
+                        FirstDigits = CurrentTrackObj.TrackData[1][:2]
+                        SecoundDigits = CurrentTrackObj.TrackData[1][2:]
+
+                        SoundDuration = float("{0}.{1}".format(FirstDigits, SecoundDigits))
                     except ValueError:
                         pass
 
                     try:
-                        SoundTune = int(CurrentTrackData[0])
+                        SoundTune = int(CurrentTrackObj.TrackData[0])
                     except ValueError:
                         pass
 
-                    if not SoundTune == 0:
-                        self.PlayMode_LastSoundChannel = Main.DefaultContents.PlayTune(SoundTune, SoundDuration)
+                    # -- If not SoundTune is null, Play the Tune -- #
+                    Volume = 1.0 / len(Editor.track_list.PatternList[Editor.track_list.CurrentPatternID].Tracks)
+                    self.PlayMode_LastSoundChannel = Main.DefaultContents.PlayTune(SoundTune, SoundDuration, Volume=Volume)
 
+                # -- Stop Playing song when it reach the end -- #
                 if self.SelectedTrack >= len(self.Tracks):
                     self.EndPlayMode()
 
@@ -350,7 +356,7 @@ class TrackColection:
 
                 if event.key == pygame.K_F1:
                     if len(self.Tracks) > 1:
-                        self.Tracks[self.SelectedTrack] = TrackBlock(("0000", "0001"))
+                        self.Tracks[self.SelectedTrack] = TrackBlock(("00000", "00100"))
 
                 if event.key == pygame.K_F2:
                     if len(self.Tracks) < 24:
@@ -367,7 +373,12 @@ class Pattern:
 
         for i, track in enumerate(self.Tracks):
             # -- Update Tracks Position -- #
-            track.Rectangle[0] = 10 + i * track.Rectangle[2] / 2.5
+            track.Rectangle[0] = 10 + i * track.Rectangle[2] / 1.8
+
+    def PlayAllTracks(self):
+        for i, track in enumerate(self.Tracks):
+            track.PlayMode = True
+            track.SelectedTrack = 0
 
     def Draw(self, DISPLAY):
         for track in self.Tracks:
@@ -380,7 +391,7 @@ class Pattern:
             track.Active = i == self.ActiveTrackID
 
             # -- Update Tracks Position -- #
-            track.Rectangle[0] = 10 + i * track.Rectangle[2] / 2
+            track.Rectangle[0] = 10 + i * track.Rectangle[2] / 1.8
 
     def EventUpdate(self, event):
         for track in self.Tracks:
@@ -407,13 +418,11 @@ class TrackList:
         self.CurrentPattern = None
         self.TracksSurface = pygame.Surface((self.Rectangle[2], self.Rectangle[3]), pygame.SRCALPHA)
         self.LastRect = pygame.Rect(0, 0, 0, 0)
-
+        self.Active = False
         self.AddNewPattern()
 
     def AddNewPattern(self):
-        print("Added new pattern")
         NewPatternID = len(self.PatternList)
-        print(NewPatternID)
         self.PatternList.append(Pattern(len(self.PatternList), pygame.Rect(5, 120, 300, 400)))
 
         self.SetCurrentPattern_ByID(NewPatternID)
@@ -424,8 +433,7 @@ class TrackList:
     def PatternJump(self, PatternID):
         if PatternID < len(self.PatternList):
             self.CurrentPattern = self.PatternList[PatternID]
-            self.CurrentPattern.PlayMode = True
-            self.CurrentPattern.SelectedTrack = 0
+            self.PatternList[PatternID].PlayAllTracks()
 
     def Render(self, DISPLAY):
         self.TracksSurface.fill((0, 0, 0, 0))
@@ -438,6 +446,11 @@ class TrackList:
         DISPLAY.blit(self.TracksSurface, (self.Rectangle[0], self.Rectangle[1]))
 
     def Update(self):
+        self.Active = self.Rectangle.collidepoint(pygame.mouse.get_pos())
+
+        if not self.Active:
+            self.CurrentPattern.Active = False
+
         self.CurrentPattern.Update()
         self.CurrentPatternID = self.CurrentPattern.PatternID
 
@@ -447,34 +460,35 @@ class TrackList:
             self.LastRect = self.Rectangle
 
     def EventUpdate(self, event):
-        self.CurrentPattern.EventUpdate(event)
+        if self.Rectangle.collidepoint(pygame.mouse.get_pos()):
+            self.CurrentPattern.EventUpdate(event)
 
-        if event.type == pygame.KEYUP:
-            if event.key == pygame.K_F3:
-                self.AddNewPattern()
+            if event.type == pygame.KEYUP:
+                if event.key == pygame.K_F3:
+                    self.AddNewPattern()
 
-            if event.key == pygame.K_F5:
-                PatternID = self.CurrentPatternID - 1
+                if event.key == pygame.K_F5:
+                    PatternID = self.CurrentPatternID - 1
 
-                if PatternID <= 0:
-                    PatternID = 0
+                    if PatternID <= 0:
+                        PatternID = 0
 
-                self.SetCurrentPattern_ByID(PatternID)
+                    self.SetCurrentPattern_ByID(PatternID)
 
-            if event.key == pygame.K_F6:
-                PatternID = self.CurrentPatternID + 1
+                if event.key == pygame.K_F6:
+                    PatternID = self.CurrentPatternID + 1
 
-                if PatternID >= len(self.PatternList) - 1:
-                    PatternID = len(self.PatternList) - 1
+                    if PatternID >= len(self.PatternList) - 1:
+                        PatternID = len(self.PatternList) - 1
 
-                self.SetCurrentPattern_ByID(PatternID)
+                    self.SetCurrentPattern_ByID(PatternID)
 
 class Button:
     def __init__(self, Rectangle, ButtonText, TextSize):
         self.Rectangle = pygame.Rect(Rectangle[0], Rectangle[1], Rectangle[2], Rectangle[3])
         self.ButtonText = ButtonText
         self.TextSize = TextSize
-        self.ButtonState = 0 # 0 - INACTIVE, 1 - DOWN, 2 - UP
+        self.ButtonState = 0  # 0 - INACTIVE, 1 - DOWN, 2 - UP
         self.FontFile = "/PressStart2P.ttf"
         self.IsButtonEnabled = True
         self.Rectangle = pygame.rect.Rect(self.Rectangle[0], self.Rectangle[1], Main.DefaultContents.GetFont_width(self.FontFile, self.TextSize, self.ButtonText) + 5, Main.DefaultContents.GetFont_height(self.FontFile, self.TextSize, self.ButtonText) + 6)
@@ -639,7 +653,6 @@ class ButtonsBar:
     def EventUpdate(self, event):
         for button in self.ButtonsList:
             button.Update(event)
-
 
 class Window:
     def __init__(self, Rectangle, Title, Resiziable, Movable=True):
