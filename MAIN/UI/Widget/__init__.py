@@ -135,4 +135,4 @@ class Widget_ValueChanger:
 
     def EventUpdate(self, event):
         self.Changer.EventUpdate(event)
-        pass
+

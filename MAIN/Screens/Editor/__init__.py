@@ -101,11 +101,17 @@ def LoadMusicData(FileName):
     SavedBPM = 0
 
     for i, obj in enumerate(patterns_list):
-        if i == 0:
-            SavedBPM = int(obj.MusicProperties[0])
+        # -- If in first pattern, read Music Properties -- #
+        try:
+            if i == 0:
+                SavedBPM = int(obj.MusicProperties[0])
 
+        except AttributeError:
+            obj.MusicProperties = list()
+            obj.MusicProperties.append("150")
+
+        # -- Add the Object -- #
         track_list.PatternList.append(obj)
-        print(obj)
 
     # -- Set to the Pattern 0 -- #
     track_list.SetCurrentPattern_ByID(0)

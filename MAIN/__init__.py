@@ -31,9 +31,10 @@ def Initialize(DISPLAY):
     DefaultContents = cntMng.ContentManager()
     DefaultContents.SetFontPath("Data/Font")
     DefaultContents.LoadSpritesInFolder("Data/Sprite")
+    DefaultContents.LoadRegKeysInFolder("Data/Reg")
     DefaultContents.InitSoundSystem()
 
-    MAIN.ReceiveCommand(5, "OneTrack v1.7")
+    MAIN.ReceiveCommand(5, "OneTrack v{0}".format(DefaultContents.Get_RegKey("/version")))
     MAIN.ReceiveCommand(0, 60)
 
     Editor.Initialize(DISPLAY)

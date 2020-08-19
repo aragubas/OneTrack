@@ -53,8 +53,8 @@ def Update():
 
     else:
         obj = WidgetCollection.GetWidget(1)
-        obj.Changer.Value = str(Editor.BPM)
-        obj.Changer.SplitedAlgarims = list(str(Editor.BPM))
+        obj.Changer.Value = str(Editor.BPM).zfill(3)
+        obj.Changer.SplitedAlgarims = list(obj.Changer.Value)
 
 def Draw(DISPLAY):
     global WidgetCollection

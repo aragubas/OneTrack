@@ -147,14 +147,14 @@ class TrackBlock:
 
         # Render the Duration Region
         DurationX = (self.Rectangle[0] + self.TextWidth)
-        shape.Shape_Rectangle(DISPLAY, DurationBGColor, (DurationX, self.Rectangle[1] - 2, (self.TextWidth) + 4, self.Rectangle[3] + 4), 0, 0, 0, 5, 0, 5)
+        shape.Shape_Rectangle(DISPLAY, DurationBGColor, (DurationX, self.Rectangle[1] - 2, (self.TextWidth) + 8, self.Rectangle[3] + 4), 0, 0, 0, 5, 0, 5)
         self.DurationNumber.Render(DISPLAY)
 
         LabelColor = TrackBlock_InstanceLabelActiveColor
         if not self.Active:
             LabelColor = TrackBlock_InstanceLabelDeactiveColor
 
-        Main.DefaultContents.FontRender(DISPLAY, "/PressStart2P.ttf", 12, str(self.Instance).zfill(2), LabelColor, (DurationX + self.TextWidth) + 5, self.Rectangle[1])
+        Main.DefaultContents.FontRender(DISPLAY, "/PressStart2P.ttf", 12, str(self.Instance).zfill(2), LabelColor, (DurationX + self.TextWidth) + 10, self.Rectangle[1])
 
     def Update(self):
         self.Rectangle = pygame.Rect(self.Rectangle[0], self.Scroll + (self.TextHeight + 10) * self.Instance, self.TextWidth, self.TextHeight)
@@ -408,8 +408,9 @@ class Pattern:
             if event.key == pygame.K_F9:
                 self.ActiveTrackID -= 1
 
-                if self.ActiveTrackID < 0:
-                    self.ActiveTrackID = len(self.Tracks)
+                if self.ActiveTrackID <= -1:
+                    self.ActiveTrackID = len(self.Tracks) - 1
+                print(self.ActiveTrackID)
 
             if event.key == pygame.K_F10:
                 self.ActiveTrackID += 1
@@ -458,12 +459,11 @@ class TrackList:
         if not self.Active:
             self.CurrentPattern.Active = False
 
+        self.CurrentPatternID = self.CurrentPattern.PatternID
         self.CurrentPattern.Update()
         if self.CurrentPatternID == 0:  # -- Save Music Properties only on the first pattern -- #
             self.CurrentPattern.MusicProperties.clear()
             self.CurrentPattern.MusicProperties.append(Editor.BPM)  # -- Save BPM Data -- #
-
-        self.CurrentPatternID = self.CurrentPattern.PatternID
 
         # -- Update the Surface Size -- #
         if not self.LastRect == self.Rectangle:
