@@ -20,6 +20,7 @@ from ENGINE import MAIN
 from ENGINE import appData
 import ENGINE as tge
 from OneTrack.MAIN.Screens import Editor
+import cProfile
 
 DefaultContents = cntMng.ContentManager
 
@@ -32,17 +33,19 @@ def Initialize(DISPLAY):
     DefaultContents.LoadSpritesInFolder("Data/Sprite")
     DefaultContents.InitSoundSystem()
 
-    MAIN.ReceiveCommand(5, "OneTrack v1.6")
+    MAIN.ReceiveCommand(5, "OneTrack v1.7")
     MAIN.ReceiveCommand(0, 60)
 
     Editor.Initialize(DISPLAY)
 
 def GameDraw(DISPLAY):
     global CurrentScreenToUpdate
+    global DefaultContents
 
     CurrentScreenToUpdate.GameDraw(DISPLAY)
 
     DefaultContents.FontRender(DISPLAY, "/PressStart2P.ttf", 8, "FPS: {0}/{1}".format(MAIN.clock.get_fps(), MAIN.clock.get_time()), (255, 255, 255), 5, 5, backgroundColor=(0, 0, 0))
+
 
 def Update():
     global CurrentScreenToUpdate

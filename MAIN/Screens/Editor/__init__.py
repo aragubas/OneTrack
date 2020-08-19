@@ -22,7 +22,7 @@ import ENGINE as tge
 from OneTrack.MAIN import UI
 from OneTrack.MAIN import SaveFileDialog
 from OneTrack.MAIN import OpenFileDialog
-from OneTrack.MAIN.Screens.Editor import EditBPMSquare
+from OneTrack.MAIN.Screens.Editor import OptionsBar
 
 
 DefaultContents = cntMng.ContentManager
@@ -56,7 +56,7 @@ def Initialize(DISPLAY):
 
     SaveFileDialog.Initialize()
     OpenFileDialog.Initialize()
-    EditBPMSquare.Initialize()
+    OptionsBar.Initialize()
 
 def GameDraw(DISPLAY):
     global track_list
@@ -64,10 +64,9 @@ def GameDraw(DISPLAY):
     global DropDownFileMenu
     global CopyOfScreen
     global DisableControls
-    global EditBPMSquare
 
     if not DisableControls:
-        DISPLAY.fill((40, 30, 35))
+        DISPLAY.fill((62, 62, 116))
 
         track_list.Render(DISPLAY)
         TopBarControls.Render(DISPLAY)
@@ -76,11 +75,9 @@ def GameDraw(DISPLAY):
         if FileMenuEnabled:
             DropDownFileMenu.Render(DISPLAY)
 
-        EditBPMSquare.Draw(DISPLAY)
+        OptionsBar.Draw(DISPLAY)
 
         CopyOfScreen = DISPLAY.copy()
-
-
 
     SaveFileDialog.Draw(DISPLAY)
     OpenFileDialog.Draw(DISPLAY)
@@ -92,6 +89,7 @@ def SaveMusicData(FilePath):
 
 def LoadMusicData(FileName):
     global track_list
+    global BPM
 
     # -- Load the List to RAM -- #
     patterns_list = pickle.load(open(FileName, "rb"))
@@ -100,12 +98,24 @@ def LoadMusicData(FileName):
     track_list.PatternList.clear()
 
     # -- Add Objects One-By-One -- #
-    for obj in patterns_list:
+    SavedBPM = 0
+
+    for i, obj in enumerate(patterns_list):
+        if i == 0:
+            SavedBPM = int(obj.MusicProperties[0])
+
         track_list.PatternList.append(obj)
         print(obj)
 
     # -- Set to the Pattern 0 -- #
     track_list.SetCurrentPattern_ByID(0)
+
+    # -- Set Properties -- #
+    Obj = OptionsBar.WidgetCollection.GetWidget(1)
+
+    Obj.Changer.Value = SavedBPM
+
+    BPM = SavedBPM
 
 def NewMusicFile():
     global track_list
@@ -121,7 +131,6 @@ def Update():
     global DropDownFileMenu
     global FileMenuEnabled
     global DisableControls
-    global EditBPMSquare
 
     SaveFileDialog.Update()
     OpenFileDialog.Update()
@@ -129,7 +138,7 @@ def Update():
     if not DisableControls:
         TopBarControls.Update()
         track_list.Update()
-        EditBPMSquare.Update()
+        OptionsBar.Update()
 
         if FileMenuEnabled:
             DropDownFileMenu.Update()
@@ -173,15 +182,13 @@ def EventUpdate(event):
     global DropDownFileMenu
     global FileMenuEnabled
     global DisableControls
-    global EditBPMSquare
 
     if not DisableControls:
         TopBarControls.EventUpdate(event)
         track_list.EventUpdate(event)
+        OptionsBar.EventUpdate(event)
 
         if FileMenuEnabled: DropDownFileMenu.EventUpdate(event)
-
-    EditBPMSquare.EventUpdate(event)
 
     SaveFileDialog.EventUpdate(event)
     OpenFileDialog.EventUpdate(event)

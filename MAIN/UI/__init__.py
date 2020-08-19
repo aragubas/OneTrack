@@ -17,10 +17,12 @@
 import pygame, os
 from OneTrack import MAIN as Main
 from OneTrack.MAIN.Screens import Editor
+from OneTrack.MAIN.UI import Widget as Widget
 from ENGINE import shape
 from ENGINE import fx
 from ENGINE import appData
 from ENGINE import utils
+
 
 # -- Color List -- #
 TrackBlock_FrequencyBGColor_Active = (90, 84, 75)
@@ -49,7 +51,7 @@ TrackPointerColor = (250, 70, 95)
 
 class EditableNumberView:
     def __init__(self, Rectangle, Value):
-        self.Rectangle = Rectangle
+        self.Rectangle = utils.Convert.List_PygameRect(Rectangle)
         self.Value = Value
         self.SelectedCharIndex = 0
         self.SplitedAlgarims = list(self.Value)
@@ -299,6 +301,7 @@ class TrackColection:
                         SecoundDigits = CurrentTrackObj.TrackData[1][2:]
 
                         SoundDuration = float("{0}.{1}".format(FirstDigits, SecoundDigits))
+                        print(SoundDuration)
                     except ValueError:
                         pass
 
@@ -309,7 +312,10 @@ class TrackColection:
 
                     # -- If not SoundTune is null, Play the Tune -- #
                     Volume = 1.0 / len(Editor.track_list.PatternList[Editor.track_list.CurrentPatternID].Tracks)
-                    self.PlayMode_LastSoundChannel = Main.DefaultContents.PlayTune(SoundTune, SoundDuration, Volume=Volume)
+                    CurrentPlayID = Main.DefaultContents.PlayTune(SoundTune, SoundDuration, Volume=Volume)
+
+                    if not CurrentPlayID is None:
+                        self.PlayMode_LastSoundChannel = CurrentPlayID
 
                 # -- Stop Playing song when it reach the end -- #
                 if self.SelectedTrack >= len(self.Tracks):
@@ -367,6 +373,7 @@ class Pattern:
         self.PatternID = PatternID
         self.Tracks = list()
         self.ActiveTrackID = 0
+        self.MusicProperties = list()
 
         self.Tracks.append(TrackColection(Rectangle))
         self.Tracks.append(TrackColection(Rectangle))
@@ -452,6 +459,10 @@ class TrackList:
             self.CurrentPattern.Active = False
 
         self.CurrentPattern.Update()
+        if self.CurrentPatternID == 0:  # -- Save Music Properties only on the first pattern -- #
+            self.CurrentPattern.MusicProperties.clear()
+            self.CurrentPattern.MusicProperties.append(Editor.BPM)  # -- Save BPM Data -- #
+
         self.CurrentPatternID = self.CurrentPattern.PatternID
 
         # -- Update the Surface Size -- #
