@@ -36,6 +36,7 @@ FileMenuEnabled = False
 DisableControls = False
 CopyOfScreen = pygame.Surface((5, 5))
 BPM = 150
+TotalBlocks = 32
 
 def Initialize(DISPLAY):
     global DefaultContents
@@ -110,6 +111,11 @@ def LoadMusicData(FileName):
             obj.MusicProperties = list()
             obj.MusicProperties.append("150")
 
+        except TypeError:
+            obj.MusicProperties = list()
+            obj.MusicProperties.append("150")
+
+
         # -- Add the Object -- #
         track_list.PatternList.append(obj)
 
@@ -121,7 +127,11 @@ def LoadMusicData(FileName):
 
     Obj.Changer.Value = SavedBPM
 
+    if SavedBPM <= 1:
+        SavedBPM = 150
     BPM = SavedBPM
+
+
 
 def NewMusicFile():
     global track_list

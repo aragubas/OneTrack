@@ -52,7 +52,7 @@ class Widget_Controller:
         for widget in self.WidgetCollection:
             widget.Update()
 
-            if not widget.InteractionType == None:
+            if not widget.InteractionType is None:
                 self.LastInteractionID = widget.ID
                 self.LastInteractionType = widget.InteractionType
 
@@ -119,7 +119,9 @@ class Widget_ValueChanger:
         shape.Shape_Rectangle(DISPLAY, LineColor, self.Rectangle, 1)
 
         # -- Render Change Title -- #
-        Main.DefaultContents.FontRender(DISPLAY, "/Ubuntu_Thin.ttf", 12, self.TitleName, (230, 230, 230), self.Rectangle[0] + Main.DefaultContents.GetFont_width("/Ubuntu_Thin.ttf", 12, self.TitleName) / 2, self.Rectangle[1])
+        TitleX = self.Rectangle[0] + self.Rectangle[2] / 2 - Main.DefaultContents.GetFont_width("/Ubuntu_Bold.ttf", 12, self.TitleName) / 2
+
+        Main.DefaultContents.FontRender(DISPLAY, "/Ubuntu_Bold.ttf", 12, self.TitleName, (230, 230, 230), TitleX, self.Rectangle[1])
 
         # -- Render EditableNumberView -- #
         self.Changer.Render(DISPLAY)
@@ -130,6 +132,13 @@ class Widget_ValueChanger:
         if not self.Changer.Value == self.LastValue:
             self.LastValue = self.Changer.Value
             self.InteractionType = self.Changer.Value
+
+        if Main.DefaultContents.GetFont_width("/PressStart2P.ttf", 12, self.Changer.Value) > self.Rectangle[2]:
+            self.Rectangle[2] = self.Rectangle[2] + Main.DefaultContents.GetFont_width("/PressStart2P.ttf", 12, self.Changer.Value) + 5
+
+        if Main.DefaultContents.GetFont_width("/Ubuntu_Bold.ttf", 12, self.TitleName) > self.Rectangle[2]:
+            self.Rectangle[2] = self.Rectangle[2] + Main.DefaultContents.GetFont_width("/Ubuntu_Bold.ttf", 12, self.TitleName)
+
 
         self.Changer.Rectangle[0] = self.Rectangle[0] + self.Rectangle[2] / 2 - Main.DefaultContents.GetFont_width("/PressStart2P.ttf", 12, self.Changer.Value) / 2
 

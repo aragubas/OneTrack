@@ -59,6 +59,7 @@ class EditableNumberView:
         self.Color = (155, 155, 155)
         self.AlgarimsWidth = 0
         self.AllowNotNumbers = False
+        self.YOffset = 0
 
     def Render(self, DISPLAY):
         for i, Algarims in enumerate(self.SplitedAlgarims):
@@ -72,7 +73,7 @@ class EditableNumberView:
             else:
                 self.Color = EditableNumberView_ColorDeactive
 
-            Main.DefaultContents.FontRender(DISPLAY, "/PressStart2P.ttf", 12, str(Algarims), self.Color, self.Rectangle[0] + self.AlgarimsWidth * i, self.Rectangle[1])
+            Main.DefaultContents.FontRender(DISPLAY, "/PressStart2P.ttf", 12, str(Algarims), self.Color, self.Rectangle[0] + self.AlgarimsWidth * i, self.YOffset + self.Rectangle[1])
 
     def Update(self):
         if not self.IsActive:
@@ -142,31 +143,33 @@ class TrackBlock:
             DurationBGColor = TrackBlock_DurationBGColor_Deactive
 
         # Render the Frequency Region
-        shape.Shape_Rectangle(DISPLAY, FrequencyBGColor, (self.Rectangle[0] - 2, self.Rectangle[1] - 2, self.Rectangle[2] + 4, self.Rectangle[3] + 4), 0, 0, 5, 0, 5, 0)
+        shape.Shape_Rectangle(DISPLAY, FrequencyBGColor, (self.Rectangle[0] - 2, self.Scroll + self.Rectangle[1] - 2, self.Rectangle[2] + 4, self.Rectangle[3] + 4), 0, 0, 5, 0, 5, 0)
         self.FrequencyNumber.Render(DISPLAY)
 
         # Render the Duration Region
         DurationX = (self.Rectangle[0] + self.TextWidth)
-        shape.Shape_Rectangle(DISPLAY, DurationBGColor, (DurationX, self.Rectangle[1] - 2, (self.TextWidth) + 8, self.Rectangle[3] + 4), 0, 0, 0, 5, 0, 5)
+        shape.Shape_Rectangle(DISPLAY, DurationBGColor, (DurationX, self.Scroll + self.Rectangle[1] - 2, (self.TextWidth) + 8, self.Rectangle[3] + 4), 0, 0, 0, 5, 0, 5)
         self.DurationNumber.Render(DISPLAY)
 
         LabelColor = TrackBlock_InstanceLabelActiveColor
         if not self.Active:
             LabelColor = TrackBlock_InstanceLabelDeactiveColor
 
-        Main.DefaultContents.FontRender(DISPLAY, "/PressStart2P.ttf", 12, str(self.Instance).zfill(2), LabelColor, (DurationX + self.TextWidth) + 10, self.Rectangle[1])
+        Main.DefaultContents.FontRender(DISPLAY, "/PressStart2P.ttf", 12, str(self.Instance).zfill(2), LabelColor, (DurationX + self.TextWidth) + 10, self.Scroll + self.Rectangle[1])
 
     def Update(self):
-        self.Rectangle = pygame.Rect(self.Rectangle[0], self.Scroll + (self.TextHeight + 10) * self.Instance, self.TextWidth, self.TextHeight)
+        self.Rectangle = pygame.Rect(self.Rectangle[0], (self.TextHeight + 10) * self.Instance, self.TextWidth, self.TextHeight)
 
         self.DurationNumber.Rectangle = pygame.Rect(self.Rectangle[0] + self.TextWidth + 5, self.Rectangle[1], self.TextWidth, self.TextHeight)
         self.FrequencyNumber.Rectangle = pygame.Rect(self.Rectangle[0], self.Rectangle[1], self.TextWidth, self.TextHeight)
 
         self.FrequencyNumber.Update()
         self.FrequencyNumber.IsActive = self.SelectedField == 0
+        self.FrequencyNumber.YOffset = self.Scroll
 
         self.DurationNumber.Update()
         self.DurationNumber.IsActive = self.SelectedField == 1
+        self.DurationNumber.YOffset = self.Scroll
 
         # -- Update the Track Data -- #
         self.TrackData[0] = self.FrequencyNumber.Value
@@ -208,11 +211,15 @@ class TrackColection:
         self.Active = False
         self.ScreenSize = (0, 0)
 
-        for _ in range(24):
+        for _ in range(Editor.TotalBlocks):
             self.AddBlankTrack()
 
+        self.UpdateTracksPos()
+
+    def UpdateTracksPos(self):
         for track in self.Tracks:
             track.Rectangle[0] = self.Rectangle[0]
+
 
     def AddBlankTrack(self):
         self.Tracks.append(TrackBlock(("00000", "00100")))
@@ -223,15 +230,19 @@ class TrackColection:
         for track in self.Tracks:
             # -- Render the Track Pointer -- #
             if track.Instance == self.SelectedTrack:
-                PointerRect = (self.Rectangle[0] - 8, track.Rectangle[1], 4, track.Rectangle[3])
+                self.Scroll = self.Rectangle[3] / 2 - track.Rectangle[3] - track.Rectangle[1]
+                PointerRect = (self.Rectangle[0] - 8, self.Scroll + track.Rectangle[1], 4, track.Rectangle[3])
                 shape.Shape_Rectangle(DISPLAY, TrackPointerColor, PointerRect)
 
-                self.Scroll = self.Rectangle[3] / 4 - (self.SelectedTrack * track.Rectangle[3])
-
-            if track.Rectangle[1] >= DISPLAY.get_height() + track.TextHeight or track.Rectangle[1] <= -track.TextHeight:
+            if self.Scroll + track.Rectangle[1] >= DISPLAY.get_height() + track.TextHeight or self.Scroll + track.Rectangle[1] <= -track.TextHeight:
                 continue
 
             track.Render(DISPLAY)
+
+    def Update(self):
+        for i, track in enumerate(self.Tracks):
+            track.Scroll = self.Scroll
+            track.Instance = i
 
             track.Rectangle[0] = self.Rectangle[0]
 
@@ -239,11 +250,6 @@ class TrackColection:
 
             if not self.Active and not self.PlayMode:
                 track.Active = False
-
-    def Update(self):
-        for i, track in enumerate(self.Tracks):
-            track.Scroll = self.Scroll
-            track.Instance = i
 
             track.Update()
 
@@ -460,10 +466,10 @@ class TrackList:
             self.CurrentPattern.Active = False
 
         self.CurrentPatternID = self.CurrentPattern.PatternID
-        self.CurrentPattern.Update()
         if self.CurrentPatternID == 0:  # -- Save Music Properties only on the first pattern -- #
             self.CurrentPattern.MusicProperties.clear()
             self.CurrentPattern.MusicProperties.append(Editor.BPM)  # -- Save BPM Data -- #
+        self.CurrentPattern.Update()
 
         # -- Update the Surface Size -- #
         if not self.LastRect == self.Rectangle:
