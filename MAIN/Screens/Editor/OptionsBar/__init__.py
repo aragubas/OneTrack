@@ -33,7 +33,8 @@ def Initialize():
     WidgetCollection = UI.Widget.Widget_Controller((0, 5, 680, 90))
     WidgetCollection.Append(UI.Widget.Widget_PictureBox((5, 5, 203, 81), "/logo.png", 0))
     WidgetCollection.Append(UI.Widget.Widget_ValueChanger((5, 5), "BPM", "150", 1))
-    WidgetCollection.Append(UI.Widget.Widget_ValueChanger((5, 42), "TIME SIGNATURE", "04.04x02", 2))
+    WidgetCollection.Append(UI.Widget.Widget_ValueChanger((5, 42), "ROWS", "31", 2))
+    WidgetCollection.Append(UI.Widget.Widget_ValueChanger((58, 5), "HIGHLIGHT", "04x16", 3))
 
     obj = WidgetCollection.GetWidget(0)
     obj.Rectangle[0] = (WidgetCollection.Rectangle[2] - obj.Rectangle[2])
@@ -51,6 +52,11 @@ def Update():
 
     WidgetCollection.Update()
 
+    UpdateBPMSelector()
+    UpdateRowsSelector()
+    UpdateHighlightSelector()
+
+def UpdateBPMSelector():
     if WidgetCollection.LastInteractionID == 1:
         Editor.BPM = int(WidgetCollection.LastInteractionType)
 
@@ -59,39 +65,45 @@ def Update():
         obj.Changer.Value = str(Editor.BPM).zfill(3)
         obj.Changer.SplitedAlgarims = list(obj.Changer.Value)
 
+def UpdateRowsSelector():
     if WidgetCollection.LastInteractionID == 2:
         # -- Validate the Current Value -- #
         CurrentValue = WidgetCollection.LastInteractionType
-        StringList = list(CurrentValue)
+        RowsValue = int(CurrentValue)
 
-        # -- Get Results from Formated String -- #
-        TimeSig1 = ''.join((StringList[0], StringList[1]))
-        TimeSig2 = ''.join((StringList[3], StringList[4]))
-        TimeMultiplier = ''.join((StringList[6], StringList[7]))
+        if RowsValue > 99:
+            RowsValue = 99
 
-        # -- Calculate the Total of Blocks -- #
-        Result = (int(TimeSig1) * int(TimeSig2)) * int(TimeMultiplier)
-        Editor.TotalBlocks = Result
-
-        """ PLACEHOLDER
-        # -- Get All PatternBlock from All Patterns -- #
-        Patterns = list()
-        SomethingChanged = False
-        for tracks in Editor.track_list.PatternList:
-            for pattern in tracks.Tracks:
-                Patterns.append(pattern)
-
-        for pattern in Patterns:
-            TotalBlocks = len(pattern.Tracks) - 2
-
-            while TotalBlocks > Result:
-                pattern.Tracks.pop()
-        """
+        Editor.TotalBlocks = RowsValue
 
         # -- Get the Changer Object -- #
         obj = WidgetCollection.GetWidget(2)
         # -- Re-Format the String -- #
-        obj.Changer.Value = ''.join((TimeSig1, ".", TimeSig2, "x", TimeMultiplier))
+        obj.Changer.Value = str(RowsValue).zfill(2)
+        obj.Changer.SplitedAlgarims = list(obj.Changer.Value)
+
+def UpdateHighlightSelector():
+    if WidgetCollection.LastInteractionID == 3:
+        # -- Validate the Current Value -- #
+        CurrentValue = WidgetCollection.LastInteractionType
+        HightLightValue = list(CurrentValue)
+
+        FirstVal = ''.join((HightLightValue[0], HightLightValue[1]))
+        SecondVal = ''.join((HightLightValue[3], HightLightValue[4]))
+
+        if int(FirstVal) > 32:
+            FirstVal = 32
+
+        if int(SecondVal) > 32:
+            SecondVal = 32
+
+        Editor.Highlight = FirstVal
+        Editor.HighlightSecond = SecondVal
+
+        # -- Get the Changer Object -- #
+        obj = WidgetCollection.GetWidget(3)
+        # -- Re-Format the String -- #4
+        obj.Changer.Value = ''.join((str(FirstVal).zfill(2), "x", str(SecondVal).zfill(2)))
         obj.Changer.SplitedAlgarims = list(obj.Changer.Value)
 
 

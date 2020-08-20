@@ -37,6 +37,8 @@ DisableControls = False
 CopyOfScreen = pygame.Surface((5, 5))
 BPM = 150
 TotalBlocks = 32
+Highlight = 4
+HighlightSecond = 16
 
 def Initialize(DISPLAY):
     global DefaultContents

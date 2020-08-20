@@ -138,6 +138,7 @@ class TrackBlock:
         if self.Active:
             FrequencyBGColor = TrackBlock_FrequencyBGColor_Active
             DurationBGColor = TrackBlock_DurationBGColor_Active
+
         else:
             FrequencyBGColor = TrackBlock_FrequencyBGColor_Deactive
             DurationBGColor = TrackBlock_DurationBGColor_Deactive
@@ -220,7 +221,6 @@ class TrackColection:
         for track in self.Tracks:
             track.Rectangle[0] = self.Rectangle[0]
 
-
     def AddBlankTrack(self):
         self.Tracks.append(TrackBlock(("00000", "00100")))
 
@@ -231,6 +231,7 @@ class TrackColection:
             # -- Render the Track Pointer -- #
             if track.Instance == self.SelectedTrack:
                 self.Scroll = self.Rectangle[3] / 2 - track.Rectangle[3] - track.Rectangle[1]
+
                 PointerRect = (self.Rectangle[0] - 8, self.Scroll + track.Rectangle[1], 4, track.Rectangle[3])
                 shape.Shape_Rectangle(DISPLAY, TrackPointerColor, PointerRect)
 
@@ -252,6 +253,13 @@ class TrackColection:
                 track.Active = False
 
             track.Update()
+
+        # -- Alingh the Track Number -- #
+        while len(self.Tracks) > Editor.TotalBlocks:
+            self.Tracks.pop()
+
+        while len(self.Tracks) < Editor.TotalBlocks:
+            self.AddBlankTrack()
 
         if self.PlayMode:
             self.PlayMode_TrackDelay += 1
