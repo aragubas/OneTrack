@@ -23,9 +23,8 @@ from OneTrack.MAIN import UI
 from OneTrack.MAIN import SaveFileDialog
 from OneTrack.MAIN import OpenFileDialog
 from OneTrack.MAIN.Screens.Editor import OptionsBar
+import OneTrack.MAIN as Main
 
-
-DefaultContents = cntMng.ContentManager
 track_list = UI.TrackList
 
 # -- Top Toolbar -- #
@@ -36,12 +35,12 @@ FileMenuEnabled = False
 DisableControls = False
 CopyOfScreen = pygame.Surface((5, 5))
 BPM = 150
-TotalBlocks = 32
+Rows = 32
 Highlight = 4
 HighlightSecond = 16
+GenerateSoundCache = True
 
 def Initialize(DISPLAY):
-    global DefaultContents
     global track_list
     global TopBarControls
     global DropDownFileMenu
@@ -93,6 +92,8 @@ def SaveMusicData(FilePath):
 def LoadMusicData(FileName):
     global track_list
     global BPM
+    global Rows
+    global GenerateSoundCache
 
     # -- Load the List to RAM -- #
     patterns_list = pickle.load(open(FileName, "rb"))
@@ -102,20 +103,19 @@ def LoadMusicData(FileName):
 
     # -- Add Objects One-By-One -- #
     SavedBPM = 0
+    SavedRows = 0
 
     for i, obj in enumerate(patterns_list):
         # -- If in first pattern, read Music Properties -- #
         try:
             if i == 0:
                 SavedBPM = int(obj.MusicProperties[0])
+                SavedRows = int(obj.MusicProperties[1])
 
-        except AttributeError:
+        except:
             obj.MusicProperties = list()
             obj.MusicProperties.append("150")
-
-        except TypeError:
-            obj.MusicProperties = list()
-            obj.MusicProperties.append("150")
+            obj.MusicProperties.append("32")
 
 
         # -- Add the Object -- #
@@ -125,15 +125,20 @@ def LoadMusicData(FileName):
     track_list.SetCurrentPattern_ByID(0)
 
     # -- Set Properties -- #
-    Obj = OptionsBar.WidgetCollection.GetWidget(1)
-
-    Obj.Changer.Value = SavedBPM
-
     if SavedBPM <= 1:
         SavedBPM = 150
+
+    if SavedRows <= 1:
+        SavedRows = 32
+
+    Obj = OptionsBar.WidgetCollection.GetWidget(1)
+    Obj.Changer.Value = str(SavedBPM).zfill(3)
+    Obj = OptionsBar.WidgetCollection.GetWidget(2)
+    Obj.Changer.Value = str(SavedRows).zfill(3)
+
     BPM = SavedBPM
-
-
+    Rows = SavedRows
+    GenerateSoundCache = True
 
 def NewMusicFile():
     global track_list

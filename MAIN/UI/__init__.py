@@ -29,6 +29,11 @@ TrackBlock_FrequencyBGColor_Active = (90, 84, 75)
 TrackBlock_DurationBGColor_Active = (40, 54, 75)
 TrackBlock_FrequencyBGColor_Deactive = (30, 20, 37)
 TrackBlock_DurationBGColor_Deactive = (0, 0, 10)
+TrackBlock_FrequencyBGColor_Hightlight1 = (50, 30, 47)
+TrackBlock_DurationBGColor_Hightlight1 = (18, 7, 19)
+TrackBlock_FrequencyBGColor_Hightlight2 = (98, 77, 78)
+TrackBlock_DurationBGColor_Hightlight2 = (45, 42, 55)
+
 TrackBlock_InstanceLabelActiveColor = (255, 255, 255)
 TrackBlock_InstanceLabelDeactiveColor = (55, 55, 55)
 
@@ -133,6 +138,7 @@ class TrackBlock:
         self.Active = False
         self.SelectedField = 0
         self.MaxFields = 1
+        self.Highlight = 0
 
     def Render(self, DISPLAY):
         if self.Active:
@@ -142,6 +148,14 @@ class TrackBlock:
         else:
             FrequencyBGColor = TrackBlock_FrequencyBGColor_Deactive
             DurationBGColor = TrackBlock_DurationBGColor_Deactive
+
+        if self.Highlight == 1:
+            FrequencyBGColor = TrackBlock_FrequencyBGColor_Hightlight1
+            DurationBGColor = TrackBlock_DurationBGColor_Hightlight1
+
+        elif self.Highlight == 2:
+            FrequencyBGColor = TrackBlock_FrequencyBGColor_Hightlight2
+            DurationBGColor = TrackBlock_DurationBGColor_Hightlight2
 
         # Render the Frequency Region
         shape.Shape_Rectangle(DISPLAY, FrequencyBGColor, (self.Rectangle[0] - 2, self.Scroll + self.Rectangle[1] - 2, self.Rectangle[2] + 4, self.Rectangle[3] + 4), 0, 0, 5, 0, 5, 0)
@@ -212,7 +226,7 @@ class TrackColection:
         self.Active = False
         self.ScreenSize = (0, 0)
 
-        for _ in range(Editor.TotalBlocks):
+        for _ in range(Editor.Rows):
             self.AddBlankTrack()
 
         self.UpdateTracksPos()
@@ -223,6 +237,14 @@ class TrackColection:
 
     def AddBlankTrack(self):
         self.Tracks.append(TrackBlock(("00000", "00100")))
+
+    def GenerateCache(self):
+        for i, track in enumerate(self.Tracks):
+            print(i)
+            Frequency = int(track.TrackData[0])
+            Duration = int(track.TrackData[1])
+
+            Main.DefaultContents.GetTune_FromTuneCache(Frequency, Duration, 44000)
 
     def Draw(self, DISPLAY):
         self.ScreenSize = (DISPLAY.get_width(), DISPLAY.get_height())
@@ -237,6 +259,15 @@ class TrackColection:
 
             if self.Scroll + track.Rectangle[1] >= DISPLAY.get_height() + track.TextHeight or self.Scroll + track.Rectangle[1] <= -track.TextHeight:
                 continue
+
+            if track.Instance % Editor.Highlight == 0:
+                track.Highlight = 1
+
+            if track.Instance % Editor.HighlightSecond == 0:
+                track.Highlight = 2
+
+            if not track.Instance % Editor.HighlightSecond == 0 and not track.Instance % Editor.Highlight == 0:
+                track.Highlight = 0
 
             track.Render(DISPLAY)
 
@@ -255,10 +286,10 @@ class TrackColection:
             track.Update()
 
         # -- Alingh the Track Number -- #
-        while len(self.Tracks) > Editor.TotalBlocks:
+        while len(self.Tracks) > Editor.Rows:
             self.Tracks.pop()
 
-        while len(self.Tracks) < Editor.TotalBlocks:
+        while len(self.Tracks) < Editor.Rows:
             self.AddBlankTrack()
 
         if self.PlayMode:
@@ -477,12 +508,16 @@ class TrackList:
         if self.CurrentPatternID == 0:  # -- Save Music Properties only on the first pattern -- #
             self.CurrentPattern.MusicProperties.clear()
             self.CurrentPattern.MusicProperties.append(Editor.BPM)  # -- Save BPM Data -- #
+            self.CurrentPattern.MusicProperties.append(Editor.Rows)  # -- Save Rows Data -- #
+            self.CurrentPattern.MusicProperties.append((Editor.Highlight, Editor.HighlightSecond))  # -- Save Highlight Data -- #
+
         self.CurrentPattern.Update()
 
         # -- Update the Surface Size -- #
         if not self.LastRect == self.Rectangle:
             self.TracksSurface = pygame.Surface((self.Rectangle[2], self.Rectangle[3]), pygame.SRCALPHA)
             self.LastRect = self.Rectangle
+
 
     def EventUpdate(self, event):
         if self.Rectangle.collidepoint(pygame.mouse.get_pos()):

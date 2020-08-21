@@ -74,7 +74,7 @@ def UpdateRowsSelector():
         if RowsValue > 99:
             RowsValue = 99
 
-        Editor.TotalBlocks = RowsValue
+        Editor.Rows = RowsValue
 
         # -- Get the Changer Object -- #
         obj = WidgetCollection.GetWidget(2)
@@ -97,8 +97,8 @@ def UpdateHighlightSelector():
         if int(SecondVal) > 32:
             SecondVal = 32
 
-        Editor.Highlight = FirstVal
-        Editor.HighlightSecond = SecondVal
+        Editor.Highlight = int(FirstVal)
+        Editor.HighlightSecond = int(SecondVal)
 
         # -- Get the Changer Object -- #
         obj = WidgetCollection.GetWidget(3)
