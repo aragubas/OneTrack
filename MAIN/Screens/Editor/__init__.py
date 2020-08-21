@@ -158,45 +158,46 @@ def Update():
     SaveFileDialog.Update()
     OpenFileDialog.Update()
 
-    if not DisableControls:
-        TopBarControls.Update()
-        track_list.Update()
-        OptionsBar.Update()
+    if DisableControls: return
 
-        if FileMenuEnabled:
-            DropDownFileMenu.Update()
+    TopBarControls.Update()
+    track_list.Update()
+    OptionsBar.Update()
 
-        #region Top Bar Update
-        if TopBarControls.ClickedButtonIndex == 0:
-            if not FileMenuEnabled:
-                FileMenuEnabled = True
+    if FileMenuEnabled:
+        DropDownFileMenu.Update()
 
-            else:
-                FileMenuEnabled = False
+    #region Top Bar Update
+    if TopBarControls.ClickedButtonIndex == 0:
+        if not FileMenuEnabled:
+            FileMenuEnabled = True
 
-        #region File DropDown Menu
-        if FileMenuEnabled:
-            if DropDownFileMenu.SelectedItem == "Save":
-                DropDownFileMenu.SelectedItem = ""
-                FileMenuEnabled = False
-                DisableControls = True
+        else:
+            FileMenuEnabled = False
 
-                SaveFileDialog.Enabled = True
+    #region File DropDown Menu
+    if FileMenuEnabled:
+        if DropDownFileMenu.SelectedItem == "Save":
+            DropDownFileMenu.SelectedItem = ""
+            FileMenuEnabled = False
+            DisableControls = True
 
-            if DropDownFileMenu.SelectedItem == "Load":
-                DropDownFileMenu.SelectedItem = ""
-                FileMenuEnabled = False
-                DisableControls = True
+            SaveFileDialog.Enabled = True
 
-                OpenFileDialog.Enabled = True
+        if DropDownFileMenu.SelectedItem == "Load":
+            DropDownFileMenu.SelectedItem = ""
+            FileMenuEnabled = False
+            DisableControls = True
 
-            if DropDownFileMenu.SelectedItem == "New File":
-                DropDownFileMenu.SelectedItem = ""
-                FileMenuEnabled = False
+            OpenFileDialog.Enabled = True
 
-                NewMusicFile()
+        if DropDownFileMenu.SelectedItem == "New File":
+            DropDownFileMenu.SelectedItem = ""
+            FileMenuEnabled = False
 
-        #endregion
+            NewMusicFile()
+
+    #endregion
 
 
 def EventUpdate(event):

@@ -39,6 +39,7 @@ def Initialize():
     obj = WidgetCollection.GetWidget(0)
     obj.Rectangle[0] = (WidgetCollection.Rectangle[2] - obj.Rectangle[2])
 
+    # -- Initialy Update All Objects -- #
     for obj in WidgetCollection.WidgetCollection:
         obj.Update()
 
@@ -55,6 +56,7 @@ def Update():
     UpdateBPMSelector()
     UpdateRowsSelector()
     UpdateHighlightSelector()
+
 
 def UpdateBPMSelector():
     if WidgetCollection.LastInteractionID == 1:
