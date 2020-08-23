@@ -22,7 +22,7 @@ from ENGINE import shape
 from ENGINE import fx
 from ENGINE import appData
 from ENGINE import utils
-
+from math import log2, pow
 
 # -- Color List -- #
 TrackBlock_FrequencyBGColor_Active = (90, 84, 75)
@@ -37,22 +37,26 @@ TrackBlock_DurationBGColor_Hightlight2 = (45, 42, 55)
 TrackBlock_InstanceLabelActiveColor = (255, 255, 255)
 TrackBlock_InstanceLabelDeactiveColor = (55, 55, 55)
 
-#-----------------------#
+TrackBlock_NoteLabel_UnknowNote = (110, 90, 125)
+TrackBlock_NoteLabel_KnowNote = (220, 190, 225)
+
+# -----------------------#
 EditableNumberView_ColorSelected = (255, 255, 255)
 EditableNumberView_ColorActive = (100, 100, 100)
 EditableNumberView_ColorDeactive = (50, 50, 50)
-#-----------------------#
+# -----------------------#
 Button_Active_IndicatorColor = (46, 196, 182)
 Button_Active_BackgroundColor = (15, 27, 44, 150)
 Button_Inactive_IndicatorColor = (255, 51, 102)
 Button_Inactive_BackgroundColor = (1, 22, 39, 150)
 Button_BackgroundColor = (12, 22, 14)
-#-----------------------#
+# -----------------------#
 InputBox_COLOR_INACTIVE = (1, 22, 39)
 InputBox_COLOR_ACTIVE = (15, 27, 44)
 InputBox_FontFile = "/Ubuntu.ttf"
-#-------------------------#
+# -------------------------#
 TrackPointerColor = (250, 70, 95)
+
 
 class EditableNumberView:
     def __init__(self, Rectangle, Value):
@@ -124,23 +128,333 @@ class EditableNumberView:
             self.Value += str(algarims)
 
 
+name = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
+
+def pitch(freq):
+    freq = int(freq)
+
+    if freq == 32:  # C1
+        return ''.join((name[0], "1"))
+
+    elif freq == 65:  # C2
+        return ''.join((name[0], "2"))
+
+    elif freq == 130:  # C3
+        return ''.join((name[0], "3"))
+
+    elif freq == 261:  # C4
+        return ''.join((name[0], "4"))
+
+    elif freq == 523:  # C5
+        return ''.join((name[0], "5"))
+
+    elif freq == 1046:  # C6
+        return ''.join((name[0], "6"))
+
+    elif freq == 2093:  # C7
+        return ''.join((name[0], "7"))
+
+    elif freq == 4186:  # C8
+        return ''.join((name[0], "8"))
+
+    elif freq == 34:  # C#1
+        return ''.join((name[1], "1"))
+
+    elif freq == 69:  # C#2
+        return ''.join((name[1], "2"))
+
+    elif freq == 138:  # C#3
+        return ''.join((name[1], "3"))
+
+    elif freq == 277:  # C#4
+        return ''.join((name[1], "4"))
+
+    elif freq == 554:  # C#5
+        return ''.join((name[1], "5"))
+
+    elif freq == 1108:  # C#6
+        return ''.join((name[1], "6"))
+
+    elif freq == 2217:  # C#7
+        return ''.join((name[1], "7"))
+
+    elif freq == 4434:  # C#8
+        return ''.join((name[1], "8"))
+
+    elif freq == 36:  # D1
+        return ''.join((name[2], "1"))
+
+    elif freq == 73:  # D2
+        return ''.join((name[2], "2"))
+
+    elif freq == 146:  # D3
+        return ''.join((name[2], "3"))
+
+    elif freq == 293:  # D4
+        return ''.join((name[2], "4"))
+
+    elif freq == 587:  # D5
+        return ''.join((name[2], "5"))
+
+    elif freq == 1174:  # D6
+        return ''.join((name[2], "6"))
+
+    elif freq == 2349:  # D7
+        return ''.join((name[2], "7"))
+
+    elif freq == 4698:  # D8
+        return ''.join((name[2], "8"))
+
+    elif freq == 38:  # D#1
+        return ''.join((name[3], "1"))
+
+    elif freq == 77:  # D#2
+        return ''.join((name[3], "2"))
+
+    elif freq == 155:  # D#3
+        return ''.join((name[3], "3"))
+
+    elif freq == 311:  # D#4
+        return ''.join((name[3], "4"))
+
+    elif freq == 622:  # D#5
+        return ''.join((name[3], "5"))
+
+    elif freq == 1244:  # D#6
+        return ''.join((name[3], "6"))
+
+    elif freq == 2489:  # D#7
+        return ''.join((name[3], "7"))
+
+    elif freq == 4978:  # D#8
+        return ''.join((name[3], "8"))
+
+    elif freq == 41:  # E1
+        return ''.join((name[4], "1"))
+
+    elif freq == 82:  # E2
+        return ''.join((name[4], "2"))
+
+    elif freq == 164:  # E3
+        return ''.join((name[4], "3"))
+
+    elif freq == 329:  # E4
+        return ''.join((name[4], "4"))
+
+    elif freq == 659:  # E5
+        return ''.join((name[4], "5"))
+
+    elif freq == 1318:  # E6
+        return ''.join((name[4], "6"))
+
+    elif freq == 2637:  # E7
+        return ''.join((name[4], "7"))
+
+    elif freq == 5274:  # E8
+        return ''.join((name[4], "8"))
+
+    elif freq == 43:  # F1
+        return ''.join((name[5], "1"))
+
+    elif freq == 87:  # F2
+        return ''.join((name[5], "2"))
+
+    elif freq == 174:  # F3
+        return ''.join((name[5], "3"))
+
+    elif freq == 349:  # F4
+        return ''.join((name[5], "4"))
+
+    elif freq == 698:  # F5
+        return ''.join((name[5], "5"))
+
+    elif freq == 1396:  # F6
+        return ''.join((name[5], "6"))
+
+    elif freq == 2793:  # F7
+        return ''.join((name[5], "7"))
+
+    elif freq == 46:  # F#1
+        return ''.join((name[6], "1"))
+
+    elif freq == 92:  # F#2
+        return ''.join((name[6], "2"))
+
+    elif freq == 184:  # F#3
+        return ''.join((name[6], "3"))
+
+    elif freq == 369:  # F#4
+        return ''.join((name[6], "4"))
+
+    elif freq == 739:  # F#5
+        return ''.join((name[6], "5"))
+
+    elif freq == 1479:  # F#6
+        return ''.join((name[6], "6"))
+
+    elif freq == 2959:  # F#7
+        return ''.join((name[6], "7"))
+
+    elif freq == 5919:  # F#8
+        return ''.join((name[6], "8"))
+
+    elif freq == 48:  # G1
+        return ''.join((name[7], "1"))
+
+    elif freq == 97:  # G2
+        return ''.join((name[7], "2"))
+
+    elif freq == 195:  # G3
+        return ''.join((name[7], "3"))
+
+    elif freq == 391:  # G4
+        return ''.join((name[7], "4"))
+
+    elif freq == 783:  # G5
+        return ''.join((name[7], "5"))
+
+    elif freq == 1567:  # G6
+        return ''.join((name[7], "6"))
+
+    elif freq == 3135:  # G7
+        return ''.join((name[7], "7"))
+
+    elif freq == 6271:  # G8
+        return ''.join((name[7], "8"))
+
+    elif freq == 51:  # G#1
+        return ''.join((name[8], "1"))
+
+    elif freq == 103:  # G#2
+        return ''.join((name[8], "2"))
+
+    elif freq == 207:  # G#3
+        return ''.join((name[8], "3"))
+
+    elif freq == 415:  # G#4
+        return ''.join((name[8], "4"))
+
+    elif freq == 830:  # G#5
+        return ''.join((name[8], "5"))
+
+    elif freq == 1661:  # G#6
+        return ''.join((name[8], "6"))
+
+    elif freq == 3322:  # G#7
+        return ''.join((name[8], "7"))
+
+    elif freq == 6644:  # G#8
+        return ''.join((name[8], "8"))
+
+    elif freq == 27:  # A0
+        return ''.join((name[9], "0"))
+
+    elif freq == 55:  # A1
+        return ''.join((name[9], "1"))
+
+    elif freq == 110:  # A2
+        return ''.join((name[9], "2"))
+
+    elif freq == 220:  # A3
+        return ''.join((name[9], "3"))
+
+    elif freq == 440:  # A4
+        return ''.join((name[9], "4"))
+
+    elif freq == 880:  # A5
+        return ''.join((name[9], "5"))
+
+    elif freq == 1760:  # A6
+        return ''.join((name[9], "6"))
+
+    elif freq == 3520:  # A7
+        return ''.join((name[9], "7"))
+
+    elif freq == 7040:  # A8
+        return ''.join((name[9], "8"))
+
+    elif freq == 29:  # A#0
+        return ''.join((name[10], "0"))
+
+    elif freq == 58:  # A#1
+        return ''.join((name[10], "1"))
+
+    elif freq == 116:  # A#2
+        return ''.join((name[10], "2"))
+
+    elif freq == 233:  # A#3
+        return ''.join((name[10], "3"))
+
+    elif freq == 466:  # A#4
+        return ''.join((name[10], "4"))
+
+    elif freq == 932:  # A#5
+        return ''.join((name[10], "5"))
+
+    elif freq == 1864:  # A#6
+        return ''.join((name[10], "6"))
+
+    elif freq == 3729:  # A#7
+        return ''.join((name[10], "7"))
+
+    elif freq == 7458:  # A#8
+        return ''.join((name[10], "7"))
+
+    elif freq == 30:  # B0
+        return ''.join((name[11], "0"))
+
+    elif freq == 61:  # B1
+        return ''.join((name[11], "1"))
+
+    elif freq == 123:  # B2
+        return ''.join((name[11], "2"))
+
+    elif freq == 246:  # B3
+        return ''.join((name[11], "3"))
+
+    elif freq == 493:  # B4
+        return ''.join((name[11], "4"))
+
+    elif freq == 987:  # B5
+        return ''.join((name[11], "5"))
+
+    elif freq == 1975:  # B6
+        return ''.join((name[11], "6"))
+
+    elif freq == 3951:  # B7
+        return ''.join((name[11], "7"))
+
+    elif freq == 7902:  # B8
+        return ''.join((name[11], "8"))
+
+    return "?"
+
+
 class TrackBlock:
     def __init__(self, TrackData):
+        self.Reset(TrackData)
+
+    def Reset(self, TrackData):
         self.TrackData = list(TrackData)
         self.Instance = -1
         self.TextWidth = Main.DefaultContents.GetFont_width("/PressStart2P.ttf", 12, "00000")
         self.TextHeight = Main.DefaultContents.GetFont_height("/PressStart2P.ttf", 12, "00000")
         self.Scroll = 0
         self.Rectangle = pygame.Rect(5, self.Scroll + (self.TextHeight + 10) * self.Instance, Main.DefaultContents.GetFont_width("/PressStart2P.ttf", 12, "00000"), Main.DefaultContents.GetFont_height("/PressStart2P.ttf", 12, "00000"))
-        self.FrequencyNumber = EditableNumberView(pygame.Rect(self.Rectangle[0], self.Rectangle[1], self.TextWidth, self.TextHeight), str(self.TrackData[0]))
-        self.DurationNumber = EditableNumberView(pygame.Rect(self.Rectangle[0] + self.TextWidth - 5, self.Rectangle[1], self.TextWidth, self.TextHeight), str(self.TrackData[1]))
+        self.FrequencyNumber = EditableNumberView(pygame.Rect(self.Rectangle[0] + 10, self.Rectangle[1], self.TextWidth, self.TextHeight), str(self.TrackData[0]))
+        self.DurationNumber = EditableNumberView(pygame.Rect(self.FrequencyNumber.Rectangle[0], self.Rectangle[1], self.TextWidth, self.TextHeight), str(self.TrackData[1]))
         self.DurationNumber.AllowNotNumbers = True
         self.Active = False
         self.SelectedField = 0
         self.MaxFields = 1
         self.Highlight = 0
+        TrackPitch = TrackData[0]
+        if TrackPitch == "-----":
+            TrackPitch = "00000"
+        self.PitchLabel = pitch(TrackPitch)
 
     def Render(self, DISPLAY):
+        # -- Update Colors -- #
         if self.Active:
             FrequencyBGColor = TrackBlock_FrequencyBGColor_Active
             DurationBGColor = TrackBlock_DurationBGColor_Active
@@ -157,13 +471,18 @@ class TrackBlock:
             FrequencyBGColor = TrackBlock_FrequencyBGColor_Hightlight2
             DurationBGColor = TrackBlock_DurationBGColor_Hightlight2
 
+        if self.PitchLabel == "?":
+            PitchLabelColor = TrackBlock_NoteLabel_UnknowNote
+        else:
+            PitchLabelColor = TrackBlock_NoteLabel_KnowNote
+
         # Render the Frequency Region
-        shape.Shape_Rectangle(DISPLAY, FrequencyBGColor, (self.Rectangle[0] - 2, self.Scroll + self.Rectangle[1] - 2, self.Rectangle[2] + 4, self.Rectangle[3] + 4), 0, 0, 5, 0, 5, 0)
+        shape.Shape_Rectangle(DISPLAY, FrequencyBGColor, (self.FrequencyNumber.Rectangle[0], self.Scroll + self.FrequencyNumber.Rectangle[1] - 2, self.FrequencyNumber.Rectangle[2] + 4, self.FrequencyNumber.Rectangle[3] + 4), 0, 0, 5, 0, 5, 0)
         self.FrequencyNumber.Render(DISPLAY)
 
         # Render the Duration Region
-        DurationX = (self.Rectangle[0] + self.TextWidth)
-        shape.Shape_Rectangle(DISPLAY, DurationBGColor, (DurationX, self.Scroll + self.Rectangle[1] - 2, (self.TextWidth) + 8, self.Rectangle[3] + 4), 0, 0, 0, 5, 0, 5)
+        DurationX = (self.FrequencyNumber.Rectangle[0] + self.TextWidth)
+        shape.Shape_Rectangle(DISPLAY, DurationBGColor, (DurationX, self.Scroll + self.DurationNumber.Rectangle[1] - 2, (self.TextWidth) + 8, self.DurationNumber.Rectangle[3] + 4), 0, 0, 0, 5, 0, 5)
         self.DurationNumber.Render(DISPLAY)
 
         LabelColor = TrackBlock_InstanceLabelActiveColor
@@ -172,15 +491,21 @@ class TrackBlock:
 
         Main.DefaultContents.FontRender(DISPLAY, "/PressStart2P.ttf", 12, str(self.Instance).zfill(2), LabelColor, (DurationX + self.TextWidth) + 10, self.Scroll + self.Rectangle[1])
 
-    def Update(self):
-        self.Rectangle = pygame.Rect(self.Rectangle[0], (self.TextHeight + 10) * self.Instance, self.TextWidth, self.TextHeight)
+        # -- Render Note Label -- #
+        Main.DefaultContents.FontRender(DISPLAY, "/PressStart2P.ttf", 12, self.PitchLabel, PitchLabelColor, self.Rectangle[0], self.Scroll + self.Rectangle[1])
 
-        self.DurationNumber.Rectangle = pygame.Rect(self.Rectangle[0] + self.TextWidth + 5, self.Rectangle[1], self.TextWidth, self.TextHeight)
-        self.FrequencyNumber.Rectangle = pygame.Rect(self.Rectangle[0], self.Rectangle[1], self.TextWidth, self.TextHeight)
+    def Update(self):
+        FrequencyWidthMax = Main.DefaultContents.GetFont_width("/PressStart2P.ttf", 12, "000")
+
+        self.FrequencyNumber.Rectangle = pygame.Rect(self.Rectangle[0] + FrequencyWidthMax, self.Rectangle[1], self.TextWidth, self.TextHeight)
+        self.DurationNumber.Rectangle = pygame.Rect(self.FrequencyNumber.Rectangle[0] + self.FrequencyNumber.Rectangle[2] + 2, self.Rectangle[1], self.TextWidth, self.TextHeight)
 
         self.FrequencyNumber.Update()
         self.FrequencyNumber.IsActive = self.SelectedField == 0
         self.FrequencyNumber.YOffset = self.Scroll
+
+        self.Rectangle = pygame.Rect(self.Rectangle[0], (self.TextHeight + 10) * self.Instance, FrequencyWidthMax + self.FrequencyNumber.Rectangle[2] + self.DurationNumber.Rectangle[2], self.TextHeight)
+
 
         self.DurationNumber.Update()
         self.DurationNumber.IsActive = self.SelectedField == 1
@@ -190,12 +515,23 @@ class TrackBlock:
         self.TrackData[0] = self.FrequencyNumber.Value
         self.TrackData[1] = self.DurationNumber.Value
 
+    def UpdatePitchLabel(self):
+        if not self.FrequencyNumber.Value == "-----":
+            try:
+                NewPitchValue = pitch(self.FrequencyNumber.Value)
+                if NewPitchValue == None:
+                    NewPitchValue = "?"
+                self.PitchLabel = NewPitchValue
+            except:
+                self.PitchLabel = "?"
+
     def EventUpdate(self, event):
         if not self.Active:
             return
 
         if self.SelectedField == 0:
             self.FrequencyNumber.EventUpdate(event)
+            self.UpdatePitchLabel()
 
         elif self.SelectedField == 1:
             self.DurationNumber.EventUpdate(event)
@@ -212,6 +548,53 @@ class TrackBlock:
 
                 if self.SelectedField >= self.MaxFields:
                     self.SelectedField = self.MaxFields
+
+            if self.SelectedField == 0:
+                # -- Higher -- #
+                if event.key == pygame.K_HOME:
+                    CurrentValue = int(self.FrequencyNumber.Value)
+                    Result = CurrentValue * 2
+
+                    if Result >= 99999:
+                        Result = 0
+
+                    self.FrequencyNumber.Value = str(Result).zfill(5)
+                    self.FrequencyNumber.SplitedAlgarims = list(self.FrequencyNumber.Value)
+
+                # -- Lower -- #
+                if event.key == pygame.K_END:
+                    CurrentValue = int(self.FrequencyNumber.Value)
+                    Result = int(CurrentValue / 2)
+
+                    if Result <= 0:
+                        Result = 0
+
+                    self.FrequencyNumber.Value = str(Result).zfill(5)
+                    self.FrequencyNumber.SplitedAlgarims = list(self.FrequencyNumber.Value)
+
+                return
+                # -- Note C -- #
+                if event.key == pygame.K_q:
+                    self.FrequencyNumber.Value = str(GetNote("C", 8)).zfill(5)
+
+                    self.FrequencyNumber.SplitedAlgarims = list(self.FrequencyNumber.Value)
+
+                # -- Note C# -- #
+                if event.key == pygame.K_2:
+                    self.FrequencyNumber.Value = str(GetNote("C#", 8)).zfill(5)
+                    self.FrequencyNumber.SplitedAlgarims = list(self.FrequencyNumber.Value)
+
+Note_name = ["C", "C", "C", "C", "C", "C", "C", "C",
+             "C#", "C#", "C#", "C#", "C#", "C#", "C#", "C#"]
+
+Note_frequencies = ["00032", "00065", "00103", "00261", "00523", "01046", "02093", "04186"
+                    "34", "69", "138", "277", "554", "1108", "2217", "4434"]
+
+def GetNote(NoteName, Octave):
+    NoteIndex = Note_name.index(NoteName)
+
+    return Note_frequencies[NoteIndex + (Octave - 1)]
+
 
 class TrackColection:
     def __init__(self, Rectangle):
@@ -288,9 +671,13 @@ class TrackColection:
         # -- Alingh the Track Number -- #
         while len(self.Tracks) > Editor.Rows:
             self.Tracks.pop()
+            self.SelectedTrack = 0
 
         while len(self.Tracks) < Editor.Rows:
             self.AddBlankTrack()
+            self.SelectedTrack = 0
+
+        self.Rectangle = pygame.Rect(self.Rectangle[0], self.Rectangle[1], self.Tracks[self.SelectedTrack].Rectangle[2], self.Rectangle[3])
 
         if self.PlayMode:
             self.PlayMode_TrackDelay += 1
@@ -413,6 +800,7 @@ class TrackColection:
                     if len(self.Tracks) < 24:
                         self.AddBlankTrack()
 
+
 class Pattern:
     def __init__(self, PatternID, Rectangle):
         self.PatternID = PatternID
@@ -425,7 +813,10 @@ class Pattern:
 
         for i, track in enumerate(self.Tracks):
             # -- Update Tracks Position -- #
-            track.Rectangle[0] = 10 + i * track.Rectangle[2] / 1.8
+            if i == 0:
+                track.Rectangle[0] = 10
+            else:
+                track.Rectangle[0] = self.Tracks[i - 1].Rectangle[0] + self.Tracks[i - 1].Rectangle[2]
 
     def PlayAllTracks(self):
         for i, track in enumerate(self.Tracks):
@@ -443,7 +834,10 @@ class Pattern:
             track.Active = i == self.ActiveTrackID
 
             # -- Update Tracks Position -- #
-            track.Rectangle[0] = 10 + i * track.Rectangle[2] / 1.8
+            if i == 0:
+                track.Rectangle[0] = 10
+            else:
+                track.Rectangle[0] = self.Tracks[i - 1].Rectangle[0] + self.Tracks[i - 1].Rectangle[2] + 50
 
     def EventUpdate(self, event):
         for track in self.Tracks:
@@ -462,6 +856,7 @@ class Pattern:
 
                 if self.ActiveTrackID >= len(self.Tracks):
                     self.ActiveTrackID = 0
+
 
 class TrackList:
     def __init__(self):
@@ -518,7 +913,6 @@ class TrackList:
             self.TracksSurface = pygame.Surface((self.Rectangle[2], self.Rectangle[3]), pygame.SRCALPHA)
             self.LastRect = self.Rectangle
 
-
     def EventUpdate(self, event):
         if self.Rectangle.collidepoint(pygame.mouse.get_pos()):
             self.CurrentPattern.EventUpdate(event)
@@ -542,6 +936,7 @@ class TrackList:
                         PatternID = len(self.PatternList) - 1
 
                     self.SetCurrentPattern_ByID(PatternID)
+
 
 class Button:
     def __init__(self, Rectangle, ButtonText, TextSize):
@@ -651,6 +1046,7 @@ class Button:
         if self.ButtonState == 2:
             self.ButtonState = 0
 
+
 class DropDownMenu:
     def __init__(self, Rectangle, ItemsList):
         self.Rectangle = Rectangle
@@ -681,6 +1077,7 @@ class DropDownMenu:
     def EventUpdate(self, event):
         for item in self.MenuItems:
             item.Update(event)
+
 
 class ButtonsBar:
     def __init__(self, Rectangle, ButtonsList):
@@ -713,6 +1110,7 @@ class ButtonsBar:
     def EventUpdate(self, event):
         for button in self.ButtonsList:
             button.Update(event)
+
 
 class Window:
     def __init__(self, Rectangle, Title, Resiziable, Movable=True):
@@ -805,7 +1203,7 @@ class Window:
             if self.WindowRectangle[2] >= self.Window_MinimunW:
                 self.WindowRectangle[2] = pygame.mouse.get_pos()[0] - self.WindowRectangle[0]
 
-            if self.WindowRectangle[3] >= self.Window_MinimunH: # <- Resize the Window
+            if self.WindowRectangle[3] >= self.Window_MinimunH:  # <- Resize the Window
                 self.WindowRectangle[3] = pygame.mouse.get_pos()[1] - self.WindowRectangle[1]
 
         # -- Dont Allow the Window to be resized lower than Minimum Size -- #
@@ -814,6 +1212,7 @@ class Window:
 
         if self.WindowRectangle[3] < self.Window_MinimunH:
             self.WindowRectangle[3] = self.Window_MinimunH
+
 
 class VerticalListWithDescription:
     def __init__(self, Rectangle):
@@ -835,7 +1234,7 @@ class VerticalListWithDescription:
         self.ButtonDownRectangle = pygame.Rect(34, 0, 32, 32)
         self.ListSurfaceUpdated = False
 
-    def Render(self,DISPLAY):
+    def Render(self, DISPLAY):
         if not self.Rectangle[2] == self.LastRectangle[2] or not self.Rectangle[3] == self.LastRectangle[3]:
             self.LastRectangle[2] = self.Rectangle[2]
             self.LastRectangle[3] = self.Rectangle[3]
@@ -854,7 +1253,7 @@ class VerticalListWithDescription:
             if self.ItemSprite[i] != "null":
                 TextsX = 45
 
-            if self.LastItemClicked == itemNam: # -- When the Item is Selected
+            if self.LastItemClicked == itemNam:  # -- When the Item is Selected
                 BackgroundColor = (20, 42, 59, 100)
                 ItemNameFontColor = (255, 255, 255)
                 BorderColor = (46, 196, 182)
@@ -881,7 +1280,7 @@ class VerticalListWithDescription:
                 Main.DefaultContents.ImageRender(self.ListSurface, self.ItemSprite[i], ItemRect[0] + 4, ItemRect[1] + 4, 36, 32)
 
         # -- Blit All Work to Screen -- #
-        DISPLAY.blit(self.ListSurface,(self.Rectangle[0], self.Rectangle[1]))
+        DISPLAY.blit(self.ListSurface, (self.Rectangle[0], self.Rectangle[1]))
 
     def Update(self, event):
         ColisionRect = pygame.Rect(self.ColisionXOffset + self.Rectangle[0], self.ColisionYOffset + self.Rectangle[1], self.Rectangle[2], self.Rectangle[3])
@@ -920,7 +1319,7 @@ class VerticalListWithDescription:
     def Set_H(self, Value):
         self.Rectangle[3] = int(Value)
 
-    def AddItem(self,ItemName, ItemDescription, ItemSprite="null"):
+    def AddItem(self, ItemName, ItemDescription, ItemSprite="null"):
         self.ItemsName.append(ItemName)
         self.ItemsDescription.append(ItemDescription)
         self.ItemSprite.append(ItemSprite)
@@ -933,6 +1332,7 @@ class VerticalListWithDescription:
         self.ItemSprite.clear()
         self.ItemSelected.clear()
         self.ItemOrderID.clear()
+
 
 class InputBox:
     def __init__(self, x, y, w, h, text='LO', FontSize=12):
@@ -949,7 +1349,6 @@ class InputBox:
         self.CharacterLimit = 0
         self.ColisionOffsetX = 0
         self.ColisionOffsetY = 0
-
 
     def Set_X(self, Value):
         if not self.rect[0] == Value:

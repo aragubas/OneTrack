@@ -121,6 +121,11 @@ def LoadMusicData(FileName):
         # -- Add the Object -- #
         track_list.PatternList.append(obj)
 
+        for track in track_list.PatternList:
+            for patternCol in track.Tracks:
+                for block in patternCol.Tracks:
+                    block.Reset(block.TrackData)
+
     # -- Set to the Pattern 0 -- #
     track_list.SetCurrentPattern_ByID(0)
 
