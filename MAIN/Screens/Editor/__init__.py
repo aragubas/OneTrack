@@ -113,7 +113,6 @@ def LoadMusicData(FileName):
             for block in patternCol.Tracks:
                 block.ResetSurface()
 
-
     # -- Load the List to RAM -- #
     patterns_list = pickle.load(open(FileName, "rb"))
 
@@ -123,6 +122,9 @@ def LoadMusicData(FileName):
     # -- Add Objects One-By-One -- #
     SavedBPM = 0
     SavedRows = 0
+    SavedHighlightOne = 0
+    SavedHighlightTwo = 0
+    SavedPatterns = 0
 
     for i, obj in enumerate(patterns_list):
         # -- If in first pattern, read Music Properties -- #
@@ -130,11 +132,23 @@ def LoadMusicData(FileName):
             if i == 0:
                 SavedBPM = int(obj.MusicProperties[0])
                 SavedRows = int(obj.MusicProperties[1])
+                SavedHighlightOne = int(obj.MusicProperties[2])
+                SavedHighlightTwo = int(obj.MusicProperties[3])
+                SavedPatterns = int(obj.MusicProperties[4])
 
         except:
             obj.MusicProperties = list()
-            obj.MusicProperties.append("150")
-            obj.MusicProperties.append("32")
+            obj.MusicProperties.append(150) # BMP
+            obj.MusicProperties.append(32) # ROWS
+            obj.MusicProperties.append(4) # HIGH1
+            obj.MusicProperties.append(16) # HIGH2
+            obj.MusicProperties.append(2) # PATTERN
+
+            SavedBPM = int(obj.MusicProperties[0])
+            SavedRows = int(obj.MusicProperties[1])
+            SavedHighlightOne = int(obj.MusicProperties[2])
+            SavedHighlightTwo = int(obj.MusicProperties[3])
+            SavedPatterns = int(obj.MusicProperties[4])
 
         # -- Add the Object -- #
         track_list.PatternList.append(obj)
@@ -151,13 +165,6 @@ def LoadMusicData(FileName):
     # -- Set to the Pattern 0 -- #
     track_list.SetCurrentPattern_ByID(0)
 
-    # -- Limit Range Properties -- #
-    if SavedBPM <= 1:
-        SavedBPM = 150
-
-    if SavedRows <= 1:
-        SavedRows = 32
-
     Obj = OptionsBar.WidgetCollection.GetWidget(1)
     Obj.Changer.Value = str(SavedBPM).zfill(3)
     Obj = OptionsBar.WidgetCollection.GetWidget(2)
@@ -167,6 +174,11 @@ def LoadMusicData(FileName):
     var.Rows = SavedRows
     var.GenerateSoundCache = True
     var.SelectedTrack = 0
+    var.Highlight = SavedHighlightOne
+    var.HighlightSecond = SavedHighlightTwo
+    var.Patterns = SavedPatterns
+
+    OptionsBar.Update()
 
 def NewMusicFile():
     global track_list

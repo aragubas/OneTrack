@@ -1059,7 +1059,6 @@ class TrackColection:
             self.UpdatePatternsCache = True
 
             for block in self.Tracks:
-                block.SurfaceUpdateTrigger = True
                 block.Active = True
 
         # -- Update the Rectangle -- #
@@ -1204,11 +1203,10 @@ class Pattern:
         self.Tracks = list()
         self.ActiveTrackID = 0
         self.MusicProperties = list()
+        self.Rectangle = Rectangle
 
-        self.Tracks.append(TrackColection(Rectangle))
-        self.Tracks.append(TrackColection(Rectangle))
-        self.Tracks.append(TrackColection(Rectangle))
-        self.Tracks.append(TrackColection(Rectangle))
+        for _ in range(4):
+            self.AddBlankTrack()
 
         for i, track in enumerate(self.Tracks):
             # -- Update Tracks Position -- #
@@ -1216,6 +1214,9 @@ class Pattern:
                 track.Rectangle[0] = 5
             else:
                 track.Rectangle[0] = self.Tracks[i - 1].Rectangle[0] + self.Tracks[i - 1].Rectangle[2]
+
+    def AddBlankTrack(self):
+        self.Tracks.append(TrackColection(self.Rectangle))
 
     def PlayAllTracks(self):
         for i, track in enumerate(self.Tracks):
@@ -1237,6 +1238,15 @@ class Pattern:
                 track.Rectangle[0] = 10
             else:
                 track.Rectangle[0] = self.Tracks[i - 1].Rectangle[0] + self.Tracks[i - 1].Rectangle[2] + 10
+
+        # -- Alingh the Patterns Number -- #
+        if len(self.Tracks) > var.Patterns:
+            self.Tracks.pop()
+            self.ActiveTrackID = 0
+
+        if len(self.Tracks) < var.Patterns:
+            self.ActiveTrackID = 0
+            self.AddBlankTrack()
 
     def EventUpdate(self, event):
         for track in self.Tracks:
@@ -1314,7 +1324,9 @@ class TrackList:
             self.CurrentPattern.MusicProperties.clear()
             self.CurrentPattern.MusicProperties.append(var.BPM)  # -- Save BPM Data -- #
             self.CurrentPattern.MusicProperties.append(var.Rows)  # -- Save Rows Data -- #
-            self.CurrentPattern.MusicProperties.append((var.Highlight, var.HighlightSecond))  # -- Save Highlight Data -- #
+            self.CurrentPattern.MusicProperties.append(var.Highlight)  # -- Save Highlight Data -- #
+            self.CurrentPattern.MusicProperties.append(var.HighlightSecond)  # -- Save Highlight Data -- #
+            self.CurrentPattern.MusicProperties.append(var.Patterns)  # -- Save Pattern Data -- #
 
         # -- Update the Current Pattern -- #
         self.CurrentPattern.Update()

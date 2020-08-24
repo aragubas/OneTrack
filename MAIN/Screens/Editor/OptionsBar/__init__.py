@@ -37,6 +37,7 @@ def Initialize():
     WidgetCollection.Append(UI.Widget.Widget_ValueChanger((5, 42), "ROWS", "31", 2))
     WidgetCollection.Append(UI.Widget.Widget_ValueChanger((58, 5), "HIGHLIGHT", "04x16", 3))
     WidgetCollection.Append(UI.Widget.Widget_Label("/PressStart2P.ttf", ''.join(("v", Main.DefaultContents.Get_RegKey("/version"))), 9, (200, 200, 200), 5, 5, 4))
+    WidgetCollection.Append(UI.Widget.Widget_ValueChanger((58, 42), "CHANNELS", "4", 5))
 
     # -- Set Logo Location -- #
     obj = WidgetCollection.GetWidget(0)
@@ -59,6 +60,7 @@ def Update():
     UpdateBPMSelector()
     UpdateRowsSelector()
     UpdateHighlightSelector()
+    UpdatePatternsSelector()
 
     # -- Set Label Version Location
     obj = WidgetCollection.GetWidget(4)
@@ -76,14 +78,33 @@ def UpdateBPMSelector():
         obj.Changer.Value = str(var.BPM).zfill(3)
         obj.Changer.SplitedAlgarims = list(obj.Changer.Value)
 
+def UpdatePatternsSelector():
+    if WidgetCollection.LastInteractionID == 5:
+        var.Patterns = int(WidgetCollection.LastInteractionType)
+
+        if var.Patterns > 4:
+            var.Patterns = 4
+        elif var.Patterns <= 0:
+            var.Patterns = 1
+
+    else:
+        if var.Patterns > 4:
+            var.Patterns = 4
+        elif var.Patterns <= 0:
+            var.Patterns = 1
+
+        obj = WidgetCollection.GetWidget(5)
+        obj.Changer.Value = str(var.Patterns)
+        obj.Changer.SplitedAlgarims = list(obj.Changer.Value)
+
 def UpdateRowsSelector():
     if WidgetCollection.LastInteractionID == 2:
         # -- Validate the Current Value -- #
         CurrentValue = WidgetCollection.LastInteractionType
         RowsValue = int(CurrentValue)
 
-        if RowsValue > 64:
-            RowsValue = 64
+        if RowsValue > 74:
+            RowsValue = 74
 
         var.Rows = RowsValue
 

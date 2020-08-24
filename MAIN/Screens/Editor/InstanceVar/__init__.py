@@ -28,3 +28,4 @@ GenerateSoundCache_MessageSeen = False
 Editor_CurrentOctave = 7
 PlayMode = False
 SelectedTrack = 0
+Patterns = 2
