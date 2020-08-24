@@ -18,6 +18,7 @@ import pygame, os, pickle, io
 from ENGINE import cntMng
 from ENGINE import MAIN
 from ENGINE import appData
+from ENGINE import shape
 import ENGINE as tge
 from OneTrack.MAIN import UI
 from OneTrack.MAIN import SaveFileDialog
@@ -25,6 +26,7 @@ from OneTrack.MAIN import OpenFileDialog
 from OneTrack.MAIN.Screens.Editor import OptionsBar
 from OneTrack.MAIN.Screens.Editor import EditorBar
 from OneTrack.MAIN.Screens.Editor import InstanceVar as var
+from OneTrack.MAIN.Screens.Editor import SoundCacheMessage
 import OneTrack.MAIN as Main
 
 track_list = UI.TrackList
@@ -32,6 +34,7 @@ track_list = UI.TrackList
 # -- Top Toolbar -- #
 TopBarControls = UI.ButtonsBar
 DropDownFileMenu = UI.DropDownMenu
+
 
 def Initialize(DISPLAY):
     global track_list
@@ -53,6 +56,7 @@ def Initialize(DISPLAY):
     OpenFileDialog.Initialize()
     OptionsBar.Initialize()
     EditorBar.Initialize()
+    SoundCacheMessage.Initialize()
 
 def GameDraw(DISPLAY):
     global track_list
@@ -60,18 +64,19 @@ def GameDraw(DISPLAY):
     global DropDownFileMenu
 
     if not var.DisableControls:
-        DISPLAY.fill((62, 62, 116))
+        DISPLAY.fill((UI.BackgroundColor))
 
         track_list.Render(DISPLAY)
         TopBarControls.Render(DISPLAY)
+
+        OptionsBar.Draw(DISPLAY)
+        EditorBar.Draw(DISPLAY)
 
         # -- Render DropDown Menus -- #
         if var.FileMenuEnabled:
             DropDownFileMenu.Render(DISPLAY)
 
-        OptionsBar.Draw(DISPLAY)
-        EditorBar.Draw(DISPLAY)
-
+        SoundCacheMessage.Draw(DISPLAY)
         var.CopyOfScreen = DISPLAY.copy()
 
     SaveFileDialog.Draw(DISPLAY)
@@ -80,10 +85,34 @@ def GameDraw(DISPLAY):
 def SaveMusicData(FilePath):
     global track_list
 
+    # -- Remove Pygame.Surface Object Before Dumping -- #
+    for track in track_list.PatternList:
+        for patternCol in track.Tracks:
+            for block in patternCol.Tracks:
+                block.BlockSurface = None
+                block.SurfaceUpdateTrigger = True
+                block.Active = True
+
     pickle.dump(track_list.PatternList, open(FilePath, "wb"))
+
+    # -- Affter Dumping, Re-Crease the Surface -- #
+    for track in track_list.PatternList:
+        for patternCol in track.Tracks:
+            for block in patternCol.Tracks:
+                block.SurfaceUpdateTrigger = True
+                block.Active = True
 
 def LoadMusicData(FileName):
     global track_list
+
+    # -- Unload the Current SoundCahce -- #
+    Main.DefaultContents.UnloadSoundTuneCache()
+    # -- Unload the Loaded TrackBlocks Surfaces -- #
+    for track in track_list.PatternList:
+        for patternCol in track.Tracks:
+            for block in patternCol.Tracks:
+                block.ResetSurface()
+
 
     # -- Load the List to RAM -- #
     patterns_list = pickle.load(open(FileName, "rb"))
@@ -107,19 +136,22 @@ def LoadMusicData(FileName):
             obj.MusicProperties.append("150")
             obj.MusicProperties.append("32")
 
-
         # -- Add the Object -- #
         track_list.PatternList.append(obj)
 
-        for track in track_list.PatternList:
-            for patternCol in track.Tracks:
-                for block in patternCol.Tracks:
-                    block.Reset(block.TrackData)
+        for patternCol in obj.Tracks:
+            # -- Restart Track Collections Variables -- #
+            patternCol.SelectedTrack = 0
+
+            # -- Update TrackBlocks Code -- #
+            for block in patternCol.Tracks:
+                block.Reset(block.TrackData)
+                block.Active = True
 
     # -- Set to the Pattern 0 -- #
     track_list.SetCurrentPattern_ByID(0)
 
-    # -- Set Properties -- #
+    # -- Limit Range Properties -- #
     if SavedBPM <= 1:
         SavedBPM = 150
 
@@ -134,6 +166,7 @@ def LoadMusicData(FileName):
     var.BPM = SavedBPM
     var.Rows = SavedRows
     var.GenerateSoundCache = True
+    var.SelectedTrack = 0
 
 def NewMusicFile():
     global track_list
@@ -157,6 +190,7 @@ def Update():
     track_list.Update()
     OptionsBar.Update()
     EditorBar.Update()
+    SoundCacheMessage.Update()
 
     if var.FileMenuEnabled:
         DropDownFileMenu.Update()

@@ -36,7 +36,9 @@ def Initialize():
     WidgetCollection.Append(UI.Widget.Widget_ValueChanger((5, 5), "BPM", "150", 1))
     WidgetCollection.Append(UI.Widget.Widget_ValueChanger((5, 42), "ROWS", "31", 2))
     WidgetCollection.Append(UI.Widget.Widget_ValueChanger((58, 5), "HIGHLIGHT", "04x16", 3))
+    WidgetCollection.Append(UI.Widget.Widget_Label("/PressStart2P.ttf", ''.join(("v", Main.DefaultContents.Get_RegKey("/version"))), 9, (200, 200, 200), 5, 5, 4))
 
+    # -- Set Logo Location -- #
     obj = WidgetCollection.GetWidget(0)
     obj.Rectangle[0] = (WidgetCollection.Rectangle[2] - obj.Rectangle[2])
 
@@ -58,10 +60,16 @@ def Update():
     UpdateRowsSelector()
     UpdateHighlightSelector()
 
+    # -- Set Label Version Location
+    obj = WidgetCollection.GetWidget(4)
+    PictcBox = WidgetCollection.GetWidget(0)
+    obj.Rectangle[0] = PictcBox.Rectangle[0]
+    obj.Rectangle[1] = PictcBox.Rectangle[1] + PictcBox.Rectangle[3] - 5
+
 
 def UpdateBPMSelector():
     if WidgetCollection.LastInteractionID == 1:
-        Editor.BPM = int(WidgetCollection.LastInteractionType)
+        var.BPM = int(WidgetCollection.LastInteractionType)
 
     else:
         obj = WidgetCollection.GetWidget(1)
@@ -74,10 +82,10 @@ def UpdateRowsSelector():
         CurrentValue = WidgetCollection.LastInteractionType
         RowsValue = int(CurrentValue)
 
-        if RowsValue > 99:
-            RowsValue = 99
+        if RowsValue > 64:
+            RowsValue = 64
 
-        Editor.Rows = RowsValue
+        var.Rows = RowsValue
 
         # -- Get the Changer Object -- #
         obj = WidgetCollection.GetWidget(2)
@@ -100,14 +108,19 @@ def UpdateHighlightSelector():
         if int(SecondVal) > 32:
             SecondVal = 32
 
-        Editor.Highlight = int(FirstVal)
-        Editor.HighlightSecond = int(SecondVal)
+        var.Highlight = int(FirstVal)
+        var.HighlightSecond = int(SecondVal)
 
         # -- Get the Changer Object -- #
         obj = WidgetCollection.GetWidget(3)
         # -- Re-Format the String -- #4
         obj.Changer.Value = ''.join((str(FirstVal).zfill(2), "x", str(SecondVal).zfill(2)))
         obj.Changer.SplitedAlgarims = list(obj.Changer.Value)
+
+        for track in Editor.track_list.PatternList:
+            for patternCol in track.Tracks:
+                for block in patternCol.Tracks:
+                    block.Active = True
 
 
 def Draw(DISPLAY):

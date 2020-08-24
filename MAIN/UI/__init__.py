@@ -34,13 +34,10 @@ TrackBlock_FrequencyBGColor_Hightlight1 = (50, 30, 47)
 TrackBlock_DurationBGColor_Hightlight1 = (18, 7, 19)
 TrackBlock_FrequencyBGColor_Hightlight2 = (98, 77, 78)
 TrackBlock_DurationBGColor_Hightlight2 = (45, 42, 55)
-
 TrackBlock_InstanceLabelActiveColor = (255, 255, 255)
 TrackBlock_InstanceLabelDeactiveColor = (55, 55, 55)
-
 TrackBlock_NoteLabel_UnknowNote = (110, 90, 125)
 TrackBlock_NoteLabel_KnowNote = (220, 190, 225)
-
 # -----------------------#
 EditableNumberView_ColorSelected = (255, 255, 255)
 EditableNumberView_ColorActive = (100, 100, 100)
@@ -57,10 +54,33 @@ InputBox_COLOR_ACTIVE = (15, 27, 44)
 InputBox_FontFile = "/Ubuntu.ttf"
 # -------------------------#
 TrackPointerColor = (250, 70, 95)
+TrackSelectedPattern_PlayMode_BackgroundColor = (10, 15, 15)
+TrackSelectedPattern_PlayMode_FontColor = (255, 255, 255)
+TrackSelectedPattern_BackgroundColor = (100, 105, 115)
+TrackSelectedPattern_FontColor = (265, 230, 255)
+# ------------------------#
+BackgroundColor = (62, 62, 116)
+
+def LoadColorSchema(FolderName):
+    pass
+
+
+def StringToColorList(Input):
+    ColorLst = Input.split(',')
+
+    ColorR = ColorLst[0]
+    ColorG = ColorLst[1]
+    ColorB = ColorLst[2]
+    ColorA = ColorLst[3]
+
+    return (ColorR, ColorG, ColorB, ColorA)
+
+def ColorListToString(Input):
+    return ''.join((Input[0], ",", Input[1], ",", Input[2], ",", Input[3]))
 
 
 class EditableNumberView:
-    def __init__(self, Rectangle, Value):
+    def __init__(self, Rectangle, Value, FontSize=12):
         self.Rectangle = utils.Convert.List_PygameRect(Rectangle)
         self.Value = Value
         self.SelectedCharIndex = 0
@@ -70,6 +90,7 @@ class EditableNumberView:
         self.AlgarimsWidth = 0
         self.AllowNotNumbers = False
         self.YOffset = 0
+        self.FontSize = FontSize
 
     def Render(self, DISPLAY):
         for i, Algarims in enumerate(self.SplitedAlgarims):
@@ -83,7 +104,7 @@ class EditableNumberView:
             else:
                 self.Color = EditableNumberView_ColorDeactive
 
-            Main.DefaultContents.FontRender(DISPLAY, "/PressStart2P.ttf", 12, str(Algarims), self.Color, self.Rectangle[0] + self.AlgarimsWidth * i, self.YOffset + self.Rectangle[1])
+            Main.DefaultContents.FontRender(DISPLAY, "/PressStart2P.ttf", self.FontSize, str(Algarims), self.Color, self.Rectangle[0] + self.AlgarimsWidth * i, self.YOffset + self.Rectangle[1])
 
     def Update(self):
         if not self.IsActive:
@@ -91,7 +112,7 @@ class EditableNumberView:
 
         # -- Update the Color -- #
         for i, Algarims in enumerate(self.SplitedAlgarims):
-            self.AlgarimsWidth = Main.DefaultContents.GetFont_width("/PressStart2P.ttf", 12, str(Algarims))
+            self.AlgarimsWidth = Main.DefaultContents.GetFont_width("/PressStart2P.ttf", self.FontSize, str(Algarims))
 
     def EventUpdate(self, event):
         if not self.IsActive:
@@ -441,9 +462,10 @@ class TrackBlock:
         self.TextWidth = Main.DefaultContents.GetFont_width("/PressStart2P.ttf", 12, "00000")
         self.TextHeight = Main.DefaultContents.GetFont_height("/PressStart2P.ttf", 12, "00000")
         self.Scroll = 0
-        self.Rectangle = pygame.Rect(5, self.Scroll + (self.TextHeight + 10) * self.Instance, Main.DefaultContents.GetFont_width("/PressStart2P.ttf", 12, "00000"), Main.DefaultContents.GetFont_height("/PressStart2P.ttf", 12, "00000"))
-        self.FrequencyNumber = EditableNumberView(pygame.Rect(self.Rectangle[0] + 10, self.Rectangle[1], self.TextWidth, self.TextHeight), str(self.TrackData[0]))
-        self.DurationNumber = EditableNumberView(pygame.Rect(self.FrequencyNumber.Rectangle[0], self.Rectangle[1], self.TextWidth, self.TextHeight), str(self.TrackData[1]))
+        self.Rectangle = pygame.Rect(5, self.Scroll + (self.TextHeight + 10) * self.Instance, Main.DefaultContents.GetFont_width("/PressStart2P.ttf", 12, "00000") * 2 + 5, Main.DefaultContents.GetFont_height("/PressStart2P.ttf", 12, "00000") + 2)
+        self.LastRect = self.Rectangle
+        self.FrequencyNumber = EditableNumberView(pygame.Rect(10, 2, self.TextWidth, self.TextHeight), str(self.TrackData[0]), 10)
+        self.DurationNumber = EditableNumberView(pygame.Rect(self.FrequencyNumber.Rectangle[0], 2, self.TextWidth, self.TextHeight), str(self.TrackData[1]), 10)
         self.DurationNumber.AllowNotNumbers = True
         self.Active = False
         self.SelectedField = 0
@@ -453,9 +475,32 @@ class TrackBlock:
         if TrackPitch == "-----":
             TrackPitch = "00000"
         self.PitchLabel = pitch(TrackPitch)
+        self.ResetSurface()
+        self.SurfaceUpdateTrigger = True
+        self.DisabledTrigger = True
+        self.ReRender()
 
     def Render(self, DISPLAY):
-        # -- Update Colors -- #
+        # -- If surface needs to be Updated -- #
+        if self.SurfaceUpdateTrigger:
+            self.ReRender()
+            self.SurfaceUpdateTrigger = False
+
+        # -- Re-Render the Block one time when Block is Disabled -- #
+        if not self.Active and not self.DisabledTrigger:
+            self.DisabledTrigger = True
+            self.SurfaceUpdateTrigger = True
+            self.ReRender()
+
+        # -- Set Disabled Trigger to False -- #
+        if self.Active:
+            self.DisabledTrigger = False
+            self.ReRender()
+
+        DISPLAY.blit(self.BlockSurface, (self.Rectangle[0], self.Scroll + self.Rectangle[1]))
+
+    def ReRender(self):
+        # -- Set the Color Scheme -- #
         if self.Active:
             FrequencyBGColor = TrackBlock_FrequencyBGColor_Active
             DurationBGColor = TrackBlock_DurationBGColor_Active
@@ -472,45 +517,55 @@ class TrackBlock:
             FrequencyBGColor = TrackBlock_FrequencyBGColor_Hightlight2
             DurationBGColor = TrackBlock_DurationBGColor_Hightlight2
 
+        if self.Active:
+            FrequencyBGColor = TrackBlock_FrequencyBGColor_Active
+            DurationBGColor = TrackBlock_DurationBGColor_Active
+
         if self.PitchLabel == "?":
             PitchLabelColor = TrackBlock_NoteLabel_UnknowNote
         else:
             PitchLabelColor = TrackBlock_NoteLabel_KnowNote
 
-        # Render the Frequency Region
-        shape.Shape_Rectangle(DISPLAY, FrequencyBGColor, (self.FrequencyNumber.Rectangle[0], self.Scroll + self.FrequencyNumber.Rectangle[1] - 2, self.FrequencyNumber.Rectangle[2] + 4, self.FrequencyNumber.Rectangle[3] + 4), 0, 0, 5, 0, 5, 0)
-        self.FrequencyNumber.Render(DISPLAY)
+        # Fill the Background
+        self.BlockSurface.fill(BackgroundColor)
 
-        # Render the Duration Region
+        # -- Render the Frequency Region
+        shape.Shape_Rectangle(self.BlockSurface, FrequencyBGColor, (self.FrequencyNumber.Rectangle[0], self.FrequencyNumber.Rectangle[1], self.FrequencyNumber.Rectangle[2], self.FrequencyNumber.Rectangle[3]), 0, 0, 5, 0, 5, 0)
+        self.FrequencyNumber.Render(self.BlockSurface)
+
+        # -- Render the Duration Region
         DurationX = (self.FrequencyNumber.Rectangle[0] + self.TextWidth)
-        shape.Shape_Rectangle(DISPLAY, DurationBGColor, (DurationX, self.Scroll + self.DurationNumber.Rectangle[1] - 2, (self.TextWidth) + 8, self.DurationNumber.Rectangle[3] + 4), 0, 0, 0, 5, 0, 5)
-        self.DurationNumber.Render(DISPLAY)
+        shape.Shape_Rectangle(self.BlockSurface, DurationBGColor, (DurationX, self.DurationNumber.Rectangle[1], (self.TextWidth), self.DurationNumber.Rectangle[3]), 0, 0, 0, 5, 0, 5)
+        self.DurationNumber.Render(self.BlockSurface)
 
         LabelColor = TrackBlock_InstanceLabelActiveColor
         if not self.Active:
             LabelColor = TrackBlock_InstanceLabelDeactiveColor
 
-        Main.DefaultContents.FontRender(DISPLAY, "/PressStart2P.ttf", 12, str(self.Instance).zfill(2), LabelColor, (DurationX + self.TextWidth) + 10, self.Scroll + self.Rectangle[1])
+        Main.DefaultContents.FontRender(self.BlockSurface, "/PressStart2P.ttf", 10, str(self.Instance).zfill(2), LabelColor, (DurationX + self.TextWidth) + 3, 1)
 
         # -- Render Note Label -- #
-        Main.DefaultContents.FontRender(DISPLAY, "/PressStart2P.ttf", 12, self.PitchLabel, PitchLabelColor, self.Rectangle[0], self.Scroll + self.Rectangle[1])
+        Main.DefaultContents.FontRender(self.BlockSurface, "/PressStart2P.ttf", 10, self.PitchLabel, PitchLabelColor, 0, 0)
+
+    def ResetSurface(self):
+        self.BlockSurface = pygame.Surface((self.Rectangle[2], self.Rectangle[3]))
 
     def Update(self):
-        FrequencyWidthMax = Main.DefaultContents.GetFont_width("/PressStart2P.ttf", 12, "000")
+        FrequencyWidthMax = Main.DefaultContents.GetFont_width("/PressStart2P.ttf", 10, "000")
 
-        self.FrequencyNumber.Rectangle = pygame.Rect(self.Rectangle[0] + FrequencyWidthMax, self.Rectangle[1], self.TextWidth, self.TextHeight)
-        self.DurationNumber.Rectangle = pygame.Rect(self.FrequencyNumber.Rectangle[0] + self.FrequencyNumber.Rectangle[2] + 2, self.Rectangle[1], self.TextWidth, self.TextHeight)
+        self.Rectangle = pygame.Rect(self.Rectangle[0], (self.TextHeight + 10) * self.Instance, FrequencyWidthMax + self.FrequencyNumber.Rectangle[2] + self.DurationNumber.Rectangle[2] + 25, self.Rectangle[3])
+        self.FrequencyNumber.Rectangle = pygame.Rect(FrequencyWidthMax, 1, self.TextWidth, self.TextHeight)
+        self.DurationNumber.Rectangle = pygame.Rect(self.FrequencyNumber.Rectangle[0] + self.FrequencyNumber.Rectangle[2] + 2, 1, self.TextWidth, self.TextHeight)
+
+        if not self.LastRect == self.Rectangle:
+            self.LastRect = self.Rectangle
+            self.ResetSurface()
 
         self.FrequencyNumber.Update()
         self.FrequencyNumber.IsActive = self.SelectedField == 0
-        self.FrequencyNumber.YOffset = self.Scroll
-
-        self.Rectangle = pygame.Rect(self.Rectangle[0], (self.TextHeight + 10) * self.Instance, FrequencyWidthMax + self.FrequencyNumber.Rectangle[2] + self.DurationNumber.Rectangle[2], self.TextHeight)
-
 
         self.DurationNumber.Update()
         self.DurationNumber.IsActive = self.SelectedField == 1
-        self.DurationNumber.YOffset = self.Scroll
 
         # -- Update the Track Data -- #
         self.TrackData[0] = self.FrequencyNumber.Value
@@ -538,6 +593,7 @@ class TrackBlock:
             self.DurationNumber.EventUpdate(event)
 
         if event.type == pygame.KEYUP:
+            self.SurfaceUpdateTrigger = True
             if event.key == pygame.K_PAGEDOWN:
                 self.SelectedField -= 1
 
@@ -684,7 +740,6 @@ class TrackBlock:
 
                     if var.Editor_CurrentOctave < 0:
                         var.Editor_CurrentOctave = 7
-
 
 def GetNote(NoteName, Octave):
     # -- Note C
@@ -928,6 +983,8 @@ class TrackColection:
         self.Rectangle = pygame.Rect(Rectangle[0], Rectangle[1], Rectangle[2], Rectangle[3])
         self.Active = False
         self.ScreenSize = (0, 0)
+        self.ID = 0
+        self.UpdatePatternsCache = False
 
         for _ in range(var.Rows):
             self.AddBlankTrack()
@@ -963,13 +1020,13 @@ class TrackColection:
             if self.Scroll + track.Rectangle[1] >= DISPLAY.get_height() + track.TextHeight or self.Scroll + track.Rectangle[1] <= -track.TextHeight:
                 continue
 
-            if track.Instance % var.Highlight == 0:
+            if track.Instance % max(1, var.Highlight) == 0:
                 track.Highlight = 1
 
-            if track.Instance % var.HighlightSecond == 0:
+            if track.Instance % max(1, var.HighlightSecond) == 0:
                 track.Highlight = 2
 
-            if not track.Instance % var.HighlightSecond == 0 and not track.Instance % var.Highlight == 0:
+            if not track.Instance % max(1, var.HighlightSecond) == 0 and not track.Instance % max(1, var.Highlight) == 0:
                 track.Highlight = 0
 
             track.Render(DISPLAY)
@@ -989,20 +1046,31 @@ class TrackColection:
             track.Update()
 
         # -- Alingh the Track Number -- #
-        while len(self.Tracks) > var.Rows:
+        if len(self.Tracks) > var.Rows:
             self.Tracks.pop()
             self.SelectedTrack = 0
+            var.SelectedTrack = 0
+            self.UpdatePatternsCache = True
 
-        while len(self.Tracks) < var.Rows:
+        if len(self.Tracks) < var.Rows:
             self.AddBlankTrack()
             self.SelectedTrack = 0
+            var.SelectedTrack = 0
+            self.UpdatePatternsCache = True
 
+            for block in self.Tracks:
+                block.SurfaceUpdateTrigger = True
+                block.Active = True
+
+        # -- Update the Rectangle -- #
         self.Rectangle = pygame.Rect(self.Rectangle[0], self.Rectangle[1], self.Tracks[self.SelectedTrack].Rectangle[2], self.Rectangle[3])
+
+        var.PlayMode = self.PlayMode
 
         if self.PlayMode:
             self.PlayMode_TrackDelay += 1
             CurrentTrackObj = self.Tracks[self.SelectedTrack]
-            BMP = abs(1000 / var.BPM)
+            BMP = 1000 / max(1, var.BPM)
 
             if self.PlayMode_TrackDelay >= BMP:
                 self.SelectedTrack += 1
@@ -1053,7 +1121,6 @@ class TrackColection:
                         SecoundDigits = CurrentTrackObj.TrackData[1][2:]
 
                         SoundDuration = float("{0}.{1}".format(FirstDigits, SecoundDigits))
-                        print(SoundDuration)
                     except ValueError:
                         pass
 
@@ -1072,14 +1139,17 @@ class TrackColection:
                 # -- Stop Playing song when it reach the end -- #
                 if self.SelectedTrack >= len(self.Tracks):
                     self.EndPlayMode()
+        else:
+            self.SelectedTrack = var.SelectedTrack
 
     def EndPlayMode(self):
         self.SelectedTrack = 0
-        self.PlayMode = 0
+        self.PlayMode = False
         self.PlayMode_TrackDelay = 0
         self.PlayMode_CurrentTonePlayed = False
         self.Scroll = 25
         self.PlayMode_LastSoundChannel = -1
+        var.PlayMode = False
 
     def EventUpdate(self, event):
         if self.Active:
@@ -1093,11 +1163,16 @@ class TrackColection:
                     self.PlayMode_TrackDelay = 0
                     self.PlayMode_CurrentTonePlayed = False
                     self.SelectedTrack = 0
+                    var.GenerateSoundCache = True
+                    var.PlayMode = True
+                    Main.DefaultContents.StopAllChannels()
 
                 else:
                     self.PlayMode = False
                     self.PlayMode_TrackDelay = 0
                     self.PlayMode_CurrentTonePlayed = False
+                    var.PlayMode = False
+                    Main.DefaultContents.StopAllChannels()
 
             # -- Disable Edit Controls when in Play Mode -- #
             if not self.PlayMode and self.Active:
@@ -1105,12 +1180,14 @@ class TrackColection:
                     self.SelectedTrack += 1
                     if self.SelectedTrack >= len(self.Tracks):
                         self.SelectedTrack = 0
+                    var.SelectedTrack = self.SelectedTrack
 
                 if event.key == pygame.K_UP:
                     if self.SelectedTrack <= 0:
                         self.SelectedTrack = len(self.Tracks)
 
                     self.SelectedTrack -= 1
+                    var.SelectedTrack = self.SelectedTrack
 
                 if event.key == pygame.K_F1:
                     if len(self.Tracks) > 1:
@@ -1130,11 +1207,13 @@ class Pattern:
 
         self.Tracks.append(TrackColection(Rectangle))
         self.Tracks.append(TrackColection(Rectangle))
+        self.Tracks.append(TrackColection(Rectangle))
+        self.Tracks.append(TrackColection(Rectangle))
 
         for i, track in enumerate(self.Tracks):
             # -- Update Tracks Position -- #
             if i == 0:
-                track.Rectangle[0] = 10
+                track.Rectangle[0] = 5
             else:
                 track.Rectangle[0] = self.Tracks[i - 1].Rectangle[0] + self.Tracks[i - 1].Rectangle[2]
 
@@ -1157,7 +1236,7 @@ class Pattern:
             if i == 0:
                 track.Rectangle[0] = 10
             else:
-                track.Rectangle[0] = self.Tracks[i - 1].Rectangle[0] + self.Tracks[i - 1].Rectangle[2] + 50
+                track.Rectangle[0] = self.Tracks[i - 1].Rectangle[0] + self.Tracks[i - 1].Rectangle[2] + 10
 
     def EventUpdate(self, event):
         for track in self.Tracks:
@@ -1169,7 +1248,6 @@ class Pattern:
 
                 if self.ActiveTrackID <= -1:
                     self.ActiveTrackID = len(self.Tracks) - 1
-                print(self.ActiveTrackID)
 
             if event.key == pygame.K_F10:
                 self.ActiveTrackID += 1
@@ -1184,7 +1262,7 @@ class TrackList:
         self.CurrentPatternID = 0
         self.PatternList = list()
         self.CurrentPattern = None
-        self.TracksSurface = pygame.Surface((self.Rectangle[2], self.Rectangle[3]), pygame.SRCALPHA)
+        self.TracksSurface = pygame.Surface((self.Rectangle[2], self.Rectangle[3]))
         self.LastRect = pygame.Rect(0, 0, 0, 0)
         self.Active = False
         self.AddNewPattern()
@@ -1199,17 +1277,29 @@ class TrackList:
         self.CurrentPattern = self.PatternList[PatternID]
 
     def PatternJump(self, PatternID):
+        # -- Ensure that all tracks has been stopped before jumping -- #
+        for patternCol in self.CurrentPattern.Tracks:
+            patternCol.EndPlayMode()
+
         if PatternID < len(self.PatternList):
             self.CurrentPattern = self.PatternList[PatternID]
             self.PatternList[PatternID].PlayAllTracks()
 
     def Render(self, DISPLAY):
-        self.TracksSurface.fill((0, 0, 0, 0))
+        self.TracksSurface.fill(BackgroundColor)
         self.CurrentPattern.Draw(self.TracksSurface)
 
         # -- Render the Pattern Name -- #
-        shape.Shape_Rectangle(self.TracksSurface, (120, 120, 120), (0, 0, DISPLAY.get_width(), 24))
-        Main.DefaultContents.FontRender(self.TracksSurface, "/PressStart2P.ttf", 14, "Pattern: {0}/{1}".format(self.CurrentPatternID, len(self.PatternList) - 1), (255, 255, 255), 5, 5)
+        PatternName_BackgroundColor = TrackSelectedPattern_BackgroundColor
+        PatternName_FontColor = TrackSelectedPattern_FontColor
+        SelectedPatternText = "Pattern: {0}/{1}".format(self.CurrentPatternID, len(self.PatternList) - 1)
+
+        if var.PlayMode:
+            PatternName_BackgroundColor = TrackSelectedPattern_PlayMode_BackgroundColor
+            PatternName_FontColor = TrackSelectedPattern_PlayMode_FontColor
+
+        shape.Shape_Rectangle(self.TracksSurface, PatternName_BackgroundColor, (0, 0, DISPLAY.get_width(), 18))
+        Main.DefaultContents.FontRender(self.TracksSurface, "/PressStart2P.ttf", 12, SelectedPatternText, PatternName_FontColor, 5, 4)
 
         DISPLAY.blit(self.TracksSurface, (self.Rectangle[0], self.Rectangle[1]))
 
@@ -1226,6 +1316,7 @@ class TrackList:
             self.CurrentPattern.MusicProperties.append(var.Rows)  # -- Save Rows Data -- #
             self.CurrentPattern.MusicProperties.append((var.Highlight, var.HighlightSecond))  # -- Save Highlight Data -- #
 
+        # -- Update the Current Pattern -- #
         self.CurrentPattern.Update()
 
         # -- Update the Surface Size -- #
@@ -1233,13 +1324,40 @@ class TrackList:
             self.TracksSurface = pygame.Surface((self.Rectangle[2], self.Rectangle[3]), pygame.SRCALPHA)
             self.LastRect = self.Rectangle
 
+        # -- Generate Sound Cache -- #
+        if var.GenerateSoundCache and var.GenerateSoundCache_MessageSeen:
+            print("Generating SoundCache...")
+            for patterns in self.PatternList:
+                for track in patterns.Tracks:
+                    for collactions in track.Tracks:
+                        try:
+                            collactions.SurfaceUpdateTrigger = True
+                            collactions.Active = True
+
+                            if not collactions.TrackData[0] == "-----":
+                                Freqn = int(collactions.TrackData[0])
+
+                                FirstDigits = collactions.TrackData[1][:2]
+                                SecoundDigits = collactions.TrackData[1][2:]
+
+                                SoundDuration = float("{0}.{1}".format(FirstDigits, SecoundDigits))
+
+                                Main.DefaultContents.GetTune_FromTuneCache(Freqn, SoundDuration, 44000)
+                        except ValueError:
+                            continue
+
+            var.GenerateSoundCache = False
+            var.GenerateSoundCache_MessageSeen = False
+            print("SoundCache Generated sucefully.")
+
     def EventUpdate(self, event):
         if self.Rectangle.collidepoint(pygame.mouse.get_pos()):
             self.CurrentPattern.EventUpdate(event)
 
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_F3:
-                    self.AddNewPattern()
+                    if len(self.PatternList) < 256:
+                        self.AddNewPattern()
 
                 if event.key == pygame.K_F5:
                     PatternID = self.CurrentPatternID - 1

@@ -24,4 +24,7 @@ Rows = 32
 Highlight = 4
 HighlightSecond = 16
 GenerateSoundCache = True
+GenerateSoundCache_MessageSeen = False
 Editor_CurrentOctave = 7
+PlayMode = False
+SelectedTrack = 0

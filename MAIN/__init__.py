@@ -25,6 +25,7 @@ import cProfile
 DefaultContents = cntMng.ContentManager
 
 CurrentScreenToUpdate = Editor
+CurrentCursor = 0
 def Initialize(DISPLAY):
     global DefaultContents
 
@@ -38,6 +39,8 @@ def Initialize(DISPLAY):
     MAIN.ReceiveCommand(0, 60)
 
     Editor.Initialize(DISPLAY)
+    # -- Set Invisible Mouse -- #
+    pygame.mouse.set_visible(False)
 
 def GameDraw(DISPLAY):
     global CurrentScreenToUpdate
@@ -45,7 +48,11 @@ def GameDraw(DISPLAY):
 
     CurrentScreenToUpdate.GameDraw(DISPLAY)
 
+    # -- Render Cursor -- #
+    DefaultContents.ImageRender(DISPLAY, "/cursor.png", pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1])
+
     DefaultContents.FontRender(DISPLAY, "/PressStart2P.ttf", 8, "FPS: {0}/{1}".format(MAIN.clock.get_fps(), MAIN.clock.get_time()), (255, 255, 255), 5, 5, backgroundColor=(0, 0, 0))
+
 
 
 def Update():
