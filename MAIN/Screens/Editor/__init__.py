@@ -23,6 +23,8 @@ from OneTrack.MAIN import UI
 from OneTrack.MAIN import SaveFileDialog
 from OneTrack.MAIN import OpenFileDialog
 from OneTrack.MAIN.Screens.Editor import OptionsBar
+from OneTrack.MAIN.Screens.Editor import EditorBar
+from OneTrack.MAIN.Screens.Editor import InstanceVar as var
 import OneTrack.MAIN as Main
 
 track_list = UI.TrackList
@@ -30,15 +32,6 @@ track_list = UI.TrackList
 # -- Top Toolbar -- #
 TopBarControls = UI.ButtonsBar
 DropDownFileMenu = UI.DropDownMenu
-
-FileMenuEnabled = False
-DisableControls = False
-CopyOfScreen = pygame.Surface((5, 5))
-BPM = 150
-Rows = 32
-Highlight = 4
-HighlightSecond = 16
-GenerateSoundCache = True
 
 def Initialize(DISPLAY):
     global track_list
@@ -59,27 +52,27 @@ def Initialize(DISPLAY):
     SaveFileDialog.Initialize()
     OpenFileDialog.Initialize()
     OptionsBar.Initialize()
+    EditorBar.Initialize()
 
 def GameDraw(DISPLAY):
     global track_list
     global TopBarControls
     global DropDownFileMenu
-    global CopyOfScreen
-    global DisableControls
 
-    if not DisableControls:
+    if not var.DisableControls:
         DISPLAY.fill((62, 62, 116))
 
         track_list.Render(DISPLAY)
         TopBarControls.Render(DISPLAY)
 
         # -- Render DropDown Menus -- #
-        if FileMenuEnabled:
+        if var.FileMenuEnabled:
             DropDownFileMenu.Render(DISPLAY)
 
         OptionsBar.Draw(DISPLAY)
+        EditorBar.Draw(DISPLAY)
 
-        CopyOfScreen = DISPLAY.copy()
+        var.CopyOfScreen = DISPLAY.copy()
 
     SaveFileDialog.Draw(DISPLAY)
     OpenFileDialog.Draw(DISPLAY)
@@ -91,9 +84,6 @@ def SaveMusicData(FilePath):
 
 def LoadMusicData(FileName):
     global track_list
-    global BPM
-    global Rows
-    global GenerateSoundCache
 
     # -- Load the List to RAM -- #
     patterns_list = pickle.load(open(FileName, "rb"))
@@ -141,9 +131,9 @@ def LoadMusicData(FileName):
     Obj = OptionsBar.WidgetCollection.GetWidget(2)
     Obj.Changer.Value = str(SavedRows).zfill(3)
 
-    BPM = SavedBPM
-    Rows = SavedRows
-    GenerateSoundCache = True
+    var.BPM = SavedBPM
+    var.Rows = SavedRows
+    var.GenerateSoundCache = True
 
 def NewMusicFile():
     global track_list
@@ -157,48 +147,47 @@ def Update():
     global track_list
     global TopBarControls
     global DropDownFileMenu
-    global FileMenuEnabled
-    global DisableControls
 
     SaveFileDialog.Update()
     OpenFileDialog.Update()
 
-    if DisableControls: return
+    if var.DisableControls: return
 
     TopBarControls.Update()
     track_list.Update()
     OptionsBar.Update()
+    EditorBar.Update()
 
-    if FileMenuEnabled:
+    if var.FileMenuEnabled:
         DropDownFileMenu.Update()
 
     #region Top Bar Update
     if TopBarControls.ClickedButtonIndex == 0:
-        if not FileMenuEnabled:
-            FileMenuEnabled = True
+        if not var.FileMenuEnabled:
+            var.FileMenuEnabled = True
 
         else:
-            FileMenuEnabled = False
+            var.FileMenuEnabled = False
 
     #region File DropDown Menu
-    if FileMenuEnabled:
+    if var.FileMenuEnabled:
         if DropDownFileMenu.SelectedItem == "Save":
             DropDownFileMenu.SelectedItem = ""
-            FileMenuEnabled = False
-            DisableControls = True
+            var.FileMenuEnabled = False
+            var.DisableControls = True
 
             SaveFileDialog.Enabled = True
 
         if DropDownFileMenu.SelectedItem == "Load":
             DropDownFileMenu.SelectedItem = ""
-            FileMenuEnabled = False
-            DisableControls = True
+            var.FileMenuEnabled = False
+            var.DisableControls = True
 
             OpenFileDialog.Enabled = True
 
         if DropDownFileMenu.SelectedItem == "New File":
             DropDownFileMenu.SelectedItem = ""
-            FileMenuEnabled = False
+            var.FileMenuEnabled = False
 
             NewMusicFile()
 
@@ -209,15 +198,14 @@ def EventUpdate(event):
     global track_list
     global TopBarControls
     global DropDownFileMenu
-    global FileMenuEnabled
-    global DisableControls
 
-    if not DisableControls:
+    if not var.DisableControls:
         TopBarControls.EventUpdate(event)
         track_list.EventUpdate(event)
         OptionsBar.EventUpdate(event)
+        EditorBar.EventUpdate(event)
 
-        if FileMenuEnabled: DropDownFileMenu.EventUpdate(event)
-
-    SaveFileDialog.EventUpdate(event)
-    OpenFileDialog.EventUpdate(event)
+        if var.FileMenuEnabled: DropDownFileMenu.EventUpdate(event)
+    else:
+        SaveFileDialog.EventUpdate(event)
+        OpenFileDialog.EventUpdate(event)

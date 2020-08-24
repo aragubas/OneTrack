@@ -18,6 +18,7 @@ import pygame, os
 from OneTrack import MAIN as Main
 from OneTrack.MAIN.Screens import Editor
 from OneTrack.MAIN.UI import Widget as Widget
+from OneTrack.MAIN.Screens.Editor import InstanceVar as var
 from ENGINE import shape
 from ENGINE import fx
 from ENGINE import appData
@@ -552,49 +553,368 @@ class TrackBlock:
             if self.SelectedField == 0:
                 # -- Higher -- #
                 if event.key == pygame.K_HOME:
-                    CurrentValue = int(self.FrequencyNumber.Value)
-                    Result = CurrentValue * 2
+                    if not self.FrequencyNumber.Value == "-----":
+                        CurrentValue = int(self.FrequencyNumber.Value)
+                        Result = CurrentValue * 2
 
-                    if Result >= 99999:
-                        Result = 0
+                        if Result >= 99999:
+                            Result = 0
 
-                    self.FrequencyNumber.Value = str(Result).zfill(5)
-                    self.FrequencyNumber.SplitedAlgarims = list(self.FrequencyNumber.Value)
+                        self.FrequencyNumber.Value = str(Result).zfill(5)
+                        self.FrequencyNumber.SplitedAlgarims = list(self.FrequencyNumber.Value)
 
                 # -- Lower -- #
                 if event.key == pygame.K_END:
-                    CurrentValue = int(self.FrequencyNumber.Value)
-                    Result = int(CurrentValue / 2)
+                    if not self.FrequencyNumber.Value == "-----":
+                        CurrentValue = int(self.FrequencyNumber.Value)
+                        Result = int(CurrentValue / 2)
 
-                    if Result <= 0:
-                        Result = 0
+                        if Result <= 0:
+                            Result = 0
 
-                    self.FrequencyNumber.Value = str(Result).zfill(5)
-                    self.FrequencyNumber.SplitedAlgarims = list(self.FrequencyNumber.Value)
+                        self.FrequencyNumber.Value = str(Result).zfill(5)
+                        self.FrequencyNumber.SplitedAlgarims = list(self.FrequencyNumber.Value)
 
-                return
                 # -- Note C -- #
-                if event.key == pygame.K_q:
-                    self.FrequencyNumber.Value = str(GetNote("C", 8)).zfill(5)
+                if event.key == pygame.K_z:
+                    self.FrequencyNumber.Value = str(GetNote("C", var.Editor_CurrentOctave))
 
+                    self.FrequencyNumber.SplitedAlgarims.clear()
                     self.FrequencyNumber.SplitedAlgarims = list(self.FrequencyNumber.Value)
+                    self.UpdatePitchLabel()
 
                 # -- Note C# -- #
-                if event.key == pygame.K_2:
-                    self.FrequencyNumber.Value = str(GetNote("C#", 8)).zfill(5)
+                if event.key == pygame.K_s:
+                    self.FrequencyNumber.Value = str(GetNote("C#", var.Editor_CurrentOctave))
+
+                    self.FrequencyNumber.SplitedAlgarims.clear()
                     self.FrequencyNumber.SplitedAlgarims = list(self.FrequencyNumber.Value)
+                    self.UpdatePitchLabel()
 
-Note_name = ["C", "C", "C", "C", "C", "C", "C", "C",
-             "C#", "C#", "C#", "C#", "C#", "C#", "C#", "C#"]
+                # -- Note D -- #
+                if event.key == pygame.K_x:
+                    self.FrequencyNumber.Value = str(GetNote("D", var.Editor_CurrentOctave))
 
-Note_frequencies = ["00032", "00065", "00103", "00261", "00523", "01046", "02093", "04186"
-                    "34", "69", "138", "277", "554", "1108", "2217", "4434"]
+                    self.FrequencyNumber.SplitedAlgarims.clear()
+                    self.FrequencyNumber.SplitedAlgarims = list(self.FrequencyNumber.Value)
+                    self.UpdatePitchLabel()
+
+                # -- Note D# -- #
+                if event.key == pygame.K_d:
+                    self.FrequencyNumber.Value = str(GetNote("D#", var.Editor_CurrentOctave))
+
+                    self.FrequencyNumber.SplitedAlgarims.clear()
+                    self.FrequencyNumber.SplitedAlgarims = list(self.FrequencyNumber.Value)
+                    self.UpdatePitchLabel()
+
+                # -- Note E -- #
+                if event.key == pygame.K_c:
+                    self.FrequencyNumber.Value = str(GetNote("E", var.Editor_CurrentOctave))
+
+                    self.FrequencyNumber.SplitedAlgarims.clear()
+                    self.FrequencyNumber.SplitedAlgarims = list(self.FrequencyNumber.Value)
+                    self.UpdatePitchLabel()
+
+                # -- Note F -- #
+                if event.key == pygame.K_v:
+                    self.FrequencyNumber.Value = str(GetNote("F", var.Editor_CurrentOctave))
+
+                    self.FrequencyNumber.SplitedAlgarims.clear()
+                    self.FrequencyNumber.SplitedAlgarims = list(self.FrequencyNumber.Value)
+                    self.UpdatePitchLabel()
+
+                # -- Note F# -- #
+                if event.key == pygame.K_g:
+                    self.FrequencyNumber.Value = str(GetNote("F#", var.Editor_CurrentOctave))
+
+                    self.FrequencyNumber.SplitedAlgarims.clear()
+                    self.FrequencyNumber.SplitedAlgarims = list(self.FrequencyNumber.Value)
+                    self.UpdatePitchLabel()
+
+                # -- Note G -- #
+                if event.key == pygame.K_b:
+                    self.FrequencyNumber.Value = str(GetNote("G", var.Editor_CurrentOctave))
+
+                    self.FrequencyNumber.SplitedAlgarims.clear()
+                    self.FrequencyNumber.SplitedAlgarims = list(self.FrequencyNumber.Value)
+                    self.UpdatePitchLabel()
+
+                # -- Note G# -- #
+                if event.key == pygame.K_h:
+                    self.FrequencyNumber.Value = str(GetNote("G#", var.Editor_CurrentOctave))
+
+                    self.FrequencyNumber.SplitedAlgarims.clear()
+                    self.FrequencyNumber.SplitedAlgarims = list(self.FrequencyNumber.Value)
+                    self.UpdatePitchLabel()
+
+                # -- Note A -- #
+                if event.key == pygame.K_n:
+                    self.FrequencyNumber.Value = str(GetNote("A", var.Editor_CurrentOctave))
+
+                    self.FrequencyNumber.SplitedAlgarims.clear()
+                    self.FrequencyNumber.SplitedAlgarims = list(self.FrequencyNumber.Value)
+                    self.UpdatePitchLabel()
+
+                # -- Note A# -- #
+                if event.key == pygame.K_j:
+                    self.FrequencyNumber.Value = str(GetNote("A#", var.Editor_CurrentOctave))
+
+                    self.FrequencyNumber.SplitedAlgarims.clear()
+                    self.FrequencyNumber.SplitedAlgarims = list(self.FrequencyNumber.Value)
+                    self.UpdatePitchLabel()
+
+                # -- Note B -- #
+                if event.key == pygame.K_m:
+                    self.FrequencyNumber.Value = str(GetNote("B", var.Editor_CurrentOctave))  # The most satanic line
+
+                    self.FrequencyNumber.SplitedAlgarims.clear()
+                    self.FrequencyNumber.SplitedAlgarims = list(self.FrequencyNumber.Value)
+                    self.UpdatePitchLabel()
+
+                # -- Increase Octave -- #
+                if event.key == pygame.K_w:
+                    var.Editor_CurrentOctave += 1
+
+                    if var.Editor_CurrentOctave > 7:
+                        var.Editor_CurrentOctave = 0
+
+                # -- Decrease Octave -- #
+                if event.key == pygame.K_q:
+                    var.Editor_CurrentOctave -= 1
+
+                    if var.Editor_CurrentOctave < 0:
+                        var.Editor_CurrentOctave = 7
+
 
 def GetNote(NoteName, Octave):
-    NoteIndex = Note_name.index(NoteName)
+    # -- Note C
+    if NoteName == "C" and Octave == 1:
+        return "00032"
+    elif NoteName == "C" and Octave == 2:
+        return "00065"
+    elif NoteName == "C" and Octave == 3:
+        return "00130"
+    elif NoteName == "C" and Octave == 4:
+        return "00261"
+    elif NoteName == "C" and Octave == 5:
+        return "00523"
+    elif NoteName == "C" and Octave == 6:
+        return "01046"
+    elif NoteName == "C" and Octave == 7:
+        return "02093"
+    elif NoteName == "C" and Octave == 8:
+        return "04186"
 
-    return Note_frequencies[NoteIndex + (Octave - 1)]
+    # -- Note C#
 
+    elif NoteName == "C#" and Octave == 1:
+        return "00034"
+    elif NoteName == "C#" and Octave == 2:
+        return "00069"
+    elif NoteName == "C#" and Octave == 3:
+        return "00138"
+    elif NoteName == "C#" and Octave == 4:
+        return "00277"
+    elif NoteName == "C#" and Octave == 5:
+        return "00554"
+    elif NoteName == "C#" and Octave == 6:
+        return "01108"
+    elif NoteName == "C#" and Octave == 7:
+        return "02217"
+    elif NoteName == "C#" and Octave == 8:
+        return "04434"
+
+    # -- Note D
+
+    elif NoteName == "D" and Octave == 1:
+        return "00036"
+    elif NoteName == "D" and Octave == 2:
+        return "00073"
+    elif NoteName == "D" and Octave == 3:
+        return "00146"
+    elif NoteName == "D" and Octave == 4:
+        return "00293"
+    elif NoteName == "D" and Octave == 5:
+        return "00587"
+    elif NoteName == "D" and Octave == 6:
+        return "01174"
+    elif NoteName == "D" and Octave == 7:
+        return "02349"
+    elif NoteName == "D" and Octave == 8:
+        return "04698"
+
+    # -- Note D#
+
+    elif NoteName == "D#" and Octave == 1:
+        return "00038"
+    elif NoteName == "D#" and Octave == 2:
+        return "00077"
+    elif NoteName == "D#" and Octave == 3:
+        return "00155"
+    elif NoteName == "D#" and Octave == 4:
+        return "00311"
+    elif NoteName == "D#" and Octave == 5:
+        return "00622"
+    elif NoteName == "D#" and Octave == 6:
+        return "01244"
+    elif NoteName == "D#" and Octave == 7:
+        return "02489"
+    elif NoteName == "D#" and Octave == 8:
+        return "04978"
+
+    # -- Note E
+
+    elif NoteName == "E" and Octave == 1:
+        return "00041"
+    elif NoteName == "E" and Octave == 2:
+        return "00082"
+    elif NoteName == "E" and Octave == 3:
+        return "00164"
+    elif NoteName == "E" and Octave == 4:
+        return "00329"
+    elif NoteName == "E" and Octave == 5:
+        return "00659"
+    elif NoteName == "E" and Octave == 6:
+        return "01318"
+    elif NoteName == "E" and Octave == 7:
+        return "02637"
+    elif NoteName == "E" and Octave == 8:
+        return "05274"
+
+    # -- Note F
+
+    elif NoteName == "F" and Octave == 1:
+        return "00043"
+    elif NoteName == "F" and Octave == 2:
+        return "00087"
+    elif NoteName == "F" and Octave == 3:
+        return "00174"
+    elif NoteName == "F" and Octave == 4:
+        return "00349"
+    elif NoteName == "F" and Octave == 5:
+        return "00698"
+    elif NoteName == "F" and Octave == 6:
+        return "01396"
+    elif NoteName == "F" and Octave == 7:
+        return "02793"
+    elif NoteName == "F" and Octave == 8:
+        return "05587"
+
+    # -- Note F#
+
+    elif NoteName == "F#" and Octave == 1:
+        return "00046"
+    elif NoteName == "F#" and Octave == 2:
+        return "00092"
+    elif NoteName == "F#" and Octave == 3:
+        return "00184"
+    elif NoteName == "F#" and Octave == 4:
+        return "00369"
+    elif NoteName == "F#" and Octave == 5:
+        return "00739"
+    elif NoteName == "F#" and Octave == 6:
+        return "01479"
+    elif NoteName == "F#" and Octave == 7:
+        return "02959"
+    elif NoteName == "F#" and Octave == 8:
+        return "05919"
+
+    # -- Note G
+
+    elif NoteName == "G" and Octave == 1:
+        return "00048"
+    elif NoteName == "G" and Octave == 2:
+        return "00097"
+    elif NoteName == "G" and Octave == 3:
+        return "00195"
+    elif NoteName == "G" and Octave == 4:
+        return "00391"
+    elif NoteName == "G" and Octave == 5:
+        return "00783"
+    elif NoteName == "G" and Octave == 6:
+        return "01567"
+    elif NoteName == "G" and Octave == 7:
+        return "03135"
+    elif NoteName == "G" and Octave == 8:
+        return "06271"
+
+    # -- Note G#
+
+    elif NoteName == "G#" and Octave == 1:
+        return "00051"
+    elif NoteName == "G#" and Octave == 2:
+        return "00103"
+    elif NoteName == "G#" and Octave == 3:
+        return "00207"
+    elif NoteName == "G#" and Octave == 4:
+        return "00415"
+    elif NoteName == "G#" and Octave == 5:
+        return "00830"
+    elif NoteName == "G#" and Octave == 6:
+        return "01616"
+    elif NoteName == "G#" and Octave == 7:
+        return "03322"
+    elif NoteName == "G#" and Octave == 8:
+        return "06644"
+
+    # -- Note A
+
+    elif NoteName == "A" and Octave == 1:
+        return "00055"
+    elif NoteName == "A" and Octave == 2:
+        return "00110"
+    elif NoteName == "A" and Octave == 3:
+        return "00220"
+    elif NoteName == "A" and Octave == 4:
+        return "00440"
+    elif NoteName == "A" and Octave == 5:
+        return "00880"
+    elif NoteName == "A" and Octave == 6:
+        return "01760"
+    elif NoteName == "A" and Octave == 7:
+        return "03520"
+    elif NoteName == "A" and Octave == 8:
+        return "07040"
+
+    # -- Note A#
+
+    elif NoteName == "A#" and Octave == 1:
+        return "00058"
+    elif NoteName == "A#" and Octave == 2:
+        return "00116"
+    elif NoteName == "A#" and Octave == 3:
+        return "00233"
+    elif NoteName == "A#" and Octave == 4:
+        return "00466"
+    elif NoteName == "A#" and Octave == 5:
+        return "00932"
+    elif NoteName == "A#" and Octave == 6:
+        return "01864"
+    elif NoteName == "A#" and Octave == 7:
+        return "03729"
+    elif NoteName == "A#" and Octave == 8:
+        return "07458"
+
+    # -- Note B
+
+    elif NoteName == "B" and Octave == 1:
+        return "00061"
+    elif NoteName == "B" and Octave == 2:
+        return "00123"
+    elif NoteName == "B" and Octave == 3:
+        return "00246"
+    elif NoteName == "B" and Octave == 4:
+        return "00493"
+    elif NoteName == "B" and Octave == 5:
+        return "00987"
+    elif NoteName == "B" and Octave == 6:
+        return "01975"
+    elif NoteName == "B" and Octave == 7:
+        return "03951"
+    elif NoteName == "B" and Octave == 8:
+        return "07902"
+
+    return "00000"
 
 class TrackColection:
     def __init__(self, Rectangle):
@@ -609,7 +929,7 @@ class TrackColection:
         self.Active = False
         self.ScreenSize = (0, 0)
 
-        for _ in range(Editor.Rows):
+        for _ in range(var.Rows):
             self.AddBlankTrack()
 
         self.UpdateTracksPos()
@@ -643,13 +963,13 @@ class TrackColection:
             if self.Scroll + track.Rectangle[1] >= DISPLAY.get_height() + track.TextHeight or self.Scroll + track.Rectangle[1] <= -track.TextHeight:
                 continue
 
-            if track.Instance % Editor.Highlight == 0:
+            if track.Instance % var.Highlight == 0:
                 track.Highlight = 1
 
-            if track.Instance % Editor.HighlightSecond == 0:
+            if track.Instance % var.HighlightSecond == 0:
                 track.Highlight = 2
 
-            if not track.Instance % Editor.HighlightSecond == 0 and not track.Instance % Editor.Highlight == 0:
+            if not track.Instance % var.HighlightSecond == 0 and not track.Instance % var.Highlight == 0:
                 track.Highlight = 0
 
             track.Render(DISPLAY)
@@ -669,11 +989,11 @@ class TrackColection:
             track.Update()
 
         # -- Alingh the Track Number -- #
-        while len(self.Tracks) > Editor.Rows:
+        while len(self.Tracks) > var.Rows:
             self.Tracks.pop()
             self.SelectedTrack = 0
 
-        while len(self.Tracks) < Editor.Rows:
+        while len(self.Tracks) < var.Rows:
             self.AddBlankTrack()
             self.SelectedTrack = 0
 
@@ -682,7 +1002,7 @@ class TrackColection:
         if self.PlayMode:
             self.PlayMode_TrackDelay += 1
             CurrentTrackObj = self.Tracks[self.SelectedTrack]
-            BMP = abs(1000 / Editor.BPM)
+            BMP = abs(1000 / var.BPM)
 
             if self.PlayMode_TrackDelay >= BMP:
                 self.SelectedTrack += 1
@@ -902,9 +1222,9 @@ class TrackList:
         self.CurrentPatternID = self.CurrentPattern.PatternID
         if self.CurrentPatternID == 0:  # -- Save Music Properties only on the first pattern -- #
             self.CurrentPattern.MusicProperties.clear()
-            self.CurrentPattern.MusicProperties.append(Editor.BPM)  # -- Save BPM Data -- #
-            self.CurrentPattern.MusicProperties.append(Editor.Rows)  # -- Save Rows Data -- #
-            self.CurrentPattern.MusicProperties.append((Editor.Highlight, Editor.HighlightSecond))  # -- Save Highlight Data -- #
+            self.CurrentPattern.MusicProperties.append(var.BPM)  # -- Save BPM Data -- #
+            self.CurrentPattern.MusicProperties.append(var.Rows)  # -- Save Rows Data -- #
+            self.CurrentPattern.MusicProperties.append((var.Highlight, var.HighlightSecond))  # -- Save Highlight Data -- #
 
         self.CurrentPattern.Update()
 

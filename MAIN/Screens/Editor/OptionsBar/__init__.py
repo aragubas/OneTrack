@@ -19,6 +19,7 @@ from ENGINE import utils
 import OneTrack.MAIN as Main
 from OneTrack.MAIN import UI
 from OneTrack.MAIN.Screens import Editor
+from OneTrack.MAIN.Screens.Editor import InstanceVar as var
 
 WidgetCollection = UI.Widget.Widget_Controller
 OptionsBarSurface = pygame.Surface
@@ -64,7 +65,7 @@ def UpdateBPMSelector():
 
     else:
         obj = WidgetCollection.GetWidget(1)
-        obj.Changer.Value = str(Editor.BPM).zfill(3)
+        obj.Changer.Value = str(var.BPM).zfill(3)
         obj.Changer.SplitedAlgarims = list(obj.Changer.Value)
 
 def UpdateRowsSelector():
@@ -118,3 +119,5 @@ def Draw(DISPLAY):
 
     DISPLAY.blit(OptionsBarSurface, (800 / 2 - OptionsBarSurface.get_width() / 2 + 15, 5))
     WidgetCollection.Rectangle[0] = 800 / 2 - OptionsBarSurface.get_width() / 2 + 15
+    WidgetCollection.Rectangle[1] = 5
+

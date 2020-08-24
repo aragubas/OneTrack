@@ -19,6 +19,7 @@ from OneTrack.MAIN import UI
 from ENGINE import utils
 import ENGINE as tge
 import OneTrack.MAIN.Screens.Editor as Main
+from OneTrack.MAIN.Screens.Editor import InstanceVar as var
 from ENGINE import fx
 
 
@@ -83,9 +84,8 @@ def Draw(DISPLAY):
     global WindowDrawnSurface
     global BluredScreen_Surface
 
-    if not Enabled: return
     # Render the Blured Screen
-
+    if not Enabled: return
     DISPLAY.blit(BluredScreen_Surface, (0, 0))
 
     Window.Render(DISPLAY)
@@ -128,7 +128,7 @@ def UpdateWindow():
         AnimationController.ValueMultiplier = 0
         AnimationController.DisableSignal = False
         AnimationNumb = 0
-        Main.DisableControls = False
+        var.DisableControls = False
         FileListUpdate = False
         SelectedFile = "null"
         Enabled = False
@@ -150,7 +150,7 @@ def Update():
     UpdateWindow()
 
     if AnimationController.Enabled:
-        BluredScreen_Surface = fx.Surface_Blur(Main.CopyOfScreen, max(1.0, AnimationController.Value - 150))
+        BluredScreen_Surface = fx.Surface_Blur(var.CopyOfScreen, max(1.0, AnimationController.Value - 150))
 
 
     #-------------------------------
@@ -204,7 +204,6 @@ def EventUpdate(event):
     global OptionsBar
     global EnterFileNameEnabled
 
-    if not Enabled: return
     Window.EventUpdate(event)
     OptionsBar.EventUpdate(event)
 

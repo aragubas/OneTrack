@@ -19,6 +19,7 @@ from OneTrack.MAIN import UI
 from ENGINE import utils
 import ENGINE as tge
 import OneTrack.MAIN.Screens.Editor as Main
+from OneTrack.MAIN.Screens.Editor import InstanceVar as var
 from ENGINE import fx
 
 # -- Window's Controls -- #
@@ -77,9 +78,8 @@ def Draw(DISPLAY):
     global WindowDrawnSurface
     global BluredScreen_Surface
 
-    if not Enabled: return
     # Render the Blured Screen
-
+    if not Enabled: return
     DISPLAY.blit(BluredScreen_Surface, (0, 0))
 
     Window.Render(DISPLAY)
@@ -103,6 +103,7 @@ def UpdateWindow():
     global FileListUpdate
     global SelectedFile
 
+    if not Enabled: return
     AnimationController.Update()
 
     # -- Window Animation -- #
@@ -118,7 +119,7 @@ def UpdateWindow():
         AnimationController.ValueMultiplier = 0
         AnimationController.DisableSignal = False
         AnimationNumb = 0
-        Main.DisableControls = False
+        var.DisableControls = False
         FileListUpdate = False
         SelectedFile = "null"
 
@@ -140,8 +141,7 @@ def Update():
     UpdateWindow()
 
     if AnimationController.Enabled:
-        BluredScreen_Surface = fx.Surface_Blur(Main.CopyOfScreen, max(1.0, AnimationController.Value - 150))
-
+        BluredScreen_Surface = fx.Surface_Blur(var.CopyOfScreen, max(1.0, AnimationController.Value - 150))
 
     FolderList.Set_W(Window.WindowRectangle[2])
     FolderList.Set_H(Window.WindowRectangle[3] - 200)
@@ -171,8 +171,8 @@ def EventUpdate(event):
     global Window
     global FolderList
     global OptionsBar
-    if not Enabled: return
 
+    if not Enabled: return
     if event.type == pygame.KEYUP:
         if event.key == pygame.K_ESCAPE:
             AnimationController.Enabled = True
