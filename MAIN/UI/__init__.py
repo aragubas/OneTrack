@@ -44,9 +44,9 @@ EditableNumberView_ColorActive = (100, 100, 100)
 EditableNumberView_ColorDeactive = (50, 50, 50)
 # -----------------------#
 Button_Active_IndicatorColor = (46, 196, 182)
-Button_Active_BackgroundColor = (15, 27, 44, 150)
+Button_Active_BackgroundColor = (15, 27, 44)
 Button_Inactive_IndicatorColor = (255, 51, 102)
-Button_Inactive_BackgroundColor = (1, 22, 39, 150)
+Button_Inactive_BackgroundColor = (1, 22, 39)
 Button_BackgroundColor = (12, 22, 14)
 # -----------------------#
 InputBox_COLOR_INACTIVE = (1, 22, 39)
@@ -60,6 +60,7 @@ TrackSelectedPattern_BackgroundColor = (100, 105, 115)
 TrackSelectedPattern_FontColor = (265, 230, 255)
 # ------------------------#
 BackgroundColor = (62, 62, 116)
+# ------------------------ #
 
 def LoadColorSchema(FolderName):
     pass
@@ -1010,12 +1011,14 @@ class TrackColection:
         self.ScreenSize = (DISPLAY.get_width(), DISPLAY.get_height())
 
         for track in self.Tracks:
-            # -- Render the Track Pointer -- #
+            # -- Set the Track Scroll -- #
             if track.Instance == self.SelectedTrack:
+                # -- Set the Track Scroll -- #
                 self.Scroll = self.Rectangle[3] / 2 - track.Rectangle[3] - track.Rectangle[1]
 
-                PointerRect = (self.Rectangle[0] - 8, self.Scroll + track.Rectangle[1], 4, track.Rectangle[3])
-                shape.Shape_Rectangle(DISPLAY, TrackPointerColor, PointerRect)
+            # -- Render the Track Pointer -- #
+            if track.Instance == self.SelectedTrack and self.Active or track.Instance == self.SelectedTrack and var.PlayMode:
+                shape.Shape_Rectangle(DISPLAY, TrackPointerColor, (self.Rectangle[0] - 8, self.Scroll + track.Rectangle[1], 4, track.Rectangle[3]))
 
             if self.Scroll + track.Rectangle[1] >= DISPLAY.get_height() + track.TextHeight or self.Scroll + track.Rectangle[1] <= -track.TextHeight:
                 continue
@@ -1051,15 +1054,30 @@ class TrackColection:
             self.SelectedTrack = 0
             var.SelectedTrack = 0
             self.UpdatePatternsCache = True
+            var.PatternIsUpdating = True
+
+            if not "APTN_T_GT".format(self.ID) in var.PatternUpdateEntry:
+                var.PatternUpdateEntry.append("APTN_T_GT")
 
         if len(self.Tracks) < var.Rows:
             self.AddBlankTrack()
+            self.UpdatePatternsCache = True
             self.SelectedTrack = 0
             var.SelectedTrack = 0
-            self.UpdatePatternsCache = True
+            var.PatternIsUpdating = True
+
+            if not "APTN_T_LT" in var.PatternUpdateEntry:
+                var.PatternUpdateEntry.append("APTN_T_LT")
 
             for block in self.Tracks:
                 block.Active = True
+
+        if not len(self.Tracks) < var.Rows and not len(self.Tracks) > var.Rows:
+            if "APTN_T_GT" in var.PatternUpdateEntry:
+                var.PatternUpdateEntry.remove("APTN_T_GT")
+
+            if "APTN_T_LT" in var.PatternUpdateEntry:
+                var.PatternUpdateEntry.remove("APTN_T_LT")
 
         # -- Update the Rectangle -- #
         self.Rectangle = pygame.Rect(self.Rectangle[0], self.Rectangle[1], self.Tracks[self.SelectedTrack].Rectangle[2], self.Rectangle[3])
@@ -1215,6 +1233,7 @@ class Pattern:
             else:
                 track.Rectangle[0] = self.Tracks[i - 1].Rectangle[0] + self.Tracks[i - 1].Rectangle[2]
 
+
     def AddBlankTrack(self):
         self.Tracks.append(TrackColection(self.Rectangle))
 
@@ -1243,10 +1262,29 @@ class Pattern:
         if len(self.Tracks) > var.Patterns:
             self.Tracks.pop()
             self.ActiveTrackID = 0
+            var.PatternIsUpdating = True
+
+            if not "APN_GT" in var.PatternUpdateEntry:
+                var.PatternUpdateEntry.append("APN_GT")
 
         if len(self.Tracks) < var.Patterns:
             self.ActiveTrackID = 0
             self.AddBlankTrack()
+            var.PatternIsUpdating = True
+
+            if not "APN_LT" in var.PatternUpdateEntry:
+                var.PatternUpdateEntry.append("APN_LT")
+
+        if not len(self.Tracks) < var.Patterns and not len(self.Tracks) > var.Patterns:
+            var.PatternIsBeingUpdated = False
+
+            if "APN_GT" in var.PatternUpdateEntry:
+                Index1 = var.PatternUpdateEntry.index("APN_GT")
+                var.PatternUpdateEntry.pop(Index1)
+
+            if "APN_LT" in var.PatternUpdateEntry:
+                Index2 = var.PatternUpdateEntry.index("APN_LT")
+                var.PatternUpdateEntry.pop(Index2)
 
     def EventUpdate(self, event):
         for track in self.Tracks:
@@ -1330,6 +1368,25 @@ class TrackList:
 
         # -- Update the Current Pattern -- #
         self.CurrentPattern.Update()
+
+        # -- Pattern Update Routine -- #
+        if len(var.PatternUpdateEntry) >= 1:
+            for pattern in self.PatternList:
+                pattern.Update()
+                for block in pattern.Tracks:
+                    block.Active = True
+
+        else:
+            if var.PatternIsUpdating:
+                var.PatternIsUpdating = False
+                var.GenerateSoundCache = True
+                var.GenerateSoundCache_MessageSeen = False
+
+                for pattern in self.PatternList:
+                    pattern.Update()
+                    for block in pattern.Tracks:
+                        block.Active = True
+
 
         # -- Update the Surface Size -- #
         if not self.LastRect == self.Rectangle:

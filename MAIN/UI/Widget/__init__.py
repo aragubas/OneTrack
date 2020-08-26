@@ -67,6 +67,7 @@ class Widget_Controller:
                     ColideRect = pygame.Rect(self.Rectangle[0] + widget.Rectangle[0], self.Rectangle[1] + widget.Rectangle[1], widget.Rectangle[2], widget.Rectangle[3])
                     if ColideRect.collidepoint(pygame.mouse.get_pos()):
                         if widget.EventUpdateable:
+                            widget.CursorOffset = (self.Rectangle[0] + widget.Rectangle[0], self.Rectangle[1] + widget.Rectangle[1])
                             widget.EventUpdate(event)
                         widget.Active = True
                     else:
@@ -89,6 +90,7 @@ class Widget_PictureBox:
         self.Active = False
         self.EventUpdateable = False
         self.AwaysUpdate = False
+        self.CursorOffset = (0, 0)
 
     def Render(self, DISPLAY):
         Main.DefaultContents.ImageRender(DISPLAY, self.ImageName, self.Rectangle[0], self.Rectangle[1], self.Rectangle[2], self.Rectangle[3])
@@ -113,6 +115,7 @@ class Widget_ValueChanger:
         self.Active = False
         self.EventUpdateable = True
         self.AwaysUpdate = False
+        self.CursorOffset = (0, 0)
 
     def Render(self, DISPLAY):
         # -- Render Background -- #
@@ -170,6 +173,7 @@ class Widget_Label:
         self.Y = Y
         self.Rectangle = utils.Convert.List_PygameRect((X, Y, Main.DefaultContents.GetFont_width(self.FontName, FontSize, self.Text), Main.DefaultContents.GetFont_height(self.FontName, FontSize, self.Text)))
         self.AwaysUpdate = False
+        self.CursorOffset = (0, 0)
 
     def Render(self, DISPLAY):
         Main.DefaultContents.FontRender(DISPLAY, self.FontName,self.FontSize, self.Text, self.Color, self.Rectangle[0], self.Rectangle[1])
@@ -196,6 +200,7 @@ class Widget_PianoKeys:
         self.LastRect = pygame.Rect(0, 0, 0, 0)
         self.LastNote = -1
         self.AwaysUpdate = True
+        self.CursorOffset = (0, 0)
         pygame.key.set_repeat(0, 0)
 
     def Render(self, DISPLAY):
@@ -335,3 +340,74 @@ class Widget_PianoKeys:
             # -- Note B -- #
             if event.key == pygame.K_m:
                 self.LastNote = 11
+
+class Widget_Button:
+    def __init__(self, Text, FontSize, X, Y, WidgetID):
+        if WidgetID == -1:
+            raise ValueError("WidgetID cannot be -1")
+        self.ID = WidgetID
+        self.InteractionType = None
+        self.Active = True
+        self.EventUpdateable = True
+        self.AwaysUpdate = False
+        self.X = X
+        self.Y = Y
+        self.Text = Text
+        self.FontSize = FontSize
+        self.TextWidth = Main.DefaultContents.GetFont_width("/Ubuntu_Bold.ttf", self.FontSize, self.Text)
+        self.TextHeight = Main.DefaultContents.GetFont_height("/Ubuntu_Bold.ttf", self.FontSize, self.Text)
+        self.Rectangle = utils.Convert.List_PygameRect((X - 2, Y - 2, self.TextWidth + 4, self.TextHeight + 4))
+        self.LastRect = self.Rectangle
+        self.Surface = pygame.Surface((self.Rectangle[2], self.Rectangle[3]))
+        self.Centred_X = self.Rectangle[2] / 2 - Main.DefaultContents.GetFont_width("/Ubuntu_Bold.ttf", self.FontSize - 2, self.Text) / 2
+        self.Centred_Y = self.Rectangle[3] / 2 - Main.DefaultContents.GetFont_height("/Ubuntu_Bold.ttf", self.FontSize - 2, self.Text) / 2
+        self.ButtonState = False
+        self.CursorOffset = (0, 0)
+        self.BgColor = UI.Button_Inactive_BackgroundColor
+        self.IndicatorColor = UI.Button_Inactive_IndicatorColor
+
+    def Render(self, DISPLAY):
+        # -- Render Background -- #
+        shape.Shape_Rectangle(self.Surface, self.BgColor, (0, 0, self.Rectangle[2], self.Rectangle[3]))
+        # -- Render Indicator -- #
+        shape.Shape_Rectangle(self.Surface, self.IndicatorColor, (0, 0, self.Rectangle[2], self.Rectangle[3]), 1)
+
+        # -- Render the Button Text -- #
+        Main.DefaultContents.FontRender(self.Surface, "/Ubuntu_Bold.ttf", self.FontSize - 2, self.Text, (240, 240, 240), self.Centred_X, self.Centred_Y)
+
+        DISPLAY.blit(self.Surface, (self.Rectangle[0], self.Rectangle[1]))
+
+        if self.ButtonState:
+            self.ButtonState = False
+
+    def Update(self):
+        # -- Check if surface has the correct size -- #
+        if not self.LastRect == self.Rectangle:
+            self.Surface = pygame.Surface((self.Rectangle[2], self.Rectangle[3]))
+
+            # -- Update all Size and Position Variables -- #
+            self.TextWidth = Main.DefaultContents.GetFont_width("/Ubuntu_Bold.ttf", self.FontSize, self.Text)
+            self.TextHeight = Main.DefaultContents.GetFont_height("/Ubuntu_Bold.ttf", self.FontSize, self.Text)
+            self.Rectangle = utils.Convert.List_PygameRect((self.Rectangle[0] - 2, self.Rectangle[1] - 2, self.TextWidth + 4, self.TextHeight + 4))
+            self.Centred_X = self.Rectangle[2] / 2 - Main.DefaultContents.GetFont_width("/Ubuntu_Bold.ttf", self.FontSize - 2, self.Text) / 2
+            self.Centred_Y = self.Rectangle[3] / 2 - Main.DefaultContents.GetFont_height("/Ubuntu_Bold.ttf", self.FontSize - 2, self.Text) / 2
+
+            self.LastRect = self.Rectangle
+
+        if self.Active and not self.ButtonState:
+            self.BgColor = UI.Button_Active_BackgroundColor
+            self.IndicatorColor = UI.Button_Active_IndicatorColor
+
+        elif self.ButtonState:
+            self.BgColor = UI.Button_Active_IndicatorColor
+            self.IndicatorColor = UI.Button_Inactive_IndicatorColor
+
+        else:
+            self.BgColor = UI.Button_Inactive_BackgroundColor
+            self.IndicatorColor = UI.Button_Inactive_IndicatorColor
+
+    def EventUpdate(self, event):
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.ButtonState = True
+            self.InteractionType = True
+

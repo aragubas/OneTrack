@@ -20,6 +20,7 @@ from ENGINE import MAIN
 from ENGINE import appData
 import ENGINE as tge
 from OneTrack.MAIN.Screens import Editor
+from OneTrack.MAIN import LagIndicator
 import cProfile
 
 DefaultContents = cntMng.ContentManager
@@ -39,6 +40,8 @@ def Initialize(DISPLAY):
     MAIN.ReceiveCommand(0, 60)
 
     Editor.Initialize(DISPLAY)
+    LagIndicator.Initialize()
+
     # -- Set Invisible Mouse -- #
     pygame.mouse.set_visible(False)
 
@@ -51,13 +54,14 @@ def GameDraw(DISPLAY):
     # -- Render Cursor -- #
     DefaultContents.ImageRender(DISPLAY, "/cursor.png", pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1])
 
-    DefaultContents.FontRender(DISPLAY, "/PressStart2P.ttf", 8, "FPS: {0}/{1}".format(MAIN.clock.get_fps(), MAIN.clock.get_time()), (255, 255, 255), 5, 5, backgroundColor=(0, 0, 0))
-
+    LagIndicator.Draw(DISPLAY)
 
 
 def Update():
     global CurrentScreenToUpdate
     CurrentScreenToUpdate.Update()
+
+    LagIndicator.Update()
 
 def EventUpdate(event):
     global CurrentScreenToUpdate

@@ -29,3 +29,5 @@ Editor_CurrentOctave = 7
 PlayMode = False
 SelectedTrack = 0
 Patterns = 2
+PatternUpdateEntry = list()
+PatternIsUpdating = False

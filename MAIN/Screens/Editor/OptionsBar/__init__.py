@@ -23,7 +23,7 @@ from OneTrack.MAIN.Screens.Editor import InstanceVar as var
 
 WidgetCollection = UI.Widget.Widget_Controller
 OptionsBarSurface = pygame.Surface
-
+UpdateChangerValues = True
 
 def Initialize():
     global WidgetCollection
@@ -38,6 +38,7 @@ def Initialize():
     WidgetCollection.Append(UI.Widget.Widget_ValueChanger((58, 5), "HIGHLIGHT", "04x16", 3))
     WidgetCollection.Append(UI.Widget.Widget_Label("/PressStart2P.ttf", ''.join(("v", Main.DefaultContents.Get_RegKey("/version"))), 9, (200, 200, 200), 5, 5, 4))
     WidgetCollection.Append(UI.Widget.Widget_ValueChanger((58, 42), "CHANNELS", "4", 5))
+    WidgetCollection.Append(UI.Widget.Widget_Button("Apply", 18, 175, 7, 6))
 
     # -- Set Logo Location -- #
     obj = WidgetCollection.GetWidget(0)
@@ -54,6 +55,7 @@ def EventUpdate(event):
 
 def Update():
     global WidgetCollection
+    global UpdateChangerValues
 
     WidgetCollection.Update()
 
@@ -61,6 +63,7 @@ def Update():
     UpdateRowsSelector()
     UpdateHighlightSelector()
     UpdatePatternsSelector()
+    UpdateApplyButton()
 
     # -- Set Label Version Location
     obj = WidgetCollection.GetWidget(4)
@@ -68,36 +71,63 @@ def Update():
     obj.Rectangle[0] = PictcBox.Rectangle[0]
     obj.Rectangle[1] = PictcBox.Rectangle[1] + PictcBox.Rectangle[3] - 5
 
+    # -- Update Changer Values -- #
+    if UpdateChangerValues:
+        UpdateChangerValues = False
+        UpdateChanger()
+
+def UpdateChanger():
+    global NewBPMValue
+    global NewRowsValue
+    global NewPatternValue
+    global NewHighlightSelector
+    global NewHighlightSecoundSelector
+
+    NewBPMValue = var.BPM
+    NewRowsValue = var.Rows
+    NewPatternValue = var.Patterns
+    NewHighlightSelector = var.Highlight
+    NewHighlightSecoundSelector = var.HighlightSecond
+
+
+NewBPMValue = 0
+NewPatternValue = 0
+NewRowsValue = 0
+NewHighlightSelector = 0
+NewHighlightSecoundSelector = 0
 
 def UpdateBPMSelector():
+    global NewBPMValue
     if WidgetCollection.LastInteractionID == 1:
-        var.BPM = int(WidgetCollection.LastInteractionType)
+        NewBPMValue = int(WidgetCollection.LastInteractionType)
 
     else:
         obj = WidgetCollection.GetWidget(1)
-        obj.Changer.Value = str(var.BPM).zfill(3)
+        obj.Changer.Value = str(NewBPMValue).zfill(3)
         obj.Changer.SplitedAlgarims = list(obj.Changer.Value)
 
 def UpdatePatternsSelector():
+    global NewPatternValue
     if WidgetCollection.LastInteractionID == 5:
-        var.Patterns = int(WidgetCollection.LastInteractionType)
+        NewPatternValue = int(WidgetCollection.LastInteractionType)
 
-        if var.Patterns > 4:
-            var.Patterns = 4
-        elif var.Patterns <= 0:
-            var.Patterns = 1
+        if NewPatternValue > 4:
+            NewPatternValue = 4
+        elif NewPatternValue <= 0:
+            NewPatternValue = 1
 
     else:
-        if var.Patterns > 4:
-            var.Patterns = 4
-        elif var.Patterns <= 0:
-            var.Patterns = 1
+        if NewPatternValue > 4:
+            NewPatternValue = 4
+        elif NewPatternValue <= 0:
+            NewPatternValue = 1
 
         obj = WidgetCollection.GetWidget(5)
-        obj.Changer.Value = str(var.Patterns)
+        obj.Changer.Value = str(NewPatternValue)
         obj.Changer.SplitedAlgarims = list(obj.Changer.Value)
 
 def UpdateRowsSelector():
+    global NewRowsValue
     if WidgetCollection.LastInteractionID == 2:
         # -- Validate the Current Value -- #
         CurrentValue = WidgetCollection.LastInteractionType
@@ -106,15 +136,18 @@ def UpdateRowsSelector():
         if RowsValue > 74:
             RowsValue = 74
 
-        var.Rows = RowsValue
+        NewRowsValue = RowsValue
 
         # -- Get the Changer Object -- #
         obj = WidgetCollection.GetWidget(2)
         # -- Re-Format the String -- #
-        obj.Changer.Value = str(RowsValue).zfill(2)
+        obj.Changer.Value = str(NewRowsValue).zfill(2)
         obj.Changer.SplitedAlgarims = list(obj.Changer.Value)
 
 def UpdateHighlightSelector():
+    global NewHighlightSelector
+    global NewHighlightSecoundSelector
+
     if WidgetCollection.LastInteractionID == 3:
         # -- Validate the Current Value -- #
         CurrentValue = WidgetCollection.LastInteractionType
@@ -129,20 +162,33 @@ def UpdateHighlightSelector():
         if int(SecondVal) > 32:
             SecondVal = 32
 
-        var.Highlight = int(FirstVal)
-        var.HighlightSecond = int(SecondVal)
+        NewHighlightSelector = int(FirstVal)
+        NewHighlightSecoundSelector = int(SecondVal)
 
         # -- Get the Changer Object -- #
         obj = WidgetCollection.GetWidget(3)
         # -- Re-Format the String -- #4
-        obj.Changer.Value = ''.join((str(FirstVal).zfill(2), "x", str(SecondVal).zfill(2)))
+        obj.Changer.Value = ''.join((str(NewHighlightSelector).zfill(2), "x", str(NewHighlightSecoundSelector).zfill(2)))
         obj.Changer.SplitedAlgarims = list(obj.Changer.Value)
 
-        for track in Editor.track_list.PatternList:
-            for patternCol in track.Tracks:
-                for block in patternCol.Tracks:
-                    block.Active = True
+def UpdateApplyButton():
+    if WidgetCollection.LastInteractionID == 6:
+        if WidgetCollection.LastInteractionType:
+            # -- Set Variables -- #
+            var.BPM = NewBPMValue
+            var.Rows = NewRowsValue
+            var.Patterns = NewPatternValue
+            var.Highlight = NewHighlightSelector
+            var.HighlightSecond = NewHighlightSecoundSelector
 
+            # -- Update the Tracks Pre-Rendered Block -- #
+            for track in Editor.track_list.PatternList:
+                for patternCol in track.Tracks:
+                    for block in patternCol.Tracks:
+                        block.Active = True
+
+            # -- Re-Check the Variables Values -- #
+            UpdateChanger()
 
 def Draw(DISPLAY):
     global WidgetCollection
