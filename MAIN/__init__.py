@@ -63,8 +63,6 @@ def Update():
 
     LagIndicator.Update()
 
-    print(0 / 0)
-
 def EventUpdate(event):
     global CurrentScreenToUpdate
 

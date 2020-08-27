@@ -99,8 +99,10 @@ def SaveMusicData(FilePath):
     for track in track_list.PatternList:
         for patternCol in track.Tracks:
             for block in patternCol.Tracks:
+                block.ResetSurface()
                 block.SurfaceUpdateTrigger = True
                 block.Active = True
+
 
 def LoadMusicData(FileName):
     global track_list
