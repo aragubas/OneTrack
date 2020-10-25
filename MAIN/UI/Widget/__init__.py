@@ -15,8 +15,8 @@
 #
 #
 import pygame
-from ENGINE import utils
-from ENGINE import shape
+from Core import utils
+from Core import shape
 from OneTrack import MAIN as Main
 from OneTrack.MAIN import UI
 

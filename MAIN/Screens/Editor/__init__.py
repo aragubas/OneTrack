@@ -15,11 +15,11 @@
 #
 #
 import pygame, os, pickle, io
-from ENGINE import cntMng
-from ENGINE import MAIN
-from ENGINE import appData
-from ENGINE import shape
-import ENGINE as tge
+from Core import cntMng
+from Core import MAIN
+from Core import appData
+from Core import shape
+import Core as tge
 from OneTrack.MAIN import UI
 from OneTrack.MAIN import SaveFileDialog
 from OneTrack.MAIN import OpenFileDialog
@@ -36,7 +36,7 @@ TopBarControls = UI.ButtonsBar
 DropDownFileMenu = UI.DropDownMenu
 
 
-def Initialize(DISPLAY):
+def Initialize():
     global track_list
     global TopBarControls
     global DropDownFileMenu

@@ -16,8 +16,8 @@
 #
 import pygame
 from OneTrack import MAIN as Main
-from ENGINE import MAIN
-from ENGINE import utils
+from Core import MAIN
+from Core import utils
 
 LagIndicatorSurface = pygame.Surface
 LagTextWidth = 0

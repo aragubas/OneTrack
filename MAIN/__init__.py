@@ -15,53 +15,67 @@
 #
 #
 import pygame, os, pickle, io
-from ENGINE import cntMng
-from ENGINE import MAIN
-from ENGINE import appData
-import ENGINE as tge
+from Core import cntMng
+from Core import MAIN
+from Core import appData
+import Core as tge
 from OneTrack.MAIN.Screens import Editor
 from OneTrack.MAIN import LagIndicator
 import cProfile
+
+## Required Variables ##
+PROCESS_PID = 0
+PROCESS_NAME = 0
+IS_GRAPHICAL = True
+FULLSCREEN = True
+POSITION = (0, 0)
+DISPLAY = pygame.Surface((800, 600))
+APPLICATION_HAS_FOCUS = True
 
 DefaultContents = cntMng.ContentManager
 
 CurrentScreenToUpdate = Editor
 CurrentCursor = 0
-def Initialize(DISPLAY):
+def Initialize():
     global DefaultContents
 
     DefaultContents = cntMng.ContentManager()
-    DefaultContents.SetFontPath("Data/Font")
-    DefaultContents.LoadSpritesInFolder("Data/Sprite")
-    DefaultContents.LoadRegKeysInFolder("Data/Reg")
+    DefaultContents.SetSourceFolder("OneTrack/")
+    DefaultContents.SetFontPath("Data/fonts")
+    DefaultContents.LoadImagesInFolder("Data/img")
+    DefaultContents.LoadRegKeysInFolder("Data/reg")
     DefaultContents.InitSoundSystem()
 
     MAIN.ReceiveCommand(5, "OneTrack v{0}".format(DefaultContents.Get_RegKey("/version")))
     MAIN.ReceiveCommand(0, 60)
 
-    Editor.Initialize(DISPLAY)
+    Editor.Initialize()
     LagIndicator.Initialize()
 
     # -- Set Invisible Mouse -- #
     pygame.mouse.set_visible(False)
 
-def GameDraw(DISPLAY):
+def Draw():
     global CurrentScreenToUpdate
     global DefaultContents
 
     CurrentScreenToUpdate.GameDraw(DISPLAY)
 
-    # -- Render Cursor -- #
-    DefaultContents.ImageRender(DISPLAY, "/cursor.png", pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1])
-
     LagIndicator.Draw(DISPLAY)
 
+    return DISPLAY
 
 def Update():
     global CurrentScreenToUpdate
+
+    tge.MAIN.clock.tick(60)
+
     CurrentScreenToUpdate.Update()
 
     LagIndicator.Update()
+
+    tge.MAIN.clock.tick(0)
+
 
 def EventUpdate(event):
     global CurrentScreenToUpdate

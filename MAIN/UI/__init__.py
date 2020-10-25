@@ -19,10 +19,10 @@ from OneTrack import MAIN as Main
 from OneTrack.MAIN.Screens import Editor
 from OneTrack.MAIN.UI import Widget as Widget
 from OneTrack.MAIN.Screens.Editor import InstanceVar as var
-from ENGINE import shape
-from ENGINE import fx
-from ENGINE import appData
-from ENGINE import utils
+from Core import shape
+from Core import fx
+from Core import appData
+from Core import utils
 from math import log2, pow
 
 # -- Color List -- #
