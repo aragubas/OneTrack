@@ -108,7 +108,7 @@ def LoadMusicData(FileName):
     global track_list
 
     # -- Unload the Current SoundCahce -- #
-    Main.DefaultContents.UnloadSoundTuneCache()
+    UI.ContentManager.UnloadSoundTuneCache()
     # -- Unload the Loaded TrackBlocks Surfaces -- #
     for track in track_list.PatternList:
         for patternCol in track.Tracks:

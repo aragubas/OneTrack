@@ -15,69 +15,91 @@
 #
 #
 import pygame, os, pickle, io
+import Core
 from Core import cntMng
 from Core import MAIN
 from Core import appData
 import Core as tge
 from OneTrack.MAIN.Screens import Editor
 from OneTrack.MAIN import LagIndicator
+from OneTrack.MAIN import UI
+
 import cProfile
 
-## Required Variables ##
-PROCESS_PID = 0
-PROCESS_NAME = 0
-IS_GRAPHICAL = True
-FULLSCREEN = True
-POSITION = (0, 0)
-DISPLAY = pygame.Surface((800, 600))
-APPLICATION_HAS_FOCUS = True
 
-DefaultContents = cntMng.ContentManager
-
-CurrentScreenToUpdate = Editor
-CurrentCursor = 0
-def Initialize():
-    global DefaultContents
-
-    DefaultContents = cntMng.ContentManager()
-    DefaultContents.SetSourceFolder("OneTrack/")
-    DefaultContents.SetFontPath("Data/fonts")
-    DefaultContents.LoadImagesInFolder("Data/img")
-    DefaultContents.LoadRegKeysInFolder("Data/reg")
-    DefaultContents.InitSoundSystem()
-
-    MAIN.ReceiveCommand(5, "OneTrack v{0}".format(DefaultContents.Get_RegKey("/version")))
-    MAIN.ReceiveCommand(0, 60)
-
-    Editor.Initialize()
-    LagIndicator.Initialize()
-
-    # -- Set Invisible Mouse -- #
-    pygame.mouse.set_visible(False)
-
-def Draw():
-    global CurrentScreenToUpdate
-    global DefaultContents
-
-    CurrentScreenToUpdate.GameDraw(DISPLAY)
-
-    LagIndicator.Draw(DISPLAY)
-
-    return DISPLAY
-
-def Update():
-    global CurrentScreenToUpdate
-
-    tge.MAIN.clock.tick(60)
-
-    CurrentScreenToUpdate.Update()
-
-    LagIndicator.Update()
-
-    tge.MAIN.clock.tick(0)
+class Process():
+    def __init__(self, pPID, pProcessName, pROOT_MODULE):
+        self.PID = pPID
+        self.NAME = pProcessName
+        self.ROOT_MODULE = pROOT_MODULE
+        self.IS_GRAPHICAL = True
+        self.DISPLAY = pygame.Surface((800, 600))
+        self.LAST_SURFACE = self.DISPLAY.copy()
+        self.APPLICATION_HAS_FOCUS = True
+        self.POSITION = (0, 0)
+        self.FULLSCREEN = True
+        self.TITLEBAR_RECTANGLE = pygame.Rect(self.POSITION[0], self.POSITION[1], self.DISPLAY.get_width(), 15)
+        self.TITLEBAR_TEXT = "OneTrack"
+        self.WindowDragEnable = False
 
 
-def EventUpdate(event):
-    global CurrentScreenToUpdate
+    def Initialize(self):
+        # Initialize Variables
+        self.CurrentScreenToUpdate = Editor
+        self.CurrentCursor = 0
 
-    CurrentScreenToUpdate.EventUpdate(event)
+        # Initialize Content Manager
+        self.DefaultContents = cntMng.ContentManager()
+        self.DefaultContents.SetSourceFolder("OneTrack/")
+        self.DefaultContents.SetFontPath("Data/fonts")
+        self.DefaultContents.LoadImagesInFolder("Data/img")
+        self.DefaultContents.LoadRegKeysInFolder("Data/reg")
+        self.DefaultContents.InitSoundSystem()
+
+        # Set the default content manager for the UI
+        UI.ContentManager = self.DefaultContents
+
+        MAIN.ReceiveCommand(0, 60)
+
+        self.TITLEBAR_TEXT = "OneTrack v{0}".format(self.DefaultContents.Get_RegKey("/version"))
+
+        Editor.Initialize()
+        LagIndicator.Initialize()
+
+        # -- Set Invisible Mouse -- #
+        pygame.mouse.set_visible(False)
+
+    def Draw(self):
+        self.CurrentScreenToUpdate.GameDraw(self.DISPLAY)
+
+        LagIndicator.Draw(self.DISPLAY)
+
+        self.LAST_SURFACE = self.DISPLAY.copy()
+        return self.DISPLAY
+
+    def Update(self):
+        ## Update the Titlebar
+        self.TITLEBAR_RECTANGLE = pygame.Rect(self.POSITION[0], self.POSITION[1], self.DISPLAY.get_width(), 15)
+
+        if not self.APPLICATION_HAS_FOCUS:
+            return
+
+        self.CurrentScreenToUpdate.Update()
+
+        LagIndicator.Update()
+
+    def EventUpdate(self, event):
+        self.CurrentScreenToUpdate.EventUpdate(event)
+
+    def WindowManagerSignal(self, Signal):
+        # Gain Focus
+        OriginalDragValue = self.WindowDragEnable
+        if Signal == 0:
+            for process in Core.MAIN.ProcessList:
+                process.APPLICATION_HAS_FOCUS = False
+                process.WindowDragEnable = False
+
+            # Make this application focused again
+            self.APPLICATION_HAS_FOCUS = True
+            self.WindowDragEnable = OriginalDragValue
+

@@ -93,7 +93,7 @@ class Widget_PictureBox:
         self.CursorOffset = (0, 0)
 
     def Render(self, DISPLAY):
-        Main.DefaultContents.ImageRender(DISPLAY, self.ImageName, self.Rectangle[0], self.Rectangle[1], self.Rectangle[2], self.Rectangle[3])
+        UI.ContentManager.ImageRender(DISPLAY, self.ImageName, self.Rectangle[0], self.Rectangle[1], self.Rectangle[2], self.Rectangle[3])
 
     def Update(self):
         pass
@@ -130,9 +130,9 @@ class Widget_ValueChanger:
         shape.Shape_Rectangle(DISPLAY, LineColor, self.Rectangle, 1)
 
         # -- Render Change Title -- #
-        TitleX = self.Rectangle[0] + self.Rectangle[2] / 2 - Main.DefaultContents.GetFont_width("/Ubuntu_Bold.ttf", 12, self.TitleName) / 2
+        TitleX = self.Rectangle[0] + self.Rectangle[2] / 2 - UI.ContentManager.GetFont_width("/Ubuntu_Bold.ttf", 12, self.TitleName) / 2
 
-        Main.DefaultContents.FontRender(DISPLAY, "/Ubuntu_Bold.ttf", 12, self.TitleName, (230, 230, 230), TitleX, self.Rectangle[1])
+        UI.ContentManager.FontRender(DISPLAY, "/Ubuntu_Bold.ttf", 12, self.TitleName, (230, 230, 230), TitleX, self.Rectangle[1])
 
         # -- Render EditableNumberView -- #
         self.Changer.Render(DISPLAY)
@@ -144,14 +144,14 @@ class Widget_ValueChanger:
             self.LastValue = self.Changer.Value
             self.InteractionType = self.Changer.Value
 
-        if Main.DefaultContents.GetFont_width("/PressStart2P.ttf", 12, self.Changer.Value) > self.Rectangle[2]:
-            self.Rectangle[2] = self.Rectangle[2] + Main.DefaultContents.GetFont_width("/PressStart2P.ttf", 12, self.Changer.Value) + 5
+        if UI.ContentManager.GetFont_width("/PressStart2P.ttf", 12, self.Changer.Value) > self.Rectangle[2]:
+            self.Rectangle[2] = self.Rectangle[2] + UI.ContentManager.GetFont_width("/PressStart2P.ttf", 12, self.Changer.Value) + 5
 
-        if Main.DefaultContents.GetFont_width("/Ubuntu_Bold.ttf", 12, self.TitleName) > self.Rectangle[2]:
-            self.Rectangle[2] = self.Rectangle[2] + Main.DefaultContents.GetFont_width("/Ubuntu_Bold.ttf", 12, self.TitleName)
+        if UI.ContentManager.GetFont_width("/Ubuntu_Bold.ttf", 12, self.TitleName) > self.Rectangle[2]:
+            self.Rectangle[2] = self.Rectangle[2] + UI.ContentManager.GetFont_width("/Ubuntu_Bold.ttf", 12, self.TitleName)
 
 
-        self.Changer.Rectangle[0] = self.Rectangle[0] + self.Rectangle[2] / 2 - Main.DefaultContents.GetFont_width("/PressStart2P.ttf", 12, self.Changer.Value) / 2
+        self.Changer.Rectangle[0] = self.Rectangle[0] + self.Rectangle[2] / 2 - UI.ContentManager.GetFont_width("/PressStart2P.ttf", 12, self.Changer.Value) / 2
 
     def EventUpdate(self, event):
         self.Changer.EventUpdate(event)
@@ -171,15 +171,15 @@ class Widget_Label:
         self.Color = Color
         self.X = X
         self.Y = Y
-        self.Rectangle = utils.Convert.List_PygameRect((X, Y, Main.DefaultContents.GetFont_width(self.FontName, FontSize, self.Text), Main.DefaultContents.GetFont_height(self.FontName, FontSize, self.Text)))
+        self.Rectangle = utils.Convert.List_PygameRect((X, Y, UI.ContentManager.GetFont_width(self.FontName, FontSize, self.Text), UI.ContentManager.GetFont_height(self.FontName, FontSize, self.Text)))
         self.AwaysUpdate = False
         self.CursorOffset = (0, 0)
 
     def Render(self, DISPLAY):
-        Main.DefaultContents.FontRender(DISPLAY, self.FontName,self.FontSize, self.Text, self.Color, self.Rectangle[0], self.Rectangle[1])
+        UI.ContentManager.FontRender(DISPLAY, self.FontName, self.FontSize, self.Text, self.Color, self.Rectangle[0], self.Rectangle[1])
 
     def Update(self):
-        self.Rectangle = utils.Convert.List_PygameRect((self.X, self.Y, Main.DefaultContents.GetFont_width(self.FontName, self.FontSize, self.Text), Main.DefaultContents.GetFont_height(self.FontName, self.FontSize, self.Text)))
+        self.Rectangle = utils.Convert.List_PygameRect((self.X, self.Y, UI.ContentManager.GetFont_width(self.FontName, self.FontSize, self.Text), UI.ContentManager.GetFont_height(self.FontName, self.FontSize, self.Text)))
 
     def EventUpdate(self, event):
         pass
@@ -233,7 +233,7 @@ class Widget_PianoKeys:
                 TextColor = (200, 205, 255)
                 IsHighNote = True
 
-            TextX = X + (Width / 2 - Main.DefaultContents.GetFont_width("/PressStart2P.ttf", 12, NoteLabel) / 2)
+            TextX = X + (Width / 2 - UI.ContentManager.GetFont_width("/PressStart2P.ttf", 12, NoteLabel) / 2)
 
             if self.LastNote == i:
                 BackgroundColor = (200, 205, 255)
@@ -244,7 +244,7 @@ class Widget_PianoKeys:
             else:
                 shape.Shape_Rectangle(self.Surface, BackgroundColor, (X, Y, Width, Height), 0, 0, 0, 0, 5, 5)
 
-            Main.DefaultContents.FontRender(self.Surface, "/PressStart2P.ttf", 12, NoteLabel, TextColor, TextX, Y + 5)
+            UI.ContentManager.FontRender(self.Surface, "/PressStart2P.ttf", 12, NoteLabel, TextColor, TextX, Y + 5)
 
         DISPLAY.blit(self.Surface, (self.Rectangle[0], self.Rectangle[1]))
 
@@ -354,13 +354,13 @@ class Widget_Button:
         self.Y = Y
         self.Text = Text
         self.FontSize = FontSize
-        self.TextWidth = Main.DefaultContents.GetFont_width("/Ubuntu_Bold.ttf", self.FontSize, self.Text)
-        self.TextHeight = Main.DefaultContents.GetFont_height("/Ubuntu_Bold.ttf", self.FontSize, self.Text)
+        self.TextWidth = UI.ContentManager.GetFont_width("/Ubuntu_Bold.ttf", self.FontSize, self.Text)
+        self.TextHeight = UI.ContentManager.GetFont_height("/Ubuntu_Bold.ttf", self.FontSize, self.Text)
         self.Rectangle = utils.Convert.List_PygameRect((X - 2, Y - 2, self.TextWidth + 4, self.TextHeight + 4))
         self.LastRect = self.Rectangle
         self.Surface = pygame.Surface((self.Rectangle[2], self.Rectangle[3]))
-        self.Centred_X = self.Rectangle[2] / 2 - Main.DefaultContents.GetFont_width("/Ubuntu_Bold.ttf", self.FontSize - 2, self.Text) / 2
-        self.Centred_Y = self.Rectangle[3] / 2 - Main.DefaultContents.GetFont_height("/Ubuntu_Bold.ttf", self.FontSize - 2, self.Text) / 2
+        self.Centred_X = self.Rectangle[2] / 2 - UI.ContentManager.GetFont_width("/Ubuntu_Bold.ttf", self.FontSize - 2, self.Text) / 2
+        self.Centred_Y = self.Rectangle[3] / 2 - UI.ContentManager.GetFont_height("/Ubuntu_Bold.ttf", self.FontSize - 2, self.Text) / 2
         self.ButtonState = False
         self.CursorOffset = (0, 0)
         self.BgColor = UI.Button_Inactive_BackgroundColor
@@ -373,7 +373,7 @@ class Widget_Button:
         shape.Shape_Rectangle(self.Surface, self.IndicatorColor, (0, 0, self.Rectangle[2], self.Rectangle[3]), 1)
 
         # -- Render the Button Text -- #
-        Main.DefaultContents.FontRender(self.Surface, "/Ubuntu_Bold.ttf", self.FontSize - 2, self.Text, (240, 240, 240), self.Centred_X, self.Centred_Y)
+        UI.ContentManager.FontRender(self.Surface, "/Ubuntu_Bold.ttf", self.FontSize - 2, self.Text, (240, 240, 240), self.Centred_X, self.Centred_Y)
 
         DISPLAY.blit(self.Surface, (self.Rectangle[0], self.Rectangle[1]))
 
@@ -386,11 +386,11 @@ class Widget_Button:
             self.Surface = pygame.Surface((self.Rectangle[2], self.Rectangle[3]))
 
             # -- Update all Size and Position Variables -- #
-            self.TextWidth = Main.DefaultContents.GetFont_width("/Ubuntu_Bold.ttf", self.FontSize, self.Text)
-            self.TextHeight = Main.DefaultContents.GetFont_height("/Ubuntu_Bold.ttf", self.FontSize, self.Text)
+            self.TextWidth = UI.ContentManager.GetFont_width("/Ubuntu_Bold.ttf", self.FontSize, self.Text)
+            self.TextHeight = UI.ContentManager.GetFont_height("/Ubuntu_Bold.ttf", self.FontSize, self.Text)
             self.Rectangle = utils.Convert.List_PygameRect((self.Rectangle[0] - 2, self.Rectangle[1] - 2, self.TextWidth + 4, self.TextHeight + 4))
-            self.Centred_X = self.Rectangle[2] / 2 - Main.DefaultContents.GetFont_width("/Ubuntu_Bold.ttf", self.FontSize - 2, self.Text) / 2
-            self.Centred_Y = self.Rectangle[3] / 2 - Main.DefaultContents.GetFont_height("/Ubuntu_Bold.ttf", self.FontSize - 2, self.Text) / 2
+            self.Centred_X = self.Rectangle[2] / 2 - UI.ContentManager.GetFont_width("/Ubuntu_Bold.ttf", self.FontSize - 2, self.Text) / 2
+            self.Centred_Y = self.Rectangle[3] / 2 - UI.ContentManager.GetFont_height("/Ubuntu_Bold.ttf", self.FontSize - 2, self.Text) / 2
 
             self.LastRect = self.Rectangle
 

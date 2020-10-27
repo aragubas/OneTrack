@@ -16,6 +16,8 @@
 #
 import pygame
 from OneTrack import MAIN as Main
+from OneTrack.MAIN import UI
+
 from Core import MAIN
 from Core import utils
 
@@ -34,8 +36,8 @@ def Initialize():
     global LagTextColor
     global FlashingAnimation
 
-    LagTextWidth = Main.DefaultContents.GetFont_width("/PressStart2P.ttf", 14, "LAG")
-    LagTextHeight = Main.DefaultContents.GetFont_height("/PressStart2P.ttf", 14, "LAG")
+    LagTextWidth = UI.ContentManager.GetFont_width("/PressStart2P.ttf", 14, "LAG")
+    LagTextHeight = UI.ContentManager.GetFont_height("/PressStart2P.ttf", 14, "LAG")
 
     LagIndicatorSurface = pygame.Surface((LagTextWidth + 4, LagTextHeight + 4))
     LagTextColor = (255, 0, 0)
@@ -53,7 +55,7 @@ def Draw(DISPLAY):
     LagIndicatorSurface.fill((0, 0, 0))
     LagIndicatorSurface.set_alpha(Alpha)
 
-    Main.DefaultContents.FontRender(LagIndicatorSurface, "/PressStart2P.ttf", 14, "LAG", LagTextColor, 2, 2)
+    UI.ContentManager.FontRender(LagIndicatorSurface, "/PressStart2P.ttf", 14, "LAG", LagTextColor, 2, 2)
 
     DISPLAY.blit(LagIndicatorSurface, (5, 5))
 

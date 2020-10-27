@@ -61,6 +61,7 @@ TrackSelectedPattern_FontColor = (265, 230, 255)
 # ------------------------#
 BackgroundColor = (62, 62, 116)
 # ------------------------ #
+ContentManager = None
 
 def LoadColorSchema(FolderName):
     pass
@@ -105,7 +106,7 @@ class EditableNumberView:
             else:
                 self.Color = EditableNumberView_ColorDeactive
 
-            Main.DefaultContents.FontRender(DISPLAY, "/PressStart2P.ttf", self.FontSize, str(Algarims), self.Color, self.Rectangle[0] + self.AlgarimsWidth * i, self.YOffset + self.Rectangle[1])
+            ContentManager.FontRender(DISPLAY, "/PressStart2P.ttf", self.FontSize, str(Algarims), self.Color, self.Rectangle[0] + self.AlgarimsWidth * i, self.YOffset + self.Rectangle[1])
 
     def Update(self):
         if not self.IsActive:
@@ -113,7 +114,7 @@ class EditableNumberView:
 
         # -- Update the Color -- #
         for i, Algarims in enumerate(self.SplitedAlgarims):
-            self.AlgarimsWidth = Main.DefaultContents.GetFont_width("/PressStart2P.ttf", self.FontSize, str(Algarims))
+            self.AlgarimsWidth = ContentManager.GetFont_width("/PressStart2P.ttf", self.FontSize, str(Algarims))
 
     def EventUpdate(self, event):
         if not self.IsActive:
@@ -460,10 +461,10 @@ class TrackBlock:
     def Reset(self, TrackData):
         self.TrackData = list(TrackData)
         self.Instance = -1
-        self.TextWidth = Main.DefaultContents.GetFont_width("/PressStart2P.ttf", 12, "00000")
-        self.TextHeight = Main.DefaultContents.GetFont_height("/PressStart2P.ttf", 12, "00000")
+        self.TextWidth = ContentManager.GetFont_width("/PressStart2P.ttf", 12, "00000")
+        self.TextHeight = ContentManager.GetFont_height("/PressStart2P.ttf", 12, "00000")
         self.Scroll = 0
-        self.Rectangle = pygame.Rect(5, self.Scroll + (self.TextHeight + 10) * self.Instance, Main.DefaultContents.GetFont_width("/PressStart2P.ttf", 12, "00000") * 2 + 5, Main.DefaultContents.GetFont_height("/PressStart2P.ttf", 12, "00000") + 2)
+        self.Rectangle = pygame.Rect(5, self.Scroll + (self.TextHeight + 10) * self.Instance, ContentManager.GetFont_width("/PressStart2P.ttf", 12, "00000") * 2 + 5, ContentManager.GetFont_height("/PressStart2P.ttf", 12, "00000") + 2)
         self.LastRect = self.Rectangle
         self.FrequencyNumber = EditableNumberView(pygame.Rect(10, 2, self.TextWidth, self.TextHeight), str(self.TrackData[0]), 10)
         self.DurationNumber = EditableNumberView(pygame.Rect(self.FrequencyNumber.Rectangle[0], 2, self.TextWidth, self.TextHeight), str(self.TrackData[1]), 10)
@@ -543,16 +544,16 @@ class TrackBlock:
         if not self.Active:
             LabelColor = TrackBlock_InstanceLabelDeactiveColor
 
-        Main.DefaultContents.FontRender(self.BlockSurface, "/PressStart2P.ttf", 10, str(self.Instance).zfill(2), LabelColor, (DurationX + self.TextWidth) + 3, 1)
+        ContentManager.FontRender(self.BlockSurface, "/PressStart2P.ttf", 10, str(self.Instance).zfill(2), LabelColor, (DurationX + self.TextWidth) + 3, 1)
 
         # -- Render Note Label -- #
-        Main.DefaultContents.FontRender(self.BlockSurface, "/PressStart2P.ttf", 10, self.PitchLabel, PitchLabelColor, 0, 0)
+        ContentManager.FontRender(self.BlockSurface, "/PressStart2P.ttf", 10, self.PitchLabel, PitchLabelColor, 0, 0)
 
     def ResetSurface(self):
         self.BlockSurface = pygame.Surface((self.Rectangle[2], self.Rectangle[3]))
 
     def Update(self):
-        FrequencyWidthMax = Main.DefaultContents.GetFont_width("/PressStart2P.ttf", 10, "000")
+        FrequencyWidthMax = ContentManager.GetFont_width("/PressStart2P.ttf", 10, "000")
 
         self.Rectangle = pygame.Rect(self.Rectangle[0], (self.TextHeight + 10) * self.Instance, FrequencyWidthMax + self.FrequencyNumber.Rectangle[2] + self.DurationNumber.Rectangle[2] + 25, self.Rectangle[3])
         self.FrequencyNumber.Rectangle = pygame.Rect(FrequencyWidthMax, 1, self.TextWidth, self.TextHeight)
@@ -1005,7 +1006,7 @@ class TrackColection:
             Frequency = int(track.TrackData[0])
             Duration = int(track.TrackData[1])
 
-            Main.DefaultContents.GetTune_FromTuneCache(Frequency, Duration, 44000)
+            ContentManager.GetTune_FromTuneCache(Frequency, Duration, 44000)
 
     def Draw(self, DISPLAY):
         self.ScreenSize = (DISPLAY.get_width(), DISPLAY.get_height())
@@ -1097,7 +1098,7 @@ class TrackColection:
                 if CurrentTrackObj.TrackData[0] == "-----":
                     # -- StopSoundChannels Command -- #
                     if "-----" in CurrentTrackObj.TrackData[1]:
-                        Main.DefaultContents.StopAllChannels()
+                        ContentManager.StopAllChannels()
 
                     # -- Fade Command -- #
                     elif CurrentTrackObj.TrackData[1].startswith("F"):
@@ -1109,7 +1110,7 @@ class TrackColection:
                                 FadeTime += arg
                         FadeTime = int(FadeTime.replace("-", ""))
 
-                        Main.DefaultContents.FadeoutSound(self.PlayMode_LastSoundChannel, FadeTime)
+                        ContentManager.FadeoutSound(self.PlayMode_LastSoundChannel, FadeTime)
 
                     # -- Pattern Jump Command -- #
                     elif CurrentTrackObj.TrackData[1].startswith("J"):
@@ -1148,7 +1149,7 @@ class TrackColection:
 
                     # -- If not SoundTune is null, Play the Tune -- #
                     Volume = 1.0 / len(Editor.track_list.PatternList[Editor.track_list.CurrentPatternID].Tracks)
-                    CurrentPlayID = Main.DefaultContents.PlayTune(SoundTune, SoundDuration, Volume=Volume)
+                    CurrentPlayID = ContentManager.PlayTune(SoundTune, SoundDuration, Volume=Volume)
 
                     if not CurrentPlayID is None:
                         self.PlayMode_LastSoundChannel = CurrentPlayID
@@ -1182,14 +1183,14 @@ class TrackColection:
                     self.SelectedTrack = 0
                     var.GenerateSoundCache = True
                     var.PlayMode = True
-                    Main.DefaultContents.StopAllChannels()
+                    ContentManager.StopAllChannels()
 
                 else:
                     self.PlayMode = False
                     self.PlayMode_TrackDelay = 0
                     self.PlayMode_CurrentTonePlayed = False
                     var.PlayMode = False
-                    Main.DefaultContents.StopAllChannels()
+                    ContentManager.StopAllChannels()
 
             # -- Disable Edit Controls when in Play Mode -- #
             if not self.PlayMode and self.Active:
@@ -1347,7 +1348,7 @@ class TrackList:
             PatternName_FontColor = TrackSelectedPattern_PlayMode_FontColor
 
         shape.Shape_Rectangle(self.TracksSurface, PatternName_BackgroundColor, (0, 0, DISPLAY.get_width(), 18))
-        Main.DefaultContents.FontRender(self.TracksSurface, "/PressStart2P.ttf", 12, SelectedPatternText, PatternName_FontColor, 5, 4)
+        ContentManager.FontRender(self.TracksSurface, "/PressStart2P.ttf", 12, SelectedPatternText, PatternName_FontColor, 5, 4)
 
         DISPLAY.blit(self.TracksSurface, (self.Rectangle[0], self.Rectangle[1]))
 
@@ -1411,7 +1412,7 @@ class TrackList:
 
                                 SoundDuration = float("{0}.{1}".format(FirstDigits, SecoundDigits))
 
-                                Main.DefaultContents.GetTune_FromTuneCache(Freqn, SoundDuration, 44000)
+                                ContentManager.GetTune_FromTuneCache(Freqn, SoundDuration, 44000)
                         except ValueError:
                             continue
 
@@ -1453,7 +1454,7 @@ class Button:
         self.ButtonState = 0  # 0 - INACTIVE, 1 - DOWN, 2 - UP
         self.FontFile = "/PressStart2P.ttf"
         self.IsButtonEnabled = True
-        self.Rectangle = pygame.rect.Rect(self.Rectangle[0], self.Rectangle[1], Main.DefaultContents.GetFont_width(self.FontFile, self.TextSize, self.ButtonText) + 5, Main.DefaultContents.GetFont_height(self.FontFile, self.TextSize, self.ButtonText) + 6)
+        self.Rectangle = pygame.rect.Rect(self.Rectangle[0], self.Rectangle[1], ContentManager.GetFont_width(self.FontFile, self.TextSize, self.ButtonText) + 5, ContentManager.GetFont_height(self.FontFile, self.TextSize, self.ButtonText) + 6)
         self.LastRect = self.Rectangle
         self.CursorSettedToggle = False
         self.ButtonDowed = False
@@ -1516,7 +1517,7 @@ class Button:
 
     def Render(self, DISPLAY):
         # -- Update the Surface -- #
-        self.Rectangle = pygame.Rect(self.Rectangle[0], self.Rectangle[1], Main.DefaultContents.GetFont_width(self.FontFile, self.TextSize, self.ButtonText) + 5, Main.DefaultContents.GetFont_height(self.FontFile, self.TextSize, self.ButtonText) + 6)
+        self.Rectangle = pygame.Rect(self.Rectangle[0], self.Rectangle[1], ContentManager.GetFont_width(self.FontFile, self.TextSize, self.ButtonText) + 5, ContentManager.GetFont_height(self.FontFile, self.TextSize, self.ButtonText) + 6)
 
         # -- Update the Rect Wheen Needed -- #
         if self.Rectangle == self.LastRect:
@@ -1545,7 +1546,7 @@ class Button:
         shape.Shape_Rectangle(self.Surface, IndicatorColor, (0, 0, self.Rectangle[2], 2), 0, 0)
 
         # -- Text -- #
-        Main.DefaultContents.FontRender(self.Surface, self.FontFile, self.TextSize, self.ButtonText, (200, 200, 200), 3, 3)
+        ContentManager.FontRender(self.Surface, self.FontFile, self.TextSize, self.ButtonText, (200, 200, 200), 3, 3)
 
         # -- Draw the Button -- #
         DISPLAY.blit(self.Surface, (self.Rectangle[0], self.Rectangle[1]))
@@ -1672,11 +1673,11 @@ class Window:
 
         # -- Draw the Resize Block -- #
         if self.Resiziable:
-            Main.DefaultContents.ImageRender(self.WindowSurface, "/window/resize.png", self.WindowRectangle[2] - 12, self.WindowRectangle[3], self.ResizeRectangle[2], self.ResizeRectangle[3], True)
+            ContentManager.ImageRender(self.WindowSurface, "/window/resize.png", self.WindowRectangle[2] - 12, self.WindowRectangle[3], self.ResizeRectangle[2], self.ResizeRectangle[3], True)
 
         # -- Draw the window title -- #
         fx.BlurredRectangle(self.WindowSurface, (0, 0, self.TitleBarRectangle[2], self.TitleBarRectangle[3] + 2), 5, 100, (100, 100, 100))
-        Main.DefaultContents.FontRender(self.WindowSurface, "/Ubuntu_Thin.ttf", 20, self.Title, (250, 250, 255), self.TitleBarRectangle[2] / 2 - Main.DefaultContents.GetFont_width("/Ubuntu_Thin.ttf", 20, self.Title) / 2, -1)
+        ContentManager.FontRender(self.WindowSurface, "/Ubuntu_Thin.ttf", 20, self.Title, (250, 250, 255), self.TitleBarRectangle[2] / 2 - ContentManager.GetFont_width("/Ubuntu_Thin.ttf", 20, self.Title) / 2, -1)
 
         # -- Draw the Window Border -- #
         shape.Shape_Rectangle(self.WindowSurface, (0, 0, 0), (0, 0, WindowBorderRectangle[2], WindowBorderRectangle[3]), 1)
@@ -1777,14 +1778,14 @@ class VerticalListWithDescription:
             shape.Shape_Rectangle(self.ListSurface, BorderColor, ItemRect, 1)
 
             # -- Render Item Name -- #
-            Main.DefaultContents.FontRender(self.ListSurface, "/Ubuntu_Bold.ttf", 14, itemNam, ItemNameFontColor, TextsX + ItemRect[0], ItemRect[1] + 5)
+            ContentManager.FontRender(self.ListSurface, "/Ubuntu_Bold.ttf", 14, itemNam, ItemNameFontColor, TextsX + ItemRect[0], ItemRect[1] + 5)
 
             # -- Render Item Description -- #
-            Main.DefaultContents.FontRender(self.ListSurface, "/Ubuntu.ttf", 12, self.ItemsDescription[i], ItemNameFontColor, TextsX + ItemRect[0], ItemRect[1] + 25)
+            ContentManager.FontRender(self.ListSurface, "/Ubuntu.ttf", 12, self.ItemsDescription[i], ItemNameFontColor, TextsX + ItemRect[0], ItemRect[1] + 25)
 
             # -- Render the Item Sprite -- #
             if self.ItemSprite[i] != "null":
-                Main.DefaultContents.ImageRender(self.ListSurface, self.ItemSprite[i], ItemRect[0] + 4, ItemRect[1] + 4, 36, 32)
+                ContentManager.ImageRender(self.ListSurface, self.ItemSprite[i], ItemRect[0] + 4, ItemRect[1] + 4, 36, 32)
 
         # -- Blit All Work to Screen -- #
         DISPLAY.blit(self.ListSurface, (self.Rectangle[0], self.Rectangle[1]))
@@ -1894,9 +1895,9 @@ class InputBox:
         # -- Resize the Textbox -- #
         try:
             if not self.CustomWidth:
-                self.width = max(100, Main.DefaultContents.GetFont_width(InputBox_FontFile, self.FontSize, self.text) + 10)
+                self.width = max(100, ContentManager.GetFont_width(InputBox_FontFile, self.FontSize, self.text) + 10)
             self.rect[2] = self.width
-            self.rect[3] = Main.DefaultContents.GetFont_height(InputBox_FontFile, self.FontSize, self.text)
+            self.rect[3] = ContentManager.GetFont_height(InputBox_FontFile, self.FontSize, self.text)
             self.LastHeight = self.rect[3]
         except:
             if not self.CustomWidth:
@@ -1909,10 +1910,10 @@ class InputBox:
         shape.Shape_Rectangle(screen, (15, 15, 15), self.rect)
 
         if self.text == self.DefaultText:
-            Main.DefaultContents.FontRender(screen, InputBox_FontFile, self.FontSize, self.text, (140, 140, 140), self.rect[0], self.rect[1])
+            ContentManager.FontRender(screen, InputBox_FontFile, self.FontSize, self.text, (140, 140, 140), self.rect[0], self.rect[1])
         else:
             if not self.text == "":
-                Main.DefaultContents.FontRender(screen, InputBox_FontFile, self.FontSize, self.text, (240, 240, 240), self.rect[0], self.rect[1])
+                ContentManager.FontRender(screen, InputBox_FontFile, self.FontSize, self.text, (240, 240, 240), self.rect[0], self.rect[1])
 
         if not self.active:
             shape.Shape_Rectangle(screen, (255, 51, 102), (self.rect[0], self.rect[1] - 1, self.rect[2], 1))

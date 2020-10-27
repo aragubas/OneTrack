@@ -36,7 +36,7 @@ def Initialize():
     WidgetCollection.Append(UI.Widget.Widget_ValueChanger((5, 5), "BPM", "150", 1))
     WidgetCollection.Append(UI.Widget.Widget_ValueChanger((5, 42), "ROWS", "31", 2))
     WidgetCollection.Append(UI.Widget.Widget_ValueChanger((58, 5), "HIGHLIGHT", "04x16", 3))
-    WidgetCollection.Append(UI.Widget.Widget_Label("/PressStart2P.ttf", ''.join(("v", Main.DefaultContents.Get_RegKey("/version"))), 9, (200, 200, 200), 5, 5, 4))
+    WidgetCollection.Append(UI.Widget.Widget_Label("/PressStart2P.ttf", ''.join(("v", UI.ContentManager.Get_RegKey("/version"))), 9, (200, 200, 200), 5, 5, 4))
     WidgetCollection.Append(UI.Widget.Widget_ValueChanger((58, 42), "CHANNELS", "4", 5))
     WidgetCollection.Append(UI.Widget.Widget_Button("Apply", 18, 175, 7, 6))
 

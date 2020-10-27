@@ -17,6 +17,8 @@
 import pygame
 from OneTrack.MAIN.Screens.Editor import InstanceVar as var
 from OneTrack import MAIN as Main
+from OneTrack.MAIN import UI
+
 
 MessageSeenDelay = 0
 
@@ -27,7 +29,7 @@ def Draw(DISPLAY):
     if not var.GenerateSoundCache and not var.GenerateSoundCache_MessageSeen:
         return
 
-    Main.DefaultContents.FontRender(DISPLAY, "/PressStart2P.ttf", 14, "Generating Sound Cache...", (255, 255, 255), DISPLAY.get_width() / 2 - Main.DefaultContents.GetFont_width("/PressStart2P.ttf", 14, "Generating Sound Cache...") / 2, 75, backgroundColor=(0, 0, 0))
+    UI.ContentManager.FontRender(DISPLAY, "/PressStart2P.ttf", 14, "Generating Sound Cache...", (255, 255, 255), DISPLAY.get_width() / 2 - UI.ContentManager.GetFont_width("/PressStart2P.ttf", 14, "Generating Sound Cache...") / 2, 75, backgroundColor=(0, 0, 0))
 
 
 def Update():
