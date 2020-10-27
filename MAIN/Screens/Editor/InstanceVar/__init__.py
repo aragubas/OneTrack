@@ -31,3 +31,5 @@ SelectedTrack = 0
 Patterns = 2
 PatternUpdateEntry = list()
 PatternIsUpdating = False
+AwaysUpdate = False
+ProcessReference = None

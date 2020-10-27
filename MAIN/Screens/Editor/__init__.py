@@ -35,7 +35,6 @@ track_list = UI.TrackList
 TopBarControls = UI.ButtonsBar
 DropDownFileMenu = UI.DropDownMenu
 
-
 def Initialize():
     global track_list
     global TopBarControls
@@ -53,10 +52,12 @@ def Initialize():
     DropDownFileMenu = UI.DropDownMenu(pygame.Rect(10, 35, 120, 65), DropDownFileMenuList)
 
     SaveFileDialog.Initialize()
-    OpenFileDialog.Initialize()
     OptionsBar.Initialize()
     EditorBar.Initialize()
     SoundCacheMessage.Initialize()
+
+    OpenFileDialog.Enabled = True
+
 
 def GameDraw(DISPLAY):
     global track_list
@@ -80,7 +81,6 @@ def GameDraw(DISPLAY):
         var.CopyOfScreen = DISPLAY.copy()
 
     SaveFileDialog.Draw(DISPLAY)
-    OpenFileDialog.Draw(DISPLAY)
 
 def SaveMusicData(FilePath):
     global track_list
@@ -256,4 +256,3 @@ def EventUpdate(event):
         if var.FileMenuEnabled: DropDownFileMenu.EventUpdate(event)
     else:
         SaveFileDialog.EventUpdate(event)
-        OpenFileDialog.EventUpdate(event)

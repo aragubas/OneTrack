@@ -1543,10 +1543,13 @@ class Button:
         self.Surface.fill(self.BackgroundColor)
 
         # -- Indicator Bar -- #
-        shape.Shape_Rectangle(self.Surface, IndicatorColor, (0, 0, self.Rectangle[2], 2), 0, 0)
+        shape.Shape_Rectangle(self.Surface, IndicatorColor, (0, 0, self.Rectangle[2], self.Rectangle[3]), 1, 0)
 
         # -- Text -- #
-        ContentManager.FontRender(self.Surface, self.FontFile, self.TextSize, self.ButtonText, (200, 200, 200), 3, 3)
+        X = self.Rectangle[2] / 2 - ContentManager.GetFont_width(self.FontFile, self.TextSize, self.ButtonText) / 2
+        Y = self.Rectangle[3] / 2 - ContentManager.GetFont_height(self.FontFile, self.TextSize, self.ButtonText) / 2
+
+        ContentManager.FontRender(self.Surface, self.FontFile, self.TextSize, self.ButtonText, (200, 200, 200), X, Y)
 
         # -- Draw the Button -- #
         DISPLAY.blit(self.Surface, (self.Rectangle[0], self.Rectangle[1]))

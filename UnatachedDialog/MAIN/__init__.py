@@ -14,16 +14,11 @@
 #   limitations under the License.
 #
 #
-import pygame, os, pickle, io
+import pygame
 import Core
 from Core import cntMng
-from Core import MAIN
-from Core import appData
-import Core as tge
-from OneTrack.MAIN.Screens import Editor
-from OneTrack.MAIN import LagIndicator
-from OneTrack.MAIN import UI
-from OneTrack.MAIN.Screens.Editor import InstanceVar as var
+from OneTrack.UnatachedDialog.MAIN.Screens import LoadFile as LoadFileScreen
+
 
 class Process():
     def __init__(self, pPID, pProcessName, pROOT_MODULE, pInitArgs):
@@ -32,57 +27,51 @@ class Process():
         self.ROOT_MODULE = pROOT_MODULE
         self.IS_GRAPHICAL = True
         self.INIT_ARGS = pInitArgs
-        self.DISPLAY = pygame.Surface((800, 600))
+        self.DISPLAY = pygame.Surface((300, 100))
         self.LAST_SURFACE = self.DISPLAY.copy()
         self.APPLICATION_HAS_FOCUS = True
-        self.POSITION = (0, 0)
-        self.FULLSCREEN = True
+        self.POSITION = (50, 50)
+        self.FULLSCREEN = False
         self.TITLEBAR_RECTANGLE = pygame.Rect(self.POSITION[0], self.POSITION[1], self.DISPLAY.get_width(), 15)
-        self.TITLEBAR_TEXT = "OneTrack"
+        self.TITLEBAR_TEXT = "OneTrack Dialog"
         self.WindowDragEnable = False
 
     def Initialize(self):
-        # Initialize Variables
-        self.CurrentScreenToUpdate = Editor
+        # Focus to this window
+        Core.wmm.WindowManagerSignal(self, 0)
 
         # Initialize Content Manager
         self.DefaultContents = cntMng.ContentManager()
-        self.DefaultContents.SetSourceFolder("OneTrack/")
+        self.DefaultContents.SetSourceFolder("OneTrack/UnatachedDialog/")
         self.DefaultContents.SetFontPath("Data/fonts")
         self.DefaultContents.LoadImagesInFolder("Data/img")
         self.DefaultContents.LoadRegKeysInFolder("Data/reg")
         self.DefaultContents.InitSoundSystem()
 
-        # Set the default content manager for the UI
-        UI.ContentManager = self.DefaultContents
+        self.RootProcess = self.INIT_ARGS[0]
+        self.OperationType = self.INIT_ARGS[1]
+        self.SelectedModuleMode = LoadFileScreen
 
-        MAIN.ReceiveCommand(0, 60)
+        if self.OperationType == "LOAD":
+            self.SelectedModuleMode = LoadFileScreen
 
-        self.TITLEBAR_TEXT = "OneTrack v{0}".format(self.DefaultContents.Get_RegKey("/version"))
+        self.SelectedModuleMode.Initialize(self)
 
-        var.ProcessReference = self
-        Editor.Initialize()
-        LagIndicator.Initialize()
-
-        # -- Set Invisible Mouse -- #
-        pygame.mouse.set_visible(False)
+        self.POSITION = (800 / 2 - self.DISPLAY.get_width() / 2, 600 / 2 - self.DISPLAY.get_height() / 2)
 
     def Draw(self):
-        self.CurrentScreenToUpdate.GameDraw(self.DISPLAY)
+        self.DISPLAY.fill((150, 150, 150))
 
-        LagIndicator.Draw(self.DISPLAY)
+        self.SelectedModuleMode.Draw(self.DISPLAY)
 
-        self.LAST_SURFACE = self.DISPLAY.copy()
         return self.DISPLAY
 
     def Update(self):
-        if not self.APPLICATION_HAS_FOCUS and var.AwaysUpdate == False:
-            return
-
-        self.CurrentScreenToUpdate.Update()
-
-        LagIndicator.Update()
+        self.SelectedModuleMode.Update()
 
     def EventUpdate(self, event):
-        self.CurrentScreenToUpdate.EventUpdate(event)
+        if event.type == pygame.KEYUP:
+            if event.key == pygame.K_ESCAPE:
+                Core.wmm.WindowManagerSignal(self, 1)
 
+        self.SelectedModuleMode.EventUpdate(event)
