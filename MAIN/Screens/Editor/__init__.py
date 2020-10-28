@@ -65,7 +65,7 @@ def GameDraw(DISPLAY):
     global DropDownFileMenu
 
     if not var.DisableControls:
-        DISPLAY.fill((UI.BackgroundColor))
+        DISPLAY.fill((UI.ThemesManager_GetProperty("BackgroundColor")))
 
         track_list.Render(DISPLAY)
         TopBarControls.Render(DISPLAY)

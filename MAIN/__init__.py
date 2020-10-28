@@ -55,6 +55,10 @@ class Process():
 
         # Set the default content manager for the UI
         UI.ContentManager = self.DefaultContents
+        var.DefaultContent = self.DefaultContents
+
+        # Load UI Theme
+        UI.ThemesManager_LoadTheme(self.DefaultContents.Get_RegKey("/selected_theme"))
 
         MAIN.ReceiveCommand(0, 60)
 
@@ -66,6 +70,7 @@ class Process():
 
         # -- Set Invisible Mouse -- #
         pygame.mouse.set_visible(False)
+
 
     def Draw(self):
         self.CurrentScreenToUpdate.GameDraw(self.DISPLAY)

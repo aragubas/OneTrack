@@ -25,42 +25,54 @@ from Core import appData
 from Core import utils
 from math import log2, pow
 
-# -- Color List -- #
-TrackBlock_FrequencyBGColor_Active = (90, 84, 75)
-TrackBlock_DurationBGColor_Active = (40, 54, 75)
-TrackBlock_FrequencyBGColor_Deactive = (30, 20, 37)
-TrackBlock_DurationBGColor_Deactive = (0, 0, 10)
-TrackBlock_FrequencyBGColor_Hightlight1 = (50, 30, 47)
-TrackBlock_DurationBGColor_Hightlight1 = (18, 7, 19)
-TrackBlock_FrequencyBGColor_Hightlight2 = (98, 77, 78)
-TrackBlock_DurationBGColor_Hightlight2 = (45, 42, 55)
-TrackBlock_InstanceLabelActiveColor = (255, 255, 255)
-TrackBlock_InstanceLabelDeactiveColor = (55, 55, 55)
-TrackBlock_NoteLabel_UnknowNote = (110, 90, 125)
-TrackBlock_NoteLabel_KnowNote = (220, 190, 225)
-# -----------------------#
-EditableNumberView_ColorSelected = (255, 255, 255)
-EditableNumberView_ColorActive = (100, 100, 100)
-EditableNumberView_ColorDeactive = (50, 50, 50)
-# -----------------------#
-Button_Active_IndicatorColor = (46, 196, 182)
-Button_Active_BackgroundColor = (15, 27, 44)
-Button_Inactive_IndicatorColor = (255, 51, 102)
-Button_Inactive_BackgroundColor = (1, 22, 39)
-Button_BackgroundColor = (12, 22, 14)
-# -----------------------#
-InputBox_COLOR_INACTIVE = (1, 22, 39)
-InputBox_COLOR_ACTIVE = (15, 27, 44)
-InputBox_FontFile = "/Ubuntu.ttf"
-# -------------------------#
-TrackPointerColor = (250, 70, 95)
-TrackSelectedPattern_PlayMode_BackgroundColor = (10, 15, 15)
-TrackSelectedPattern_PlayMode_FontColor = (255, 255, 255)
-TrackSelectedPattern_BackgroundColor = (100, 105, 115)
-TrackSelectedPattern_FontColor = (265, 230, 255)
-# ------------------------#
-BackgroundColor = (62, 62, 116)
-# ------------------------ #
+
+#region Theme Manager
+ThemesList_Properties = list()
+ThemesList_PropertyNames = list()
+
+def ThemesManager_LoadTheme(ThemeName):
+    global ThemesList_Properties
+    global ThemesList_PropertyNames
+
+    ThemesList_Properties.clear()
+    ThemesList_PropertyNames.clear()
+
+    print("OneTrack : Loading UI Theme '" + ThemeName + "'")
+    for key in var.DefaultContent.Get_RegKey("/theme/{0}".format(ThemeName)).splitlines():
+        if key.startswith("#"):
+            continue
+
+        ThemeDataTag = key.split(";")[0]
+        ThemeDataType = key.split(";")[1]
+        ThemeData = key.split(";")[2]
+        ThemeRawData = None
+
+        if ThemeDataType == "tuple":
+            ThemeRawData = utils.Convert.Parse_Tuple(ThemeData)
+
+        if ThemeDataType == "int":
+            ThemeRawData = int(ThemeData)
+
+        if ThemeDataType == "str":
+            ThemeRawData = str(ThemeData)
+
+        print("Property: '{0}' of type '{1}' loaded with value '{2}'".format(ThemeDataTag, ThemeDataType, ThemeData))
+
+        ThemesManager_AddProperty(ThemeDataTag, ThemeRawData)
+
+    print("OneTrack : Theme Loaded sucefully")
+
+def ThemesManager_GetProperty(pPropertyName):
+    Index = ThemesList_PropertyNames.index(pPropertyName)
+
+    return ThemesList_Properties[Index]
+
+def ThemesManager_AddProperty(PropertyName, PropertyValue):
+    ThemesList_Properties.append(PropertyValue)
+    ThemesList_PropertyNames.append(PropertyName)
+
+#endregion
+
 ContentManager = None
 
 def LoadColorSchema(FolderName):
@@ -98,13 +110,13 @@ class EditableNumberView:
         for i, Algarims in enumerate(self.SplitedAlgarims):
             if self.IsActive:
                 if i == self.SelectedCharIndex:
-                    self.Color = EditableNumberView_ColorSelected
+                    self.Color = ThemesManager_GetProperty("EditableNumberView_ColorSelected")
 
                 else:
-                    self.Color = EditableNumberView_ColorActive
+                    self.Color = ThemesManager_GetProperty("EditableNumberView_ColorActive")
 
             else:
-                self.Color = EditableNumberView_ColorDeactive
+                self.Color = ThemesManager_GetProperty("EditableNumberView_ColorDeactive")
 
             ContentManager.FontRender(DISPLAY, "/PressStart2P.ttf", self.FontSize, str(Algarims), self.Color, self.Rectangle[0] + self.AlgarimsWidth * i, self.YOffset + self.Rectangle[1])
 
@@ -504,32 +516,32 @@ class TrackBlock:
     def ReRender(self):
         # -- Set the Color Scheme -- #
         if self.Active:
-            FrequencyBGColor = TrackBlock_FrequencyBGColor_Active
-            DurationBGColor = TrackBlock_DurationBGColor_Active
+            FrequencyBGColor = ThemesManager_GetProperty("TrackBlock_FrequencyBGColor_Active")
+            DurationBGColor = ThemesManager_GetProperty("TrackBlock_DurationBGColor_Active")
 
         else:
-            FrequencyBGColor = TrackBlock_FrequencyBGColor_Deactive
-            DurationBGColor = TrackBlock_DurationBGColor_Deactive
+            FrequencyBGColor = ThemesManager_GetProperty("TrackBlock_FrequencyBGColor_Deactive")
+            DurationBGColor = ThemesManager_GetProperty("TrackBlock_DurationBGColor_Deactive")
 
         if self.Highlight == 1:
-            FrequencyBGColor = TrackBlock_FrequencyBGColor_Hightlight1
-            DurationBGColor = TrackBlock_DurationBGColor_Hightlight1
+            FrequencyBGColor = ThemesManager_GetProperty("TrackBlock_FrequencyBGColor_Hightlight1")
+            DurationBGColor = ThemesManager_GetProperty("TrackBlock_DurationBGColor_Hightlight1")
 
         elif self.Highlight == 2:
-            FrequencyBGColor = TrackBlock_FrequencyBGColor_Hightlight2
-            DurationBGColor = TrackBlock_DurationBGColor_Hightlight2
+            FrequencyBGColor = ThemesManager_GetProperty("TrackBlock_FrequencyBGColor_Hightlight2")
+            DurationBGColor = ThemesManager_GetProperty("TrackBlock_DurationBGColor_Hightlight2")
 
         if self.Active:
-            FrequencyBGColor = TrackBlock_FrequencyBGColor_Active
-            DurationBGColor = TrackBlock_DurationBGColor_Active
+            FrequencyBGColor = ThemesManager_GetProperty("TrackBlock_FrequencyBGColor_Active")
+            DurationBGColor = ThemesManager_GetProperty("TrackBlock_DurationBGColor_Active")
 
         if self.PitchLabel == "?":
-            PitchLabelColor = TrackBlock_NoteLabel_UnknowNote
+            PitchLabelColor = ThemesManager_GetProperty("TrackBlock_NoteLabel_UnknowNote")
         else:
-            PitchLabelColor = TrackBlock_NoteLabel_KnowNote
+            PitchLabelColor = ThemesManager_GetProperty("TrackBlock_NoteLabel_KnowNote")
 
         # Fill the Background
-        self.BlockSurface.fill(BackgroundColor)
+        self.BlockSurface.fill(ThemesManager_GetProperty("BackgroundColor"))
 
         # -- Render the Frequency Region
         shape.Shape_Rectangle(self.BlockSurface, FrequencyBGColor, (self.FrequencyNumber.Rectangle[0], self.FrequencyNumber.Rectangle[1], self.FrequencyNumber.Rectangle[2], self.FrequencyNumber.Rectangle[3]), 0, 0, 5, 0, 5, 0)
@@ -540,9 +552,9 @@ class TrackBlock:
         shape.Shape_Rectangle(self.BlockSurface, DurationBGColor, (DurationX, self.DurationNumber.Rectangle[1], (self.TextWidth), self.DurationNumber.Rectangle[3]), 0, 0, 0, 5, 0, 5)
         self.DurationNumber.Render(self.BlockSurface)
 
-        LabelColor = TrackBlock_InstanceLabelActiveColor
+        LabelColor = ThemesManager_GetProperty("TrackBlock_InstanceLabelActiveColor")
         if not self.Active:
-            LabelColor = TrackBlock_InstanceLabelDeactiveColor
+            LabelColor = ThemesManager_GetProperty("TrackBlock_InstanceLabelDeactiveColor")
 
         ContentManager.FontRender(self.BlockSurface, "/PressStart2P.ttf", 10, str(self.Instance).zfill(2), LabelColor, (DurationX + self.TextWidth) + 3, 1)
 
@@ -1019,7 +1031,7 @@ class TrackColection:
 
             # -- Render the Track Pointer -- #
             if track.Instance == self.SelectedTrack and self.Active or track.Instance == self.SelectedTrack and var.PlayMode:
-                shape.Shape_Rectangle(DISPLAY, TrackPointerColor, (self.Rectangle[0] - 8, self.Scroll + track.Rectangle[1], 4, track.Rectangle[3]))
+                shape.Shape_Rectangle(DISPLAY, ThemesManager_GetProperty("TrackPointerColor"), (self.Rectangle[0] - 8, self.Scroll + track.Rectangle[1], 4, track.Rectangle[3]))
 
             if self.Scroll + track.Rectangle[1] >= DISPLAY.get_height() + track.TextHeight or self.Scroll + track.Rectangle[1] <= -track.TextHeight:
                 continue
@@ -1335,17 +1347,17 @@ class TrackList:
             self.PatternList[PatternID].PlayAllTracks()
 
     def Render(self, DISPLAY):
-        self.TracksSurface.fill(BackgroundColor)
+        self.TracksSurface.fill(ThemesManager_GetProperty("BackgroundColor"))
         self.CurrentPattern.Draw(self.TracksSurface)
 
         # -- Render the Pattern Name -- #
-        PatternName_BackgroundColor = TrackSelectedPattern_BackgroundColor
-        PatternName_FontColor = TrackSelectedPattern_FontColor
+        PatternName_BackgroundColor = ThemesManager_GetProperty("TrackSelectedPattern_BackgroundColor")
+        PatternName_FontColor = ThemesManager_GetProperty("TrackSelectedPattern_FontColor")
         SelectedPatternText = "Pattern: {0}/{1}".format(self.CurrentPatternID, len(self.PatternList) - 1)
 
         if var.PlayMode:
-            PatternName_BackgroundColor = TrackSelectedPattern_PlayMode_BackgroundColor
-            PatternName_FontColor = TrackSelectedPattern_PlayMode_FontColor
+            PatternName_BackgroundColor = ThemesManager_GetProperty("TrackSelectedPattern_PlayMode_BackgroundColor")
+            PatternName_FontColor = ThemesManager_GetProperty("TrackSelectedPattern_PlayMode_FontColor")
 
         shape.Shape_Rectangle(self.TracksSurface, PatternName_BackgroundColor, (0, 0, DISPLAY.get_width(), 18))
         ContentManager.FontRender(self.TracksSurface, "/PressStart2P.ttf", 12, SelectedPatternText, PatternName_FontColor, 5, 4)
@@ -1459,7 +1471,7 @@ class Button:
         self.CursorSettedToggle = False
         self.ButtonDowed = False
         self.ColisionRectangle = self.Rectangle
-        self.BackgroundColor = Button_BackgroundColor
+        self.BackgroundColor = ThemesManager_GetProperty("Button_BackgroundColor")
         self.SurfaceUpdated = False
         self.LastRect = pygame.Rect(0, 0, 0, 0)
         self.Surface = pygame.Surface((Rectangle[2], Rectangle[3]))
@@ -1532,12 +1544,12 @@ class Button:
         IndicatorColor = (0, 0, 0)
 
         if self.ButtonState == 0:
-            IndicatorColor = Button_Inactive_IndicatorColor
-            self.BackgroundColor = Button_Inactive_BackgroundColor
+            IndicatorColor = ThemesManager_GetProperty("Button_Inactive_IndicatorColor")
+            self.BackgroundColor = ThemesManager_GetProperty("Button_Inactive_BackgroundColor")
 
         elif self.ButtonState == 1:
-            IndicatorColor = Button_Active_IndicatorColor
-            self.BackgroundColor = Button_Active_BackgroundColor
+            IndicatorColor = ThemesManager_GetProperty("Button_Active_IndicatorColor")
+            self.BackgroundColor = ThemesManager_GetProperty("Button_Active_BackgroundColor")
 
         # -- Render Background -- #
         self.Surface.fill(self.BackgroundColor)
@@ -1757,22 +1769,22 @@ class VerticalListWithDescription:
         for i, itemNam in enumerate(self.ItemsName):
             ItemRect = (self.Rectangle[0], self.ScrollY + self.Rectangle[1] + 42 * i, self.Rectangle[2], 40)
 
-            BackgroundColor = (20, 42, 59, 50)
-            ItemNameFontColor = (250, 250, 250)
-            BorderColor = (32, 164, 243)
+            BackgroundColor = ThemesManager_GetProperty("VerticalListWithDescription_Inactive_BackgroundColor")
+            ItemNameFontColor = ThemesManager_GetProperty("VerticalListWithDescription_Inactive_ItemNameFontColor")
+            BorderColor = ThemesManager_GetProperty("VerticalListWithDescription_Inactive_BorderColor")
             TextsX = 5
             if self.ItemSprite[i] != "null":
                 TextsX = 45
 
             if self.LastItemClicked == itemNam:  # -- When the Item is Selected
-                BackgroundColor = (20, 42, 59, 100)
-                ItemNameFontColor = (255, 255, 255)
-                BorderColor = (46, 196, 182)
+                BackgroundColor = ThemesManager_GetProperty("VerticalListWithDescription_Active_BackgroundColor")
+                ItemNameFontColor = ThemesManager_GetProperty("VerticalListWithDescription_Active_ItemNameFontColor")
+                BorderColor = ThemesManager_GetProperty("VerticalListWithDescription_Active_BorderColor")
 
             if self.ItemSelected[i]:  # -- When the Item is Clicked
-                BackgroundColor = (30, 52, 69, 150)
-                ItemNameFontColor = (250, 250, 250)
-                BorderColor = (255, 51, 102)
+                BackgroundColor = ThemesManager_GetProperty("VerticalListWithDescription_Selected_BackgroundColor")
+                ItemNameFontColor = ThemesManager_GetProperty("VerticalListWithDescription_Selected_ItemNameFontColor")
+                BorderColor = ThemesManager_GetProperty("VerticalListWithDescription_Selected_BorderColor")
 
             # -- Background -- #
             shape.Shape_Rectangle(self.ListSurface, BackgroundColor, ItemRect)
@@ -1781,10 +1793,10 @@ class VerticalListWithDescription:
             shape.Shape_Rectangle(self.ListSurface, BorderColor, ItemRect, 1)
 
             # -- Render Item Name -- #
-            ContentManager.FontRender(self.ListSurface, "/Ubuntu_Bold.ttf", 14, itemNam, ItemNameFontColor, TextsX + ItemRect[0], ItemRect[1] + 5)
+            ContentManager.FontRender(self.ListSurface, ThemesManager_GetProperty("VerticalListWithDescription_ItemNameFont"), 14, itemNam, ItemNameFontColor, TextsX + ItemRect[0], ItemRect[1] + 5)
 
             # -- Render Item Description -- #
-            ContentManager.FontRender(self.ListSurface, "/Ubuntu.ttf", 12, self.ItemsDescription[i], ItemNameFontColor, TextsX + ItemRect[0], ItemRect[1] + 25)
+            ContentManager.FontRender(self.ListSurface, ThemesManager_GetProperty("VerticalListWithDescription_ItemDescriptionFont"), 12, self.ItemsDescription[i], ItemNameFontColor, TextsX + ItemRect[0], ItemRect[1] + 25)
 
             # -- Render the Item Sprite -- #
             if self.ItemSprite[i] != "null":
@@ -1849,7 +1861,7 @@ class InputBox:
     def __init__(self, x, y, w, h, text='LO', FontSize=12):
         self.rect = pygame.Rect(x, y, w, h)
         self.colisionRect = pygame.Rect(x, y, w, h)
-        self.color = InputBox_COLOR_ACTIVE
+        self.color = ThemesManager_GetProperty("InputBox_COLOR_ACTIVE")
         self.text = text
         self.active = False
         self.DefaultText = text

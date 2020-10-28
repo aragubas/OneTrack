@@ -119,12 +119,12 @@ class Widget_ValueChanger:
 
     def Render(self, DISPLAY):
         # -- Render Background -- #
-        BGColor = UI.Button_Active_BackgroundColor
-        LineColor = UI.Button_Active_IndicatorColor
+        BGColor = UI.ThemesManager_GetProperty("Button_Active_BackgroundColor")
+        LineColor = UI.ThemesManager_GetProperty("Button_Active_IndicatorColor")
 
         if not self.Active:
-            BGColor = UI.Button_Inactive_BackgroundColor
-            LineColor = UI.Button_Inactive_IndicatorColor
+            BGColor = UI.ThemesManager_GetProperty("Button_Inactive_BackgroundColor")
+            LineColor = UI.ThemesManager_GetProperty("Button_Inactive_IndicatorColor")
 
         shape.Shape_Rectangle(DISPLAY, BGColor, self.Rectangle)
         shape.Shape_Rectangle(DISPLAY, LineColor, self.Rectangle, 1)
@@ -363,8 +363,8 @@ class Widget_Button:
         self.Centred_Y = self.Rectangle[3] / 2 - UI.ContentManager.GetFont_height("/Ubuntu_Bold.ttf", self.FontSize - 2, self.Text) / 2
         self.ButtonState = False
         self.CursorOffset = (0, 0)
-        self.BgColor = UI.Button_Inactive_BackgroundColor
-        self.IndicatorColor = UI.Button_Inactive_IndicatorColor
+        self.BgColor = UI.ThemesManager_GetProperty("Button_Inactive_BackgroundColor")
+        self.IndicatorColor = UI.ThemesManager_GetProperty("Button_Inactive_IndicatorColor")
 
     def Render(self, DISPLAY):
         # -- Render Background -- #
@@ -395,16 +395,16 @@ class Widget_Button:
             self.LastRect = self.Rectangle
 
         if self.Active and not self.ButtonState:
-            self.BgColor = UI.Button_Active_BackgroundColor
-            self.IndicatorColor = UI.Button_Active_IndicatorColor
+            self.BgColor = UI.ThemesManager_GetProperty("Button_Active_BackgroundColor")
+            self.IndicatorColor = UI.ThemesManager_GetProperty("Button_Active_IndicatorColor")
 
         elif self.ButtonState:
-            self.BgColor = UI.Button_Active_IndicatorColor
-            self.IndicatorColor = UI.Button_Inactive_IndicatorColor
+            self.BgColor = UI.ThemesManager_GetProperty("Button_Active_IndicatorColor")
+            self.IndicatorColor = UI.ThemesManager_GetProperty("Button_Inactive_IndicatorColor")
 
         else:
-            self.BgColor = UI.Button_Inactive_BackgroundColor
-            self.IndicatorColor = UI.Button_Inactive_IndicatorColor
+            self.BgColor = UI.ThemesManager_GetProperty("Button_Inactive_BackgroundColor")
+            self.IndicatorColor = UI.ThemesManager_GetProperty("Button_Inactive_IndicatorColor")
 
     def EventUpdate(self, event):
         if event.type == pygame.MOUSEBUTTONUP:
