@@ -18,6 +18,8 @@ import pygame
 import Core
 from Core import cntMng
 from OneTrack.UnatachedDialog.MAIN.Screens import LoadFile as LoadFileScreen
+from OneTrack.UnatachedDialog.MAIN.Screens import SaveFile as SaveFileScreen
+from OneTrack.UnatachedDialog.MAIN.Screens import DialogOkOnly as DialogOkOnlyScreen
 
 
 class Process():
@@ -50,10 +52,19 @@ class Process():
 
         self.RootProcess = self.INIT_ARGS[0]
         self.OperationType = self.INIT_ARGS[1]
-        self.SelectedModuleMode = LoadFileScreen
+        self.SelectedModuleMode = None
 
-        if self.OperationType == "LOAD":
+        print(self.OperationType)
+
+        if self.OperationType == "OPEN":
             self.SelectedModuleMode = LoadFileScreen
+
+        if self.OperationType == "SAVE":
+            self.SelectedModuleMode = SaveFileScreen
+
+        if self.OperationType == "DIALOG_OK":
+            self.SelectedModuleMode = DialogOkOnlyScreen
+
 
         self.SelectedModuleMode.Initialize(self)
 

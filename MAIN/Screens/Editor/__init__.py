@@ -40,23 +40,17 @@ def Initialize():
     global TopBarControls
     global DropDownFileMenu
 
-    NewMusicFile()
-
+    # Add all widgets
     ButtonsList = list()
     ButtonsList.append(UI.Button(pygame.Rect(0, 0, 0, 0), "File", 14))
-
     TopBarControls = UI.ButtonsBar((3, 5, 800, 32), ButtonsList)
-
     DropDownFileMenuList = ("Load", "Save", "New File")
-
     DropDownFileMenu = UI.DropDownMenu(pygame.Rect(10, 35, 120, 65), DropDownFileMenuList)
-
-    SaveFileDialog.Initialize()
     OptionsBar.Initialize()
     EditorBar.Initialize()
     SoundCacheMessage.Initialize()
 
-    OpenFileDialog.Enabled = True
+    NewMusicFile()
 
 
 def GameDraw(DISPLAY):
@@ -80,8 +74,6 @@ def GameDraw(DISPLAY):
         SoundCacheMessage.Draw(DISPLAY)
         var.CopyOfScreen = DISPLAY.copy()
 
-    SaveFileDialog.Draw(DISPLAY)
-
 def SaveMusicData(FilePath):
     global track_list
 
@@ -102,7 +94,6 @@ def SaveMusicData(FilePath):
                 block.ResetSurface()
                 block.SurfaceUpdateTrigger = True
                 block.Active = True
-
 
 def LoadMusicData(FileName):
     global track_list
@@ -180,7 +171,7 @@ def LoadMusicData(FileName):
     var.HighlightSecond = SavedHighlightTwo
     var.Patterns = SavedPatterns
 
-    OptionsBar.Update()
+    OptionsBar.UpdateChanger()
 
 def NewMusicFile():
     global track_list
@@ -189,6 +180,17 @@ def NewMusicFile():
 
     track_list = UI.TrackList()
     track_list.Rectangle = pygame.Rect(0, 100, 800, 400)
+
+    var.BPM = 150
+    var.Rows = 32
+    var.GenerateSoundCache = True
+    var.SelectedTrack = 0
+    var.Highlight = 4
+    var.HighlightSecond = 16
+    var.Patterns = 2
+
+    OptionsBar.UpdateChanger()
+
 
 def Update():
     global track_list
@@ -254,5 +256,3 @@ def EventUpdate(event):
         EditorBar.EventUpdate(event)
 
         if var.FileMenuEnabled: DropDownFileMenu.EventUpdate(event)
-    else:
-        SaveFileDialog.EventUpdate(event)

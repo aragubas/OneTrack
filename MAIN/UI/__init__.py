@@ -75,9 +75,6 @@ def ThemesManager_AddProperty(PropertyName, PropertyValue):
 
 ContentManager = None
 
-def LoadColorSchema(FolderName):
-    pass
-
 
 def StringToColorList(Input):
     ColorLst = Input.split(',')
@@ -164,307 +161,19 @@ class EditableNumberView:
             self.Value += str(algarims)
 
 
-name = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
-
-def pitch(freq):
-    freq = int(freq)
-
-    if freq == 32:  # C1
-        return ''.join((name[0], "1"))
-
-    elif freq == 65:  # C2
-        return ''.join((name[0], "2"))
-
-    elif freq == 130:  # C3
-        return ''.join((name[0], "3"))
-
-    elif freq == 261:  # C4
-        return ''.join((name[0], "4"))
-
-    elif freq == 523:  # C5
-        return ''.join((name[0], "5"))
-
-    elif freq == 1046:  # C6
-        return ''.join((name[0], "6"))
-
-    elif freq == 2093:  # C7
-        return ''.join((name[0], "7"))
-
-    elif freq == 4186:  # C8
-        return ''.join((name[0], "8"))
-
-    elif freq == 34:  # C#1
-        return ''.join((name[1], "1"))
-
-    elif freq == 69:  # C#2
-        return ''.join((name[1], "2"))
-
-    elif freq == 138:  # C#3
-        return ''.join((name[1], "3"))
-
-    elif freq == 277:  # C#4
-        return ''.join((name[1], "4"))
-
-    elif freq == 554:  # C#5
-        return ''.join((name[1], "5"))
-
-    elif freq == 1108:  # C#6
-        return ''.join((name[1], "6"))
-
-    elif freq == 2217:  # C#7
-        return ''.join((name[1], "7"))
-
-    elif freq == 4434:  # C#8
-        return ''.join((name[1], "8"))
-
-    elif freq == 36:  # D1
-        return ''.join((name[2], "1"))
-
-    elif freq == 73:  # D2
-        return ''.join((name[2], "2"))
-
-    elif freq == 146:  # D3
-        return ''.join((name[2], "3"))
-
-    elif freq == 293:  # D4
-        return ''.join((name[2], "4"))
-
-    elif freq == 587:  # D5
-        return ''.join((name[2], "5"))
-
-    elif freq == 1174:  # D6
-        return ''.join((name[2], "6"))
-
-    elif freq == 2349:  # D7
-        return ''.join((name[2], "7"))
-
-    elif freq == 4698:  # D8
-        return ''.join((name[2], "8"))
-
-    elif freq == 38:  # D#1
-        return ''.join((name[3], "1"))
-
-    elif freq == 77:  # D#2
-        return ''.join((name[3], "2"))
-
-    elif freq == 155:  # D#3
-        return ''.join((name[3], "3"))
-
-    elif freq == 311:  # D#4
-        return ''.join((name[3], "4"))
-
-    elif freq == 622:  # D#5
-        return ''.join((name[3], "5"))
-
-    elif freq == 1244:  # D#6
-        return ''.join((name[3], "6"))
-
-    elif freq == 2489:  # D#7
-        return ''.join((name[3], "7"))
-
-    elif freq == 4978:  # D#8
-        return ''.join((name[3], "8"))
-
-    elif freq == 41:  # E1
-        return ''.join((name[4], "1"))
-
-    elif freq == 82:  # E2
-        return ''.join((name[4], "2"))
-
-    elif freq == 164:  # E3
-        return ''.join((name[4], "3"))
-
-    elif freq == 329:  # E4
-        return ''.join((name[4], "4"))
-
-    elif freq == 659:  # E5
-        return ''.join((name[4], "5"))
-
-    elif freq == 1318:  # E6
-        return ''.join((name[4], "6"))
-
-    elif freq == 2637:  # E7
-        return ''.join((name[4], "7"))
-
-    elif freq == 5274:  # E8
-        return ''.join((name[4], "8"))
-
-    elif freq == 43:  # F1
-        return ''.join((name[5], "1"))
-
-    elif freq == 87:  # F2
-        return ''.join((name[5], "2"))
-
-    elif freq == 174:  # F3
-        return ''.join((name[5], "3"))
-
-    elif freq == 349:  # F4
-        return ''.join((name[5], "4"))
-
-    elif freq == 698:  # F5
-        return ''.join((name[5], "5"))
-
-    elif freq == 1396:  # F6
-        return ''.join((name[5], "6"))
-
-    elif freq == 2793:  # F7
-        return ''.join((name[5], "7"))
-
-    elif freq == 46:  # F#1
-        return ''.join((name[6], "1"))
-
-    elif freq == 92:  # F#2
-        return ''.join((name[6], "2"))
-
-    elif freq == 184:  # F#3
-        return ''.join((name[6], "3"))
-
-    elif freq == 369:  # F#4
-        return ''.join((name[6], "4"))
-
-    elif freq == 739:  # F#5
-        return ''.join((name[6], "5"))
-
-    elif freq == 1479:  # F#6
-        return ''.join((name[6], "6"))
-
-    elif freq == 2959:  # F#7
-        return ''.join((name[6], "7"))
-
-    elif freq == 5919:  # F#8
-        return ''.join((name[6], "8"))
-
-    elif freq == 48:  # G1
-        return ''.join((name[7], "1"))
-
-    elif freq == 97:  # G2
-        return ''.join((name[7], "2"))
-
-    elif freq == 195:  # G3
-        return ''.join((name[7], "3"))
-
-    elif freq == 391:  # G4
-        return ''.join((name[7], "4"))
-
-    elif freq == 783:  # G5
-        return ''.join((name[7], "5"))
-
-    elif freq == 1567:  # G6
-        return ''.join((name[7], "6"))
-
-    elif freq == 3135:  # G7
-        return ''.join((name[7], "7"))
-
-    elif freq == 6271:  # G8
-        return ''.join((name[7], "8"))
-
-    elif freq == 51:  # G#1
-        return ''.join((name[8], "1"))
-
-    elif freq == 103:  # G#2
-        return ''.join((name[8], "2"))
-
-    elif freq == 207:  # G#3
-        return ''.join((name[8], "3"))
-
-    elif freq == 415:  # G#4
-        return ''.join((name[8], "4"))
-
-    elif freq == 830:  # G#5
-        return ''.join((name[8], "5"))
-
-    elif freq == 1661:  # G#6
-        return ''.join((name[8], "6"))
-
-    elif freq == 3322:  # G#7
-        return ''.join((name[8], "7"))
-
-    elif freq == 6644:  # G#8
-        return ''.join((name[8], "8"))
-
-    elif freq == 27:  # A0
-        return ''.join((name[9], "0"))
-
-    elif freq == 55:  # A1
-        return ''.join((name[9], "1"))
-
-    elif freq == 110:  # A2
-        return ''.join((name[9], "2"))
-
-    elif freq == 220:  # A3
-        return ''.join((name[9], "3"))
-
-    elif freq == 440:  # A4
-        return ''.join((name[9], "4"))
-
-    elif freq == 880:  # A5
-        return ''.join((name[9], "5"))
-
-    elif freq == 1760:  # A6
-        return ''.join((name[9], "6"))
-
-    elif freq == 3520:  # A7
-        return ''.join((name[9], "7"))
-
-    elif freq == 7040:  # A8
-        return ''.join((name[9], "8"))
-
-    elif freq == 29:  # A#0
-        return ''.join((name[10], "0"))
-
-    elif freq == 58:  # A#1
-        return ''.join((name[10], "1"))
-
-    elif freq == 116:  # A#2
-        return ''.join((name[10], "2"))
-
-    elif freq == 233:  # A#3
-        return ''.join((name[10], "3"))
-
-    elif freq == 466:  # A#4
-        return ''.join((name[10], "4"))
-
-    elif freq == 932:  # A#5
-        return ''.join((name[10], "5"))
-
-    elif freq == 1864:  # A#6
-        return ''.join((name[10], "6"))
-
-    elif freq == 3729:  # A#7
-        return ''.join((name[10], "7"))
-
-    elif freq == 7458:  # A#8
-        return ''.join((name[10], "7"))
-
-    elif freq == 30:  # B0
-        return ''.join((name[11], "0"))
-
-    elif freq == 61:  # B1
-        return ''.join((name[11], "1"))
-
-    elif freq == 123:  # B2
-        return ''.join((name[11], "2"))
-
-    elif freq == 246:  # B3
-        return ''.join((name[11], "3"))
-
-    elif freq == 493:  # B4
-        return ''.join((name[11], "4"))
-
-    elif freq == 987:  # B5
-        return ''.join((name[11], "5"))
-
-    elif freq == 1975:  # B6
-        return ''.join((name[11], "6"))
-
-    elif freq == 3951:  # B7
-        return ''.join((name[11], "7"))
-
-    elif freq == 7902:  # B8
-        return ''.join((name[11], "8"))
-
-    return "?"
-
+def pitch(pFreq):
+    if pFreq == "00000":
+        return "?"
+    freq = int(pFreq)
+    Path = "/note_by_pitch/{0}".format(str(freq))
+
+    try:
+        ReadVal = ContentManager.Get_RegKey(Path)
+
+    except ValueError:
+        ReadVal = "?"
+
+    return ReadVal
 
 class TrackBlock:
     def __init__(self, TrackData):
@@ -473,10 +182,10 @@ class TrackBlock:
     def Reset(self, TrackData):
         self.TrackData = list(TrackData)
         self.Instance = -1
-        self.TextWidth = ContentManager.GetFont_width("/PressStart2P.ttf", 12, "00000")
-        self.TextHeight = ContentManager.GetFont_height("/PressStart2P.ttf", 12, "00000")
+        self.TextWidth = ContentManager.GetFont_width("/PressStart2P.ttf", 12, var.DefaultContent.Get_RegKey("/default/pitch_value"))
+        self.TextHeight = ContentManager.GetFont_height("/PressStart2P.ttf", 12, var.DefaultContent.Get_RegKey("/default/pitch_value"))
         self.Scroll = 0
-        self.Rectangle = pygame.Rect(5, self.Scroll + (self.TextHeight + 10) * self.Instance, ContentManager.GetFont_width("/PressStart2P.ttf", 12, "00000") * 2 + 5, ContentManager.GetFont_height("/PressStart2P.ttf", 12, "00000") + 2)
+        self.Rectangle = pygame.Rect(5, self.Scroll + (self.TextHeight + 10) * self.Instance, ContentManager.GetFont_width("/PressStart2P.ttf", 12, var.DefaultContent.Get_RegKey("/default/pitch_value")) * 2 + 5, ContentManager.GetFont_height("/PressStart2P.ttf", 12, var.DefaultContent.Get_RegKey("/default/pitch_value")) + 2)
         self.LastRect = self.Rectangle
         self.FrequencyNumber = EditableNumberView(pygame.Rect(10, 2, self.TextWidth, self.TextHeight), str(self.TrackData[0]), 10)
         self.DurationNumber = EditableNumberView(pygame.Rect(self.FrequencyNumber.Rectangle[0], 2, self.TextWidth, self.TextHeight), str(self.TrackData[1]), 10)
@@ -487,7 +196,7 @@ class TrackBlock:
         self.Highlight = 0
         TrackPitch = TrackData[0]
         if TrackPitch == "-----":
-            TrackPitch = "00000"
+            TrackPitch = var.DefaultContent.Get_RegKey("/default/pitch_value")
         self.PitchLabel = pitch(TrackPitch)
         self.ResetSurface()
         self.SurfaceUpdateTrigger = True
@@ -565,10 +274,10 @@ class TrackBlock:
         self.BlockSurface = pygame.Surface((self.Rectangle[2], self.Rectangle[3]))
 
     def Update(self):
-        FrequencyWidthMax = ContentManager.GetFont_width("/PressStart2P.ttf", 10, "000")
+        NoteLabelWidth = ContentManager.GetFont_width("/PressStart2P.ttf", 10, "0000")
 
-        self.Rectangle = pygame.Rect(self.Rectangle[0], (self.TextHeight + 10) * self.Instance, FrequencyWidthMax + self.FrequencyNumber.Rectangle[2] + self.DurationNumber.Rectangle[2] + 25, self.Rectangle[3])
-        self.FrequencyNumber.Rectangle = pygame.Rect(FrequencyWidthMax, 1, self.TextWidth, self.TextHeight)
+        self.Rectangle = pygame.Rect(self.Rectangle[0], (self.TextHeight + 10) * self.Instance, NoteLabelWidth + self.FrequencyNumber.Rectangle[2] + self.DurationNumber.Rectangle[2] + 25, self.Rectangle[3])
+        self.FrequencyNumber.Rectangle = pygame.Rect(NoteLabelWidth, 1, self.TextWidth, self.TextHeight)
         self.DurationNumber.Rectangle = pygame.Rect(self.FrequencyNumber.Rectangle[0] + self.FrequencyNumber.Rectangle[2] + 2, 1, self.TextWidth, self.TextHeight)
 
         if not self.LastRect == self.Rectangle:
@@ -756,234 +465,16 @@ class TrackBlock:
                         var.Editor_CurrentOctave = 7
 
 def GetNote(NoteName, Octave):
-    # -- Note C
-    if NoteName == "C" and Octave == 1:
-        return "00032"
-    elif NoteName == "C" and Octave == 2:
-        return "00065"
-    elif NoteName == "C" and Octave == 3:
-        return "00130"
-    elif NoteName == "C" and Octave == 4:
-        return "00261"
-    elif NoteName == "C" and Octave == 5:
-        return "00523"
-    elif NoteName == "C" and Octave == 6:
-        return "01046"
-    elif NoteName == "C" and Octave == 7:
-        return "02093"
-    elif NoteName == "C" and Octave == 8:
-        return "04186"
+    Path = "/note_databank/{0}/{1}".format(NoteName, Octave)
+    ReturnVal = "00000"
 
-    # -- Note C#
+    try:
+        ReturnVal = ContentManager.Get_RegKey(Path)
 
-    elif NoteName == "C#" and Octave == 1:
-        return "00034"
-    elif NoteName == "C#" and Octave == 2:
-        return "00069"
-    elif NoteName == "C#" and Octave == 3:
-        return "00138"
-    elif NoteName == "C#" and Octave == 4:
-        return "00277"
-    elif NoteName == "C#" and Octave == 5:
-        return "00554"
-    elif NoteName == "C#" and Octave == 6:
-        return "01108"
-    elif NoteName == "C#" and Octave == 7:
-        return "02217"
-    elif NoteName == "C#" and Octave == 8:
-        return "04434"
+    except ValueError:
+        print("OneTrack : GetNote_Error, note {0} octave {1} does not exist".format(NoteName, Octave))
 
-    # -- Note D
-
-    elif NoteName == "D" and Octave == 1:
-        return "00036"
-    elif NoteName == "D" and Octave == 2:
-        return "00073"
-    elif NoteName == "D" and Octave == 3:
-        return "00146"
-    elif NoteName == "D" and Octave == 4:
-        return "00293"
-    elif NoteName == "D" and Octave == 5:
-        return "00587"
-    elif NoteName == "D" and Octave == 6:
-        return "01174"
-    elif NoteName == "D" and Octave == 7:
-        return "02349"
-    elif NoteName == "D" and Octave == 8:
-        return "04698"
-
-    # -- Note D#
-
-    elif NoteName == "D#" and Octave == 1:
-        return "00038"
-    elif NoteName == "D#" and Octave == 2:
-        return "00077"
-    elif NoteName == "D#" and Octave == 3:
-        return "00155"
-    elif NoteName == "D#" and Octave == 4:
-        return "00311"
-    elif NoteName == "D#" and Octave == 5:
-        return "00622"
-    elif NoteName == "D#" and Octave == 6:
-        return "01244"
-    elif NoteName == "D#" and Octave == 7:
-        return "02489"
-    elif NoteName == "D#" and Octave == 8:
-        return "04978"
-
-    # -- Note E
-
-    elif NoteName == "E" and Octave == 1:
-        return "00041"
-    elif NoteName == "E" and Octave == 2:
-        return "00082"
-    elif NoteName == "E" and Octave == 3:
-        return "00164"
-    elif NoteName == "E" and Octave == 4:
-        return "00329"
-    elif NoteName == "E" and Octave == 5:
-        return "00659"
-    elif NoteName == "E" and Octave == 6:
-        return "01318"
-    elif NoteName == "E" and Octave == 7:
-        return "02637"
-    elif NoteName == "E" and Octave == 8:
-        return "05274"
-
-    # -- Note F
-
-    elif NoteName == "F" and Octave == 1:
-        return "00043"
-    elif NoteName == "F" and Octave == 2:
-        return "00087"
-    elif NoteName == "F" and Octave == 3:
-        return "00174"
-    elif NoteName == "F" and Octave == 4:
-        return "00349"
-    elif NoteName == "F" and Octave == 5:
-        return "00698"
-    elif NoteName == "F" and Octave == 6:
-        return "01396"
-    elif NoteName == "F" and Octave == 7:
-        return "02793"
-    elif NoteName == "F" and Octave == 8:
-        return "05587"
-
-    # -- Note F#
-
-    elif NoteName == "F#" and Octave == 1:
-        return "00046"
-    elif NoteName == "F#" and Octave == 2:
-        return "00092"
-    elif NoteName == "F#" and Octave == 3:
-        return "00184"
-    elif NoteName == "F#" and Octave == 4:
-        return "00369"
-    elif NoteName == "F#" and Octave == 5:
-        return "00739"
-    elif NoteName == "F#" and Octave == 6:
-        return "01479"
-    elif NoteName == "F#" and Octave == 7:
-        return "02959"
-    elif NoteName == "F#" and Octave == 8:
-        return "05919"
-
-    # -- Note G
-
-    elif NoteName == "G" and Octave == 1:
-        return "00048"
-    elif NoteName == "G" and Octave == 2:
-        return "00097"
-    elif NoteName == "G" and Octave == 3:
-        return "00195"
-    elif NoteName == "G" and Octave == 4:
-        return "00391"
-    elif NoteName == "G" and Octave == 5:
-        return "00783"
-    elif NoteName == "G" and Octave == 6:
-        return "01567"
-    elif NoteName == "G" and Octave == 7:
-        return "03135"
-    elif NoteName == "G" and Octave == 8:
-        return "06271"
-
-    # -- Note G#
-
-    elif NoteName == "G#" and Octave == 1:
-        return "00051"
-    elif NoteName == "G#" and Octave == 2:
-        return "00103"
-    elif NoteName == "G#" and Octave == 3:
-        return "00207"
-    elif NoteName == "G#" and Octave == 4:
-        return "00415"
-    elif NoteName == "G#" and Octave == 5:
-        return "00830"
-    elif NoteName == "G#" and Octave == 6:
-        return "01616"
-    elif NoteName == "G#" and Octave == 7:
-        return "03322"
-    elif NoteName == "G#" and Octave == 8:
-        return "06644"
-
-    # -- Note A
-
-    elif NoteName == "A" and Octave == 1:
-        return "00055"
-    elif NoteName == "A" and Octave == 2:
-        return "00110"
-    elif NoteName == "A" and Octave == 3:
-        return "00220"
-    elif NoteName == "A" and Octave == 4:
-        return "00440"
-    elif NoteName == "A" and Octave == 5:
-        return "00880"
-    elif NoteName == "A" and Octave == 6:
-        return "01760"
-    elif NoteName == "A" and Octave == 7:
-        return "03520"
-    elif NoteName == "A" and Octave == 8:
-        return "07040"
-
-    # -- Note A#
-
-    elif NoteName == "A#" and Octave == 1:
-        return "00058"
-    elif NoteName == "A#" and Octave == 2:
-        return "00116"
-    elif NoteName == "A#" and Octave == 3:
-        return "00233"
-    elif NoteName == "A#" and Octave == 4:
-        return "00466"
-    elif NoteName == "A#" and Octave == 5:
-        return "00932"
-    elif NoteName == "A#" and Octave == 6:
-        return "01864"
-    elif NoteName == "A#" and Octave == 7:
-        return "03729"
-    elif NoteName == "A#" and Octave == 8:
-        return "07458"
-
-    # -- Note B
-
-    elif NoteName == "B" and Octave == 1:
-        return "00061"
-    elif NoteName == "B" and Octave == 2:
-        return "00123"
-    elif NoteName == "B" and Octave == 3:
-        return "00246"
-    elif NoteName == "B" and Octave == 4:
-        return "00493"
-    elif NoteName == "B" and Octave == 5:
-        return "00987"
-    elif NoteName == "B" and Octave == 6:
-        return "01975"
-    elif NoteName == "B" and Octave == 7:
-        return "03951"
-    elif NoteName == "B" and Octave == 8:
-        return "07902"
-
-    return "00000"
+    return ReturnVal
 
 class TrackColection:
     def __init__(self, Rectangle):
@@ -1585,6 +1076,8 @@ class DropDownMenu:
         shape.Shape_Rectangle(DISPLAY, (30, 15, 32), self.Rectangle, 5)
         DISPLAY.blit(fx.Surface_Blur(BluredBackground, 20), self.Rectangle)
 
+
+
         for button in self.MenuItems:
             button.Render(DISPLAY)
 
@@ -1592,7 +1085,7 @@ class DropDownMenu:
 
     def Update(self):
         for i, button in enumerate(self.MenuItems):
-            button.Rectangle[1] = self.Rectangle[1] + i * button.Rectangle[3] + 5
+            button.Rectangle[1] = self.Rectangle[1] + i * (button.Rectangle[3] + 2) + 2
 
             if button.ButtonState == 2:
                 self.SelectedItem = button.ButtonText
@@ -1890,7 +1383,7 @@ class InputBox:
             else:
                 self.active = False
             # Change the current color of the input box.
-            self.color = InputBox_COLOR_ACTIVE if self.active else InputBox_COLOR_INACTIVE
+            self.color = ThemesManager_GetProperty("InputBox_COLOR_ACTIVE") if self.active else ThemesManager_GetProperty("InputBox_COLOR_INACTIVE")
         if event.type == pygame.KEYDOWN:
             if self.active:
                 if event.key == pygame.K_BACKSPACE:
@@ -1910,9 +1403,9 @@ class InputBox:
         # -- Resize the Textbox -- #
         try:
             if not self.CustomWidth:
-                self.width = max(100, ContentManager.GetFont_width(InputBox_FontFile, self.FontSize, self.text) + 10)
+                self.width = max(100, ContentManager.GetFont_width(ThemesManager_GetProperty("InputBox_FontFile"), self.FontSize, self.text) + 10)
             self.rect[2] = self.width
-            self.rect[3] = ContentManager.GetFont_height(InputBox_FontFile, self.FontSize, self.text)
+            self.rect[3] = ContentManager.GetFont_height(ThemesManager_GetProperty("InputBox_FontFile"), self.FontSize, self.text)
             self.LastHeight = self.rect[3]
         except:
             if not self.CustomWidth:
@@ -1925,10 +1418,10 @@ class InputBox:
         shape.Shape_Rectangle(screen, (15, 15, 15), self.rect)
 
         if self.text == self.DefaultText:
-            ContentManager.FontRender(screen, InputBox_FontFile, self.FontSize, self.text, (140, 140, 140), self.rect[0], self.rect[1])
+            ContentManager.FontRender(screen, ThemesManager_GetProperty("InputBox_FontFile"), self.FontSize, self.text, (140, 140, 140), self.rect[0], self.rect[1])
         else:
             if not self.text == "":
-                ContentManager.FontRender(screen, InputBox_FontFile, self.FontSize, self.text, (240, 240, 240), self.rect[0], self.rect[1])
+                ContentManager.FontRender(screen, ThemesManager_GetProperty("InputBox_FontFile"), self.FontSize, self.text, (240, 240, 240), self.rect[0], self.rect[1])
 
         if not self.active:
             shape.Shape_Rectangle(screen, (255, 51, 102), (self.rect[0], self.rect[1] - 1, self.rect[2], 1))

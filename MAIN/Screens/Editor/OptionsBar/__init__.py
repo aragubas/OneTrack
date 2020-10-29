@@ -23,7 +23,6 @@ from OneTrack.MAIN.Screens.Editor import InstanceVar as var
 
 WidgetCollection = UI.Widget.Widget_Controller
 OptionsBarSurface = pygame.Surface
-UpdateChangerValues = True
 
 def Initialize():
     global WidgetCollection
@@ -55,7 +54,6 @@ def EventUpdate(event):
 
 def Update():
     global WidgetCollection
-    global UpdateChangerValues
 
     WidgetCollection.Update()
 
@@ -71,23 +69,21 @@ def Update():
     obj.Rectangle[0] = PictcBox.Rectangle[0]
     obj.Rectangle[1] = PictcBox.Rectangle[1] + PictcBox.Rectangle[3] - 5
 
-    # -- Update Changer Values -- #
-    if UpdateChangerValues:
-        UpdateChangerValues = False
-        UpdateChanger()
-
 def UpdateChanger():
     global NewBPMValue
     global NewRowsValue
     global NewPatternValue
     global NewHighlightSelector
     global NewHighlightSecoundSelector
+    global WidgetCollection
 
     NewBPMValue = var.BPM
     NewRowsValue = var.Rows
     NewPatternValue = var.Patterns
     NewHighlightSelector = var.Highlight
     NewHighlightSecoundSelector = var.HighlightSecond
+
+    WidgetCollection.Update()
 
 
 NewBPMValue = 0

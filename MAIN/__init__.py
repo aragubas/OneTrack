@@ -68,8 +68,6 @@ class Process():
         Editor.Initialize()
         LagIndicator.Initialize()
 
-        # -- Set Invisible Mouse -- #
-        pygame.mouse.set_visible(False)
 
 
     def Draw(self):
@@ -81,7 +79,7 @@ class Process():
         return self.DISPLAY
 
     def Update(self):
-        if not self.APPLICATION_HAS_FOCUS and var.AwaysUpdate == False:
+        if not self.APPLICATION_HAS_FOCUS and var.AwaysUpdate is False:
             return
 
         self.CurrentScreenToUpdate.Update()

@@ -36,7 +36,7 @@ def Initialize(pRoot_Process):
 
     FolderList = UI.VerticalListWithDescription(pygame.Rect(0, 24, 300, 15))
     ButtonsList = list()
-    ButtonsList.append(UI.Button(pygame.Rect(0, 0, 0, 0), "Select File", 12))
+    ButtonsList.append(UI.Button(pygame.Rect(0, 0, 0, 0), "Select", 12))
     OptionsBar = UI.ButtonsBar((0, 0, 0, 0), ButtonsList)
     RootProcess.TITLEBAR_TEXT = "Open File"
     FileListUpdated = False
@@ -87,7 +87,7 @@ def EventUpdate(event):
 def UpdateFileList():
     global FolderList
 
-    print("Save : Updating File List...")
+    print("Load : Updating File List...")
     FolderList.ClearItems()
     AllFilesInDir = utils.Directory_FilesList(Core.GetAppDataFromAppName("OneTrack"))
 
