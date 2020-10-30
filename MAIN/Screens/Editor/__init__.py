@@ -52,7 +52,6 @@ def Initialize():
 
     NewMusicFile()
 
-
 def GameDraw(DISPLAY):
     global track_list
     global TopBarControls
@@ -72,123 +71,212 @@ def GameDraw(DISPLAY):
             DropDownFileMenu.Render(DISPLAY)
 
         SoundCacheMessage.Draw(DISPLAY)
-        var.CopyOfScreen = DISPLAY.copy()
 
 def SaveMusicData(FilePath):
     global track_list
 
-    # -- Remove Pygame.Surface Object Before Dumping -- #
-    for track in track_list.PatternList:
-        for patternCol in track.Tracks:
-            for block in patternCol.Tracks:
-                block.BlockSurface = None
-                block.SurfaceUpdateTrigger = True
-                block.Active = True
+    FilePath = FilePath + ".oneprj"
 
-    pickle.dump(track_list.PatternList, open(FilePath, "wb"))
+    ProjectDataFile = ""
 
-    # -- Affter Dumping, Re-Crease the Surface -- #
-    for track in track_list.PatternList:
-        for patternCol in track.Tracks:
-            for block in patternCol.Tracks:
-                block.ResetSurface()
-                block.SurfaceUpdateTrigger = True
-                block.Active = True
+    ProjectDataFile += "#region,METADATA\n" + \
+                       "BPM:" + str(var.BPM) + "\n" + \
+                       "Rows:" + str(var.Rows) + "\n" +  \
+                       "Highlight:" + str(var.Highlight) + "\n" +  \
+                       "HighlightSecond:" + str(var.HighlightSecond) + "\n" +  \
+                       "Patterns:" + str(var.Patterns) + "\n" +  \
+                       "SavedVersion:" + str(var.ProcessReference.DefaultContents.Get_RegKey("/version")) + "\n" +  \
+                       "$end\n"
+
+    for pattern in track_list.PatternList:
+        ProjectDataFile += "#region,Pattern:" + str(pattern.PatternID) + "\n"
+
+        for rows in pattern.Tracks:
+            ProjectDataFile += "%Row:" + str(rows.ID) + "\n"
+
+            for block in rows.Tracks:
+                BlockData = "{0}:{1}".format(block.TrackData[0], block.TrackData[1])
+
+                ProjectDataFile += BlockData + "\n"
+
+            ProjectDataFile += "%row_end\n"
+
+        ProjectDataFile += "$end\n"
+
+    FileWritter = open(FilePath, "w")
+    FileWritter.write(ProjectDataFile)
+    FileWritter.close()
 
 def LoadMusicData(FileName):
     global track_list
 
+    FileName = FileName + ".oneprj"
+
     # -- Unload the Current SoundCahce -- #
     UI.ContentManager.UnloadSoundTuneCache()
-    # -- Unload the Loaded TrackBlocks Surfaces -- #
-    for track in track_list.PatternList:
-        for patternCol in track.Tracks:
-            for block in patternCol.Tracks:
-                block.ResetSurface()
-
-    # -- Load the List to RAM -- #
-    patterns_list = pickle.load(open(FileName, "rb"))
 
     # -- Clear the Current Patterns -- #
     track_list.PatternList.clear()
 
-    # -- Add Objects One-By-One -- #
-    SavedBPM = 0
-    SavedRows = 0
-    SavedHighlightOne = 0
-    SavedHighlightTwo = 0
-    SavedPatterns = 0
+    FileDataRead = open(FileName, "r").readlines()
+
     FileImportedFromOlderVersion = False
+    IsReadingRegion = False
+    IsReadingMetadata = False
+    LastReadingRegion_Name = ""
 
-    for i, obj in enumerate(patterns_list):
-        # -- If in first pattern, read Music Properties -- #
-        try:
-            if i == 0:
-                SavedBPM = int(obj.MusicProperties[0])
-                SavedRows = int(obj.MusicProperties[1])
-                SavedHighlightOne = int(obj.MusicProperties[2])
-                SavedHighlightTwo = int(obj.MusicProperties[3])
-                SavedPatterns = int(obj.MusicProperties[4])
+    MusicData_BPM = 0
+    MusicData_Rows = 0
+    MusicData_Highlight = 0
+    MusicData_HighlightSecound = 0
+    MusicData_Patterns = 0
+    MusicData_VersionSaved = ""
 
-        except:
-            obj.MusicProperties = list()
-            obj.MusicProperties.append(150)  # BMP
-            obj.MusicProperties.append(32)  # ROWS
-            obj.MusicProperties.append(4)  # HIGH1
-            obj.MusicProperties.append(16)  # HIGH2
-            obj.MusicProperties.append(2)  # PATTERN
-            FileImportedFromOlderVersion = True
+    RowReading_LastRowID = 0
+    RowReading_IsReadingRow = False
+    RowReading_BlocksList = list()
 
-            SavedBPM = int(obj.MusicProperties[0])
-            SavedRows = int(obj.MusicProperties[1])
-            SavedHighlightOne = int(obj.MusicProperties[2])
-            SavedHighlightTwo = int(obj.MusicProperties[3])
-            SavedPatterns = int(obj.MusicProperties[4])
+    ReadPatternsList = list()
 
-        # -- Add the Object -- #
-        track_list.PatternList.append(obj)
+    for line in FileDataRead:
+        line = line.rstrip()
+        if not IsReadingRegion:
+            if line.startswith("#region"):
+                IsReadingRegion = True
+                SplitRegionRead = line.replace("#region", "").split(",")
+                LastReadingRegion_Name = SplitRegionRead[1]
 
-        for patternCol in obj.Tracks:
-            # -- Restart Track Collections Variables -- #
-            patternCol.SelectedTrack = 0
+                # Check what type of data is being read
+                IsReadingMetadata = LastReadingRegion_Name == "METADATA"
 
-            # -- Update TrackBlocks Code -- #
-            for block in patternCol.Tracks:
-                block.Reset(block.TrackData)
-                block.Active = True
+                # Create the Pattern
+                if not IsReadingMetadata:
+                    ObjToAdd = UI.Pattern(int(LastReadingRegion_Name.split(":")[1]), False)
+                    ReadPatternsList.append(ObjToAdd)
 
-            if not hasattr(patternCol, "LastSinewave"):
-                patternCol.LastSineWave = "square"
-                FileImportedFromOlderVersion = True
+                    print("CreatedPattern_ID : " + str(LastReadingRegion_Name.split(":")[1]))
+
+            continue
+
+        # Check if reading hit it's end
+        if line == "$end":
+            print("Finished reading region ({0})".format(LastReadingRegion_Name))
+            IsReadingRegion = False
+            if not IsReadingMetadata:
+                ReadPatternsList[int(LastReadingRegion_Name.split(":")[1])].UpdateTracksPosition()
+
+                LastReadingRegion_Name = ""
+            IsReadingMetadata = False
+            continue
+
+        # Read Metadata
+        if IsReadingMetadata:
+            ArgsSplit = line.split(":")
+
+            if ArgsSplit[0] == "BPM":
+                MusicData_BPM = int(ArgsSplit[1])
+                print("BPM was set to: {0}".format(str(MusicData_BPM)))
+                continue
+
+            if ArgsSplit[0] == "Rows":
+                MusicData_Rows = int(ArgsSplit[1])
+                print("Rows was set to: {0}".format(str(MusicData_Rows)))
+                continue
+
+            if ArgsSplit[0] == "Highlight":
+                MusicData_Highlight = int(ArgsSplit[1])
+                print("Highlight was set to: {0}".format(str(MusicData_Highlight)))
+                continue
+
+            if ArgsSplit[0] == "HighlightSecond":
+                MusicData_HighlightSecound = int(ArgsSplit[1])
+                print("HighlightSecond was set to: {0}".format(str(MusicData_HighlightSecound)))
+                continue
+
+            if ArgsSplit[0] == "Patterns":
+                MusicData_Patterns = int(ArgsSplit[1])
+                print("Patterns was set to: {0}".format(str(MusicData_Patterns)))
+                continue
+
+            if ArgsSplit[0] == "SavedVersion":
+                MusicData_VersionSaved = ArgsSplit[1]
+                print("VersionSaved was set to: {0}".format(MusicData_VersionSaved))
+                continue
+
+            print("Invalid Metadata Argument ({0})".format(ArgsSplit[0]))
+            continue
+
+        # Start Row Reading
+        if line.startswith("%Row") and not RowReading_IsReadingRow:
+            LineSplit = line.split(":")
+
+            RowReading_IsReadingRow = True
+            RowReading_LastRowID = int(LineSplit[1])
+            print("RowReading : RowID {0}".format(str(RowReading_LastRowID)))
+            continue
+
+        # Finish Row Reading
+        if line == "%row_end" and RowReading_IsReadingRow:
+            print("RowReading : Finished Reading Row {0}".format(RowReading_LastRowID))
+
+            ObjToAdd = UI.TrackColection(int(RowReading_LastRowID), False)
+            for block in RowReading_BlocksList:
+                ObjToAdd.Tracks.append(block)
+
+            ReadPatternsList[int(LastReadingRegion_Name.split(":")[1])].Tracks.append(ObjToAdd)
+
+            RowReading_IsReadingRow = False
+            RowReading_LastRowID = 0
+
+            RowReading_BlocksList.clear()
+            continue
+
+        # Get BlockData
+        BlockData = line.split(":")
+
+        BlockFrequency = BlockData[0]
+        BlockDuration = BlockData[1]
+
+        TrackblockToAdd = UI.TrackBlock((BlockFrequency, BlockDuration))
+
+        RowReading_BlocksList.append(TrackblockToAdd)
+
+    # Set the VarValues
+    var.BPM = MusicData_BPM
+    var.Rows = MusicData_Rows
+    var.Highlight = MusicData_Highlight
+    var.HighlightSecond = MusicData_HighlightSecound
+    var.Patterns = MusicData_Patterns
+    var.SelectedTrack = 0
+
+    # Replace the Patterns List
+    track_list.PatternList.clear()
+    track_list.PatternList = ReadPatternsList
 
     # -- Set to the Pattern 0 -- #
     track_list.SetCurrentPattern_ByID(0)
 
-    Obj = OptionsBar.WidgetCollection.GetWidget(1)
-    Obj.Changer.Value = str(SavedBPM).zfill(3)
-    Obj = OptionsBar.WidgetCollection.GetWidget(2)
-    Obj.Changer.Value = str(SavedRows).zfill(3)
-
-    var.BPM = SavedBPM
-    var.Rows = SavedRows
-    var.GenerateSoundCache = True
-    var.SelectedTrack = 0
-    var.Highlight = SavedHighlightOne
-    var.HighlightSecond = SavedHighlightTwo
-    var.Patterns = SavedPatterns
+    if MusicData_VersionSaved != var.ProcessReference.DefaultContents.Get_RegKey("/version"):
+        FileImportedFromOlderVersion = True
 
     OptionsBar.UpdateChanger()
 
-    if FileImportedFromOlderVersion:
+    if not FileImportedFromOlderVersion and not var.ProcessReference.DefaultContents.Get_RegKey("/dialog/imported_older_version/show_once", bool):
         var.ProcessReference.GreyDialog(var.ProcessReference.DefaultContents.Get_RegKey("/dialog/imported_older_version/title"), var.ProcessReference.DefaultContents.Get_RegKey("/dialog/imported_older_version/text"))
+        var.ProcessReference.DefaultContents.Write_RegKey("/dialog/imported_older_version/show_once", "True")
 
 def NewMusicFile():
     global track_list
+
     del track_list
     tge.utils.GarbageCollector_Collect()
 
+    # -- Unload the Current SoundCahce -- #
+    UI.ContentManager.UnloadSoundTuneCache()
+
     # -- Update Tittlebar -- #
     var.ProcessReference.TITLEBAR_TEXT = "OneTrack v{0}".format(var.ProcessReference.DefaultContents.Get_RegKey("/version"))
+
 
     track_list = UI.TrackList()
     track_list.Rectangle = pygame.Rect(0, 100, 800, 400)
@@ -202,6 +290,9 @@ def NewMusicFile():
     var.Patterns = 2
 
     OptionsBar.UpdateChanger()
+    OptionsBar.Update()
+
+    var.ProcessReference.DefaultContents.Write_RegKey("/dialog/imported_older_version/show_once", "False")
 
 
 def Update():

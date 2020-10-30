@@ -143,7 +143,7 @@ def UpdateFileList():
 
     for file in AllFilesInDir:
         FileAllPath = file
-        FileName = file.replace(Core.GetAppDataFromAppName("OneTrack"), "")
+        FileName = file.replace(Core.GetAppDataFromAppName("OneTrack"), "").replace(".oneprj", "")
 
         ItemName = FileName[1:]
         ItemDescription = "Saved on: {0}".format(FileAllPath)

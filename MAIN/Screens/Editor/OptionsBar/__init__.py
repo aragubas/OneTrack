@@ -83,8 +83,25 @@ def UpdateChanger():
     NewHighlightSelector = var.Highlight
     NewHighlightSecoundSelector = var.HighlightSecond
 
-    WidgetCollection.Update()
+    Obj = WidgetCollection.GetWidget(1)
+    Obj.Changer.Value = str(NewBPMValue).zfill(3)
+    Obj.Active = True
 
+    Obj = WidgetCollection.GetWidget(2)
+    Obj.Changer.Value = str(NewRowsValue).zfill(2)
+    Obj.Active = True
+
+    Obj = WidgetCollection.GetWidget(3)
+    Obj.Changer.Value = str(''.join((str(NewHighlightSelector).zfill(2), "x", str(NewHighlightSecoundSelector).zfill(2))))
+    Obj.Active = True
+
+    Obj = WidgetCollection.GetWidget(5)
+    Obj.Changer.Value = str(NewPatternValue)
+    Obj.Active = True
+
+
+    WidgetCollection.Active = True
+    WidgetCollection.Update()
 
 NewBPMValue = 0
 NewPatternValue = 0
@@ -96,6 +113,12 @@ def UpdateBPMSelector():
     global NewBPMValue
     if WidgetCollection.LastInteractionID == 1:
         NewBPMValue = int(WidgetCollection.LastInteractionType)
+
+        if NewBPMValue <= 10:
+            NewBPMValue = 10
+
+        if NewBPMValue >= 500:
+            NewBPMValue = 500
 
     else:
         obj = WidgetCollection.GetWidget(1)
@@ -177,7 +200,7 @@ def UpdateApplyButton():
             var.Highlight = NewHighlightSelector
             var.HighlightSecond = NewHighlightSecoundSelector
 
-            # -- Update the Tracks Pre-Rendered Block -- #
+            # -- Update the Tracks Blocks -- #
             for track in Editor.track_list.PatternList:
                 for patternCol in track.Tracks:
                     for block in patternCol.Tracks:

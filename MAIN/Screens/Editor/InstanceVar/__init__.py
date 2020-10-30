@@ -18,7 +18,6 @@ import pygame
 
 FileMenuEnabled = False
 DisableControls = False
-CopyOfScreen = pygame.Surface((5, 5))
 BPM = 150
 Rows = 32
 Highlight = 4
@@ -33,3 +32,5 @@ PatternUpdateEntry = list()
 PatternIsUpdating = False
 AwaysUpdate = False
 ProcessReference = None
+Volume = 0.4
+SoundsBeingPlayedNow = 0

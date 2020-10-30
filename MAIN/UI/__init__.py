@@ -177,9 +177,6 @@ def pitch(pFreq):
 
 class TrackBlock:
     def __init__(self, TrackData):
-        self.Reset(TrackData)
-
-    def Reset(self, TrackData):
         self.TrackData = list(TrackData)
         self.Instance = -1
         self.TextWidth = ContentManager.GetFont_width("/PressStart2P.ttf", 12, var.DefaultContent.Get_RegKey("/default/pitch_value"))
@@ -190,14 +187,16 @@ class TrackBlock:
         self.FrequencyNumber = EditableNumberView(pygame.Rect(10, 2, self.TextWidth, self.TextHeight), str(self.TrackData[0]), 10)
         self.DurationNumber = EditableNumberView(pygame.Rect(self.FrequencyNumber.Rectangle[0], 2, self.TextWidth, self.TextHeight), str(self.TrackData[1]), 10)
         self.DurationNumber.AllowNotNumbers = True
-        self.Active = False
+        self.Active = True
         self.SelectedField = 0
         self.MaxFields = 1
         self.Highlight = 0
+
         TrackPitch = TrackData[0]
         if TrackPitch == "-----":
             TrackPitch = var.DefaultContent.Get_RegKey("/default/pitch_value")
         self.PitchLabel = pitch(TrackPitch)
+
         self.ResetSurface()
         self.SurfaceUpdateTrigger = True
         self.DisabledTrigger = True
@@ -476,8 +475,19 @@ def GetNote(NoteName, Octave):
 
     return ReturnVal
 
+def GetWaveTypeByWaveCode(pWaveCode):
+    if pWaveCode == "SQUR":
+        return "square"
+
+    if pWaveCode == "SINE":
+        return "sine"
+
+    print("Invalid Sinewave type: ({0})".format(WaveformCommand))
+    return "square"
+
+
 class TrackColection:
-    def __init__(self, Rectangle):
+    def __init__(self, pID, ZeroFillTracks=True):
         self.Tracks = list()
         self.Scroll = 0
         self.PlayMode = False
@@ -485,16 +495,21 @@ class TrackColection:
         self.PlayMode_TrackDelay = 0
         self.PlayMode_CurrentTonePlayed = False
         self.PlayMode_LastSoundChannel = -1
-        self.Rectangle = pygame.Rect(Rectangle[0], Rectangle[1], Rectangle[2], Rectangle[3])
+        self.Rectangle = pygame.Rect(5, 120, 300, 400)
         self.Active = False
         self.ScreenSize = (0, 0)
-        self.ID = 0
+        self.ID = pID
         self.UpdatePatternsCache = False
         self.LastSineWave = "square"
 
-        for _ in range(var.Rows):
-            self.AddBlankTrack()
+        if ZeroFillTracks:
+            for _ in range(var.Rows):
+                self.AddBlankTrack()
 
+            self.UpdateTracksPos()
+
+    def AddBlock(self, pBlockObject):
+        self.Tracks.append(pBlockObject)
         self.UpdateTracksPos()
 
     def UpdateTracksPos(self):
@@ -502,7 +517,7 @@ class TrackColection:
             track.Rectangle[0] = self.Rectangle[0]
 
     def AddBlankTrack(self):
-        self.Tracks.append(TrackBlock(("00000", "00100")))
+        self.Tracks.append(TrackBlock((var.ProcessReference.DefaultContents.Get_RegKey("/default/pitch_value").zfill(5), var.ProcessReference.DefaultContents.Get_RegKey("/default/note_duration").zfill(5))))
 
     def GenerateCache(self):
         for i, track in enumerate(self.Tracks):
@@ -512,9 +527,6 @@ class TrackColection:
             SinewaveType = "square"
 
             ContentManager.GetTune_FromTuneCache(Frequency, Duration, 44000, SinewaveType)
-
-    def GetWaveTypeByWaveCode(self, WaveCode):
-        pass
 
     def Draw(self, DISPLAY):
         self.ScreenSize = (DISPLAY.get_width(), DISPLAY.get_height())
@@ -532,6 +544,25 @@ class TrackColection:
             if self.Scroll + track.Rectangle[1] >= DISPLAY.get_height() + track.TextHeight or self.Scroll + track.Rectangle[1] <= -track.TextHeight:
                 continue
 
+            # Render the Track
+            track.Render(DISPLAY)
+
+    def Update(self):
+        for i, track in enumerate(self.Tracks):
+            track.Scroll = self.Scroll
+            track.Instance = i
+
+            #  Align X
+            track.Rectangle[0] = self.Rectangle[0]
+
+            #  Set Track.Active
+            track.Active = track.Instance == self.SelectedTrack
+
+            #  Disable the track when it is useless
+            if not self.Active and not self.PlayMode:
+                track.Active = False
+
+            #  Set Track Highlight Type
             if track.Instance % max(1, var.Highlight) == 0:
                 track.Highlight = 1
 
@@ -541,23 +572,10 @@ class TrackColection:
             if not track.Instance % max(1, var.HighlightSecond) == 0 and not track.Instance % max(1, var.Highlight) == 0:
                 track.Highlight = 0
 
-            track.Render(DISPLAY)
-
-    def Update(self):
-        for i, track in enumerate(self.Tracks):
-            track.Scroll = self.Scroll
-            track.Instance = i
-
-            track.Rectangle[0] = self.Rectangle[0]
-
-            track.Active = track.Instance == self.SelectedTrack
-
-            if not self.Active and not self.PlayMode:
-                track.Active = False
-
+            #  Update Track Code
             track.Update()
 
-        # -- Alingh the Track Number -- #
+        # -- Align the Track Number -- #
         if len(self.Tracks) > var.Rows:
             self.Tracks.pop()
             self.SelectedTrack = 0
@@ -580,6 +598,7 @@ class TrackColection:
 
             for block in self.Tracks:
                 block.Active = True
+                block.Update()
 
         if not len(self.Tracks) < var.Rows and not len(self.Tracks) > var.Rows:
             if "APTN_T_GT" in var.PatternUpdateEntry:
@@ -592,6 +611,9 @@ class TrackColection:
         self.Rectangle = pygame.Rect(self.Rectangle[0], self.Rectangle[1], self.Tracks[self.SelectedTrack].Rectangle[2], self.Rectangle[3])
 
         var.PlayMode = self.PlayMode
+
+        if var.SoundsBeingPlayedNow <= 0:
+            var.SoundsBeingPlayedNow = 0
 
         if self.PlayMode:
             self.PlayMode_TrackDelay += 1
@@ -624,15 +646,7 @@ class TrackColection:
                     elif CurrentTrackObj.TrackData[1].startswith("W"):
                         WaveformCommand = CurrentTrackObj.TrackData[1][1:]
                         # X---- 4 Digits
-                        if WaveformCommand == "SQUR":
-                            self.LastSineWave = "square"
-
-                        elif WaveformCommand == "SINE":
-                            self.LastSineWave = "sine"
-
-                        else:
-                            print("Invalid Sinewave type: ({0})".format(WaveformCommand))
-                            self.LastSineWave = "sine"
+                        self.LastSineWave = GetWaveTypeByWaveCode(WaveformCommand)
 
                     # -- Pattern Jump Command -- #
                     elif CurrentTrackObj.TrackData[1].startswith("J"):
@@ -651,16 +665,15 @@ class TrackColection:
                     elif CurrentTrackObj.TrackData[1].startswith("END"):
                         self.EndPlayMode()
 
+                    #var.SoundsBeingPlayedNow -= 1
+
                 else:  # -- If not, Play Note -- #
                     SoundDuration = 0
                     SoundTune = 0
 
                     # -- Convert the Time to the Correct Time -- #
                     try:
-                        FirstDigits = CurrentTrackObj.TrackData[1][:2]
-                        SecoundDigits = CurrentTrackObj.TrackData[1][2:]
-
-                        SoundDuration = float("{0}.{1}".format(FirstDigits, SecoundDigits))
+                        SoundDuration = int(CurrentTrackObj.TrackData[1]) / var.BPM
                     except ValueError:
                         pass
 
@@ -670,11 +683,20 @@ class TrackColection:
                         pass
 
                     # -- If not SoundTune is null, Play the Tune -- #
-                    Volume = 1.0 / len(Editor.track_list.PatternList[Editor.track_list.CurrentPatternID].Tracks)
+                    if var.SoundsBeingPlayedNow == 0:
+                        Volume = var.Volume
+                    else:
+                        Volume = var.Volume / var.SoundsBeingPlayedNow
+
                     CurrentPlayID = ContentManager.PlayTune(SoundTune, SoundDuration, Volume=Volume, FrequencyType=self.LastSineWave)
+                    if SoundTune >= 1:
+                        var.SoundsBeingPlayedNow += 1
+                    else:
+                        var.SoundsBeingPlayedNow -= 1
 
                     if not CurrentPlayID is None:
                         self.PlayMode_LastSoundChannel = CurrentPlayID
+                        var.SoundsBeingPlayedNow -= 1
 
                 # -- Stop Playing song when it reach the end -- #
                 if self.SelectedTrack >= len(self.Tracks):
@@ -691,6 +713,7 @@ class TrackColection:
         self.PlayMode_LastSoundChannel = -1
         var.PlayMode = False
         self.LastSineWave = "square"
+        var.SoundsBeingPlayedNow = 0
 
     def EventUpdate(self, event):
         if self.Active:
@@ -732,7 +755,7 @@ class TrackColection:
 
                 if event.key == pygame.K_F1:
                     if len(self.Tracks) > 1:
-                        self.Tracks[self.SelectedTrack] = TrackBlock(("00000", "00100"))
+                        self.Tracks[self.SelectedTrack] = TrackBlock((var.ProcessReference.DefaultContents.Get_RegKey("/default/pitch_value").zfill(5), var.ProcessReference.DefaultContents.Get_RegKey("/default/note_duration").zfill(5)))
 
                 if event.key == pygame.K_F2:
                     if len(self.Tracks) < 24:
@@ -740,16 +763,19 @@ class TrackColection:
 
 
 class Pattern:
-    def __init__(self, PatternID, Rectangle):
+    def __init__(self, PatternID, ZeroFillPatterns=True):
         self.PatternID = PatternID
         self.Tracks = list()
         self.ActiveTrackID = 0
-        self.MusicProperties = list()
-        self.Rectangle = Rectangle
+        self.Rectangle = pygame.Rect(5, 120, 300, 400)
 
-        for _ in range(4):
-            self.AddBlankTrack()
+        if ZeroFillPatterns:
+            for _ in range(var.Patterns):
+                self.AddBlankTrack()
 
+            self.UpdateTracksPosition()
+
+    def UpdateTracksPosition(self):
         for i, track in enumerate(self.Tracks):
             # -- Update Tracks Position -- #
             if i == 0:
@@ -757,9 +783,8 @@ class Pattern:
             else:
                 track.Rectangle[0] = self.Tracks[i - 1].Rectangle[0] + self.Tracks[i - 1].Rectangle[2]
 
-
     def AddBlankTrack(self):
-        self.Tracks.append(TrackColection(self.Rectangle))
+        self.Tracks.append(TrackColection(len(self.Tracks)))
 
     def PlayAllTracks(self):
         for i, track in enumerate(self.Tracks):
@@ -782,7 +807,7 @@ class Pattern:
             else:
                 track.Rectangle[0] = self.Tracks[i - 1].Rectangle[0] + self.Tracks[i - 1].Rectangle[2] + 10
 
-        # -- Alingh the Patterns Number -- #
+        # -- Align the Patterns Number -- #
         if len(self.Tracks) > var.Patterns:
             self.Tracks.pop()
             self.ActiveTrackID = 0
@@ -841,7 +866,7 @@ class TrackList:
 
     def AddNewPattern(self):
         NewPatternID = len(self.PatternList)
-        self.PatternList.append(Pattern(len(self.PatternList), pygame.Rect(5, 120, 300, 400)))
+        self.PatternList.append(Pattern(len(self.PatternList)))
 
         self.SetCurrentPattern_ByID(NewPatternID)
 
@@ -880,15 +905,6 @@ class TrackList:
 
         if not self.Active:
             self.CurrentPattern.Active = False
-
-        self.CurrentPatternID = self.CurrentPattern.PatternID
-        if self.CurrentPatternID == 0:  # -- Save Music Properties only on the first pattern -- #
-            self.CurrentPattern.MusicProperties.clear()
-            self.CurrentPattern.MusicProperties.append(var.BPM)  # -- Save BPM Data -- #
-            self.CurrentPattern.MusicProperties.append(var.Rows)  # -- Save Rows Data -- #
-            self.CurrentPattern.MusicProperties.append(var.Highlight)  # -- Save Highlight Data -- #
-            self.CurrentPattern.MusicProperties.append(var.HighlightSecond)  # -- Save Highlight Data -- #
-            self.CurrentPattern.MusicProperties.append(var.Patterns)  # -- Save Pattern Data -- #
 
         # -- Update the Current Pattern -- #
         self.CurrentPattern.Update()
@@ -931,26 +947,13 @@ class TrackList:
 
                             if not collactions.TrackData[0] == "-----":
                                 Freqn = int(collactions.TrackData[0])
-
-                                FirstDigits = collactions.TrackData[1][:2]
-                                SecoundDigits = collactions.TrackData[1][2:]
-
-                                SoundDuration = float("{0}.{1}".format(FirstDigits, SecoundDigits))
+                                SoundDuration = int(collactions.TrackData[1]) / var.BPM
 
                                 ContentManager.GetTune_FromTuneCache(Freqn, SoundDuration, 44000, SinewaveType)
                             else:
                                 if collactions.TrackData[1].startswith("W"):
                                     WaveformCommand = collactions.TrackData[1][1:]
-                                                            # X---- 4 Digits
-                                    if WaveformCommand == "SQUR":
-                                        CollectionLastSinewaveForm = "square"
-
-                                    elif WaveformCommand == "SINE":
-                                        CollectionLastSinewaveForm = "sine"
-
-                                    else:
-                                        print("Invalid Sinewave type: ({0})".format(CollectionLastSinewaveForm))
-                                        CollectionLastSinewaveForm = "sine"
+                                    CollectionLastSinewaveForm = GetWaveTypeByWaveCode(WaveformCommand)
 
                         except ValueError:
                             continue
