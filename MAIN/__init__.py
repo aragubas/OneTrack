@@ -68,7 +68,9 @@ class Process():
         Editor.Initialize()
         LagIndicator.Initialize()
 
-
+    def GreyDialog(self, Title, Text, ):
+        var.AwaysUpdate = False
+        Core.MAIN.CreateProcess("OneTrack/UnatachedDialog", "OneTrack Dialog", (var.ProcessReference, "DIALOG_OK", "{0};{1}".format(Title, Text)))
 
     def Draw(self):
         self.CurrentScreenToUpdate.GameDraw(self.DISPLAY)

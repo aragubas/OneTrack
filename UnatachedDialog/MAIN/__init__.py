@@ -65,7 +65,6 @@ class Process():
         if self.OperationType == "DIALOG_OK":
             self.SelectedModuleMode = DialogOkOnlyScreen
 
-
         self.SelectedModuleMode.Initialize(self)
 
         self.POSITION = (800 / 2 - self.DISPLAY.get_width() / 2, 600 / 2 - self.DISPLAY.get_height() / 2)
@@ -80,9 +79,14 @@ class Process():
     def Update(self):
         self.SelectedModuleMode.Update()
 
+    def CloseDialog(self):
+        Core.wmm.WindowManagerSignal(self, 1)
+        Core.wmm.WindowManagerSignal(self.RootProcess, 0)
+
     def EventUpdate(self, event):
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_ESCAPE:
-                Core.wmm.WindowManagerSignal(self, 1)
+                self.CloseDialog()
+
 
         self.SelectedModuleMode.EventUpdate(event)

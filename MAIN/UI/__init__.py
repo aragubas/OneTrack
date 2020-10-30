@@ -490,6 +490,7 @@ class TrackColection:
         self.ScreenSize = (0, 0)
         self.ID = 0
         self.UpdatePatternsCache = False
+        self.LastSineWave = "square"
 
         for _ in range(var.Rows):
             self.AddBlankTrack()
@@ -508,8 +509,12 @@ class TrackColection:
             print(i)
             Frequency = int(track.TrackData[0])
             Duration = int(track.TrackData[1])
+            SinewaveType = "square"
 
-            ContentManager.GetTune_FromTuneCache(Frequency, Duration, 44000)
+            ContentManager.GetTune_FromTuneCache(Frequency, Duration, 44000, SinewaveType)
+
+    def GetWaveTypeByWaveCode(self, WaveCode):
+        pass
 
     def Draw(self, DISPLAY):
         self.ScreenSize = (DISPLAY.get_width(), DISPLAY.get_height())
@@ -615,6 +620,20 @@ class TrackColection:
 
                         ContentManager.FadeoutSound(self.PlayMode_LastSoundChannel, FadeTime)
 
+                    # -- Waveform Command -- #
+                    elif CurrentTrackObj.TrackData[1].startswith("W"):
+                        WaveformCommand = CurrentTrackObj.TrackData[1][1:]
+                        # X---- 4 Digits
+                        if WaveformCommand == "SQUR":
+                            self.LastSineWave = "square"
+
+                        elif WaveformCommand == "SINE":
+                            self.LastSineWave = "sine"
+
+                        else:
+                            print("Invalid Sinewave type: ({0})".format(WaveformCommand))
+                            self.LastSineWave = "sine"
+
                     # -- Pattern Jump Command -- #
                     elif CurrentTrackObj.TrackData[1].startswith("J"):
                         SplitedAgrs = list(CurrentTrackObj.TrackData[1])
@@ -652,7 +671,7 @@ class TrackColection:
 
                     # -- If not SoundTune is null, Play the Tune -- #
                     Volume = 1.0 / len(Editor.track_list.PatternList[Editor.track_list.CurrentPatternID].Tracks)
-                    CurrentPlayID = ContentManager.PlayTune(SoundTune, SoundDuration, Volume=Volume)
+                    CurrentPlayID = ContentManager.PlayTune(SoundTune, SoundDuration, Volume=Volume, FrequencyType=self.LastSineWave)
 
                     if not CurrentPlayID is None:
                         self.PlayMode_LastSoundChannel = CurrentPlayID
@@ -671,6 +690,7 @@ class TrackColection:
         self.Scroll = 25
         self.PlayMode_LastSoundChannel = -1
         var.PlayMode = False
+        self.LastSineWave = "square"
 
     def EventUpdate(self, event):
         if self.Active:
@@ -902,10 +922,12 @@ class TrackList:
             print("Generating SoundCache...")
             for patterns in self.PatternList:
                 for track in patterns.Tracks:
+                    CollectionLastSinewaveForm = "square"
                     for collactions in track.Tracks:
                         try:
                             collactions.SurfaceUpdateTrigger = True
                             collactions.Active = True
+                            SinewaveType = CollectionLastSinewaveForm
 
                             if not collactions.TrackData[0] == "-----":
                                 Freqn = int(collactions.TrackData[0])
@@ -915,7 +937,21 @@ class TrackList:
 
                                 SoundDuration = float("{0}.{1}".format(FirstDigits, SecoundDigits))
 
-                                ContentManager.GetTune_FromTuneCache(Freqn, SoundDuration, 44000)
+                                ContentManager.GetTune_FromTuneCache(Freqn, SoundDuration, 44000, SinewaveType)
+                            else:
+                                if collactions.TrackData[1].startswith("W"):
+                                    WaveformCommand = collactions.TrackData[1][1:]
+                                                            # X---- 4 Digits
+                                    if WaveformCommand == "SQUR":
+                                        CollectionLastSinewaveForm = "square"
+
+                                    elif WaveformCommand == "SINE":
+                                        CollectionLastSinewaveForm = "sine"
+
+                                    else:
+                                        print("Invalid Sinewave type: ({0})".format(CollectionLastSinewaveForm))
+                                        CollectionLastSinewaveForm = "sine"
+
                         except ValueError:
                             continue
 

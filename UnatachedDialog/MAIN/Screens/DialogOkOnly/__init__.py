@@ -20,22 +20,39 @@ from OneTrack.MAIN import UI
 from Core import utils
 
 RootProcess = None
+DialogTitle = ""
+DialogText = ""
+
 
 def Initialize(pRoot_Process):
     global RootProcess
+    global DialogTitle
+    global DialogText
     RootProcess = pRoot_Process
 
     # Set the correct screen size
     RootProcess.DISPLAY = pygame.Surface((400, 150))
 
     Args = RootProcess.INIT_ARGS[2].split(';')
+    DialogTitle = Args[0]
+    DialogText = Args[1] + "\n\nPress 'ESC' to close dialog"
+
+    RootProcess.TITLEBAR_TEXT = DialogTitle
+
+    TextSize = (RootProcess.DefaultContents.GetFont_width("/Ubuntu_Bold.ttf", 14, DialogText) + 10, RootProcess.DefaultContents.GetFont_height("/Ubuntu_Bold.ttf", 14, DialogText) + 5)
+
+    RootProcess.DISPLAY = pygame.Surface(TextSize)
 
 
 def Draw(DISPLAY):
-    pass
+    global DialogText
+    RootProcess.DefaultContents.FontRender(DISPLAY, "/Ubuntu_Bold.ttf", 14, DialogText, (240, 240, 240), 5, 5)
+
 
 def Update():
-    pass
+    global RootProcess
+    if RootProcess.APPLICATION_HAS_FOCUS:
+        Core.wmm.WindowManagerSignal(RootProcess, 0)
 
 def EventUpdate(event):
     pass

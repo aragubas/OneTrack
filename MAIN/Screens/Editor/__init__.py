@@ -118,6 +118,7 @@ def LoadMusicData(FileName):
     SavedHighlightOne = 0
     SavedHighlightTwo = 0
     SavedPatterns = 0
+    FileImportedFromOlderVersion = False
 
     for i, obj in enumerate(patterns_list):
         # -- If in first pattern, read Music Properties -- #
@@ -131,11 +132,12 @@ def LoadMusicData(FileName):
 
         except:
             obj.MusicProperties = list()
-            obj.MusicProperties.append(150) # BMP
-            obj.MusicProperties.append(32) # ROWS
-            obj.MusicProperties.append(4) # HIGH1
-            obj.MusicProperties.append(16) # HIGH2
-            obj.MusicProperties.append(2) # PATTERN
+            obj.MusicProperties.append(150)  # BMP
+            obj.MusicProperties.append(32)  # ROWS
+            obj.MusicProperties.append(4)  # HIGH1
+            obj.MusicProperties.append(16)  # HIGH2
+            obj.MusicProperties.append(2)  # PATTERN
+            FileImportedFromOlderVersion = True
 
             SavedBPM = int(obj.MusicProperties[0])
             SavedRows = int(obj.MusicProperties[1])
@@ -155,6 +157,10 @@ def LoadMusicData(FileName):
                 block.Reset(block.TrackData)
                 block.Active = True
 
+            if not hasattr(patternCol, "LastSinewave"):
+                patternCol.LastSineWave = "square"
+                FileImportedFromOlderVersion = True
+
     # -- Set to the Pattern 0 -- #
     track_list.SetCurrentPattern_ByID(0)
 
@@ -173,10 +179,16 @@ def LoadMusicData(FileName):
 
     OptionsBar.UpdateChanger()
 
+    if FileImportedFromOlderVersion:
+        var.ProcessReference.GreyDialog(var.ProcessReference.DefaultContents.Get_RegKey("/dialog/imported_older_version/title"), var.ProcessReference.DefaultContents.Get_RegKey("/dialog/imported_older_version/text"))
+
 def NewMusicFile():
     global track_list
     del track_list
     tge.utils.GarbageCollector_Collect()
+
+    # -- Update Tittlebar -- #
+    var.ProcessReference.TITLEBAR_TEXT = "OneTrack v{0}".format(var.ProcessReference.DefaultContents.Get_RegKey("/version"))
 
     track_list = UI.TrackList()
     track_list.Rectangle = pygame.Rect(0, 100, 800, 400)
