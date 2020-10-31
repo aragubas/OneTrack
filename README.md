@@ -12,5 +12,4 @@ It just requires Taiyou Framework
 
 
 ### Itch.io Page!!
-
-<iframe src="https://itch.io/embed/806277?linkback=true&amp;bg_color=14143a&amp;fg_color=ffffff&amp;link_color=3e3e74&amp;border_color=ff3366" width="552" height="167" frameborder="0"><a href="https://aragubas.itch.io/onetrack">OneTrack by Aragubas</a></iframe>
+https://aragubas.itch.io/onetrack
