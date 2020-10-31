@@ -11,5 +11,5 @@ Then, go to the file "Selected.txt" and type **OneTrack**
 It just requires Taiyou Framework
 
 
-### Itch.io Page!!
+### Stable Versions at avaliable in Itch.io!!
 https://aragubas.itch.io/onetrack
