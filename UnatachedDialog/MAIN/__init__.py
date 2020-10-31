@@ -52,9 +52,16 @@ class Process():
 
         self.RootProcess = self.INIT_ARGS[0]
         self.OperationType = self.INIT_ARGS[1]
-        self.SelectedModuleMode = None
 
-        print(self.OperationType)
+        try:
+            self.OptionalParameters = self.INIT_ARGS[3]
+            print("Optional parameters set")
+
+        except IndexError:
+            self.OptionalParameters = None
+            print("No optional parameters set")
+
+        self.SelectedModuleMode = None
 
         if self.OperationType == "OPEN":
             self.SelectedModuleMode = LoadFileScreen
@@ -77,6 +84,8 @@ class Process():
         return self.DISPLAY
 
     def Update(self):
+        if not self.APPLICATION_HAS_FOCUS:
+            Core.wmm.WindowManagerSignal(self, 0)
         self.SelectedModuleMode.Update()
 
     def CloseDialog(self):

@@ -30,10 +30,12 @@ def Draw(DISPLAY):
     if not var.GenerateSoundCache and not var.GenerateSoundCache_MessageSeen:
         return
 
-    Area = pygame.Rect(DISPLAY.get_width() / 2 - UI.ContentManager.GetFont_width("/PressStart2P.ttf", 14, "Generating Sound Cache...") / 2, 75, UI.ContentManager.GetFont_width("/PressStart2P.ttf", 14, "Generating Sound Cache...") + 5, UI.ContentManager.GetFont_height("/PressStart2P.ttf", 14, "Generating Sound Cache...") + 5)
+    GeneratingCacheMessage = var.ProcessReference.DefaultContents.Get_RegKey("/strings/generating_cache")
+
+    Area = pygame.Rect(DISPLAY.get_width() / 2 - UI.ContentManager.GetFont_width("/PressStart2P.ttf", 14, GeneratingCacheMessage) / 2, 75, UI.ContentManager.GetFont_width("/PressStart2P.ttf", 14, GeneratingCacheMessage) + 5, UI.ContentManager.GetFont_height("/PressStart2P.ttf", 14, GeneratingCacheMessage) + 5)
 
     Core.fx.BlurredRectangle(DISPLAY, Area, 15, 150)
-    UI.ContentManager.FontRender(DISPLAY, "/PressStart2P.ttf", 14, "Generating Sound Cache...", (255, 255, 255), Area[0] + 5, Area[1] + 3)
+    UI.ContentManager.FontRender(DISPLAY, "/PressStart2P.ttf", 14, GeneratingCacheMessage, (255, 255, 255), Area[0] + 5, Area[1] + 3)
 
 
 def Update():

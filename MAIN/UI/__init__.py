@@ -1101,10 +1101,12 @@ class Button:
 
 
 class DropDownMenu:
-    def __init__(self, Rectangle, ItemsList):
-        self.Rectangle = Rectangle
+    def __init__(self, pPosition, ItemsList):
+        self.Position = pPosition
+        self.Rectangle = pygame.Rect(pPosition[0], pPosition[1], 32, 32)
         self.MenuItems = list()
         self.SelectedItem = ""
+        self.SizeUpdated = False
 
         for i, item in enumerate(ItemsList):
             self.MenuItems.append(Button(pygame.Rect(self.Rectangle[0] + 5, self.Rectangle[1] + 5 * i + 32, 0, 0), item, 12))
@@ -1114,8 +1116,6 @@ class DropDownMenu:
         BluredBackground.blit(DISPLAY, (0, 0), self.Rectangle)
         shape.Shape_Rectangle(DISPLAY, (30, 15, 32), self.Rectangle, 5)
         DISPLAY.blit(fx.Surface_Blur(BluredBackground, 20), self.Rectangle)
-
-
 
         for button in self.MenuItems:
             button.Render(DISPLAY)
@@ -1128,6 +1128,27 @@ class DropDownMenu:
 
             if button.ButtonState == 2:
                 self.SelectedItem = button.ButtonText
+
+        if not self.SizeUpdated:
+            self.SizeUpdated = True
+            self.UpdateSize()
+
+        # Align the Position with the Rectangle
+        self.Rectangle[0] = self.Position[0]
+        self.Rectangle[1] = self.Position[1]
+
+    def UpdateSize(self):
+        AllButtonsWidth = 0
+        AllButtonsHeight = 0
+
+        for button in self.MenuItems:
+            AllButtonsHeight += button.Rectangle[3] + 3
+
+            if button.Rectangle[2] > AllButtonsWidth:
+                AllButtonsWidth = button.Rectangle[2] + 10
+
+        self.Rectangle[3] = AllButtonsHeight
+        self.Rectangle[2] = AllButtonsWidth
 
     def EventUpdate(self, event):
         for item in self.MenuItems:

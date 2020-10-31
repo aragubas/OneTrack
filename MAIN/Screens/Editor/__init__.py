@@ -44,7 +44,7 @@ def Initialize():
     ButtonsList = list()
     ButtonsList.append(UI.Button(pygame.Rect(0, 0, 0, 0), "File", 14))
     TopBarControls = UI.ButtonsBar((3, 5, 800, 32), ButtonsList)
-    DropDownFileMenuList = ("Load", "Save", "New File")
+    DropDownFileMenuList = ("Load", "Save", "New File", "About")
     DropDownFileMenu = UI.DropDownMenu(pygame.Rect(10, 35, 120, 65), DropDownFileMenuList)
     OptionsBar.Initialize()
     EditorBar.Initialize()
@@ -111,6 +111,7 @@ def LoadMusicData(FileName):
     global track_list
 
     FileName = FileName + ".oneprj"
+    print("Loading Music {0}...".format(FileName))
 
     # -- Unload the Current SoundCahce -- #
     UI.ContentManager.UnloadSoundTuneCache()
@@ -261,7 +262,7 @@ def LoadMusicData(FileName):
 
     OptionsBar.UpdateChanger()
 
-    if not FileImportedFromOlderVersion and not var.ProcessReference.DefaultContents.Get_RegKey("/dialog/imported_older_version/show_once", bool):
+    if FileImportedFromOlderVersion and not var.ProcessReference.DefaultContents.Get_RegKey("/dialog/imported_older_version/show_once", bool):
         var.ProcessReference.GreyDialog(var.ProcessReference.DefaultContents.Get_RegKey("/dialog/imported_older_version/title"), var.ProcessReference.DefaultContents.Get_RegKey("/dialog/imported_older_version/text"))
         var.ProcessReference.DefaultContents.Write_RegKey("/dialog/imported_older_version/show_once", "True")
 
@@ -276,7 +277,6 @@ def NewMusicFile():
 
     # -- Update Tittlebar -- #
     var.ProcessReference.TITLEBAR_TEXT = "OneTrack v{0}".format(var.ProcessReference.DefaultContents.Get_RegKey("/version"))
-
 
     track_list = UI.TrackList()
     track_list.Rectangle = pygame.Rect(0, 100, 800, 400)
@@ -303,7 +303,8 @@ def Update():
     SaveFileDialog.Update()
     OpenFileDialog.Update()
 
-    if var.DisableControls: return
+    if var.DisableControls:
+        return
 
     TopBarControls.Update()
     track_list.Update()
@@ -344,6 +345,12 @@ def Update():
 
             NewMusicFile()
 
+        if DropDownFileMenu.SelectedItem == "About":
+            DropDownFileMenu.SelectedItem = ""
+            var.FileMenuEnabled = False
+
+            var.ProcessReference.GreyDialog("About", var.ProcessReference.DefaultContents.Get_RegKey("/dialog/about/text").replace("$version", var.ProcessReference.DefaultContents.Get_RegKey("/version")), "logo")
+
     #endregion
 
 
@@ -358,4 +365,5 @@ def EventUpdate(event):
         OptionsBar.EventUpdate(event)
         EditorBar.EventUpdate(event)
 
-        if var.FileMenuEnabled: DropDownFileMenu.EventUpdate(event)
+        if var.FileMenuEnabled:
+            DropDownFileMenu.EventUpdate(event)
