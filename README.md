@@ -1,5 +1,5 @@
 # OneTrack
-OneTrack is a SineWave Tracker program made with [Taiyou Framework](https://github.com/aragubas/taiyou-framework)
+OneTrack is a 2-Bit ish Tracker program made with [Taiyou Framework](https://github.com/aragubas/taiyou-framework)
 
 ### Instalation Guide
 First, download a fresh copy of [Taiyou Framework](https://github.com/aragubas/taiyou-framework)
@@ -9,3 +9,7 @@ Then, go to the file "Selected.txt" and type **OneTrack**
 
 ### Required Packpages
 It just requires Taiyou Framework
+
+
+### Stable Versions at avaliable in Itch.io!!
+https://aragubas.itch.io/onetrack
