@@ -44,8 +44,9 @@ def Initialize():
     ButtonsList = list()
     ButtonsList.append(UI.Button(pygame.Rect(0, 0, 0, 0), "File", 14))
     TopBarControls = UI.ButtonsBar((3, 5, 800, 32), ButtonsList)
-    DropDownFileMenuList = ("Load", "Save", "New File", "About")
+    DropDownFileMenuList = (("Load", DropDownButtonsActions_LoadButton), ("Save", DropDownButtonsActions_SaveButton), ("New File", DropDownButtonsActions_NewFileButton), ("About", DropDownButtonsActions_AboutButton))
     DropDownFileMenu = UI.DropDownMenu(pygame.Rect(10, 35, 120, 65), DropDownFileMenuList)
+
     OptionsBar.Initialize()
     EditorBar.Initialize()
     SoundCacheMessage.Initialize()
@@ -103,9 +104,7 @@ def SaveMusicData(FilePath):
 
         ProjectDataFile += "$end\n"
 
-    FileWritter = open(FilePath, "w")
-    FileWritter.write(ProjectDataFile)
-    FileWritter.close()
+    tge.appData.WriteAppData(FilePath, ProjectDataFile)
 
 def LoadMusicData(FileName):
     global track_list
@@ -323,35 +322,34 @@ def Update():
         else:
             var.FileMenuEnabled = False
 
-    #region File DropDown Menu
-    if var.FileMenuEnabled:
-        if DropDownFileMenu.SelectedItem == "Save":
-            DropDownFileMenu.SelectedItem = ""
-            var.FileMenuEnabled = False
-            var.DisableControls = True
-
-            SaveFileDialog.Enabled = True
-
-        if DropDownFileMenu.SelectedItem == "Load":
-            DropDownFileMenu.SelectedItem = ""
-            var.FileMenuEnabled = False
-            var.DisableControls = True
-
-            OpenFileDialog.Enabled = True
-
-        if DropDownFileMenu.SelectedItem == "New File":
-            DropDownFileMenu.SelectedItem = ""
-            var.FileMenuEnabled = False
-
-            NewMusicFile()
-
-        if DropDownFileMenu.SelectedItem == "About":
-            DropDownFileMenu.SelectedItem = ""
-            var.FileMenuEnabled = False
-
-            var.ProcessReference.GreyDialog("About", var.ProcessReference.DefaultContents.Get_RegKey("/dialog/about/text").replace("$version", var.ProcessReference.DefaultContents.Get_RegKey("/version")), "logo")
-
     #endregion
+
+def DropDownButtonsActions_SaveButton():
+    DropDownFileMenu.SelectedItem = ""
+    var.FileMenuEnabled = False
+    var.DisableControls = True
+
+    SaveFileDialog.Enabled = True
+
+def DropDownButtonsActions_LoadButton():
+    DropDownFileMenu.SelectedItem = ""
+    var.FileMenuEnabled = False
+    var.DisableControls = True
+
+    OpenFileDialog.Enabled = True
+
+
+def DropDownButtonsActions_NewFileButton():
+    DropDownFileMenu.SelectedItem = ""
+    var.FileMenuEnabled = False
+
+    NewMusicFile()
+
+def DropDownButtonsActions_AboutButton():
+    DropDownFileMenu.SelectedItem = ""
+    var.FileMenuEnabled = False
+
+    var.ProcessReference.GreyDialog("About", var.ProcessReference.DefaultContents.Get_RegKey("/dialog/about/text").replace("$version", var.ProcessReference.DefaultContents.Get_RegKey("/version")), "logo")
 
 
 def EventUpdate(event):

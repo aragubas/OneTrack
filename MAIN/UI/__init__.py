@@ -593,7 +593,7 @@ class TrackColection:
             var.SelectedTrack = 0
             var.PatternIsUpdating = True
 
-            if not "APTN_T_LT" in var.PatternUpdateEntry:
+            if "APTN_T_LT" not in var.PatternUpdateEntry:
                 var.PatternUpdateEntry.append("APTN_T_LT")
 
             for block in self.Tracks:
@@ -611,9 +611,6 @@ class TrackColection:
         self.Rectangle = pygame.Rect(self.Rectangle[0], self.Rectangle[1], self.Tracks[self.SelectedTrack].Rectangle[2], self.Rectangle[3])
 
         var.PlayMode = self.PlayMode
-
-        if var.SoundsBeingPlayedNow <= 0:
-            var.SoundsBeingPlayedNow = 0
 
         if self.PlayMode:
             self.PlayMode_TrackDelay += 1
@@ -683,20 +680,12 @@ class TrackColection:
                         pass
 
                     # -- If not SoundTune is null, Play the Tune -- #
-                    if var.SoundsBeingPlayedNow == 0:
-                        Volume = var.Volume
-                    else:
-                        Volume = var.Volume / var.SoundsBeingPlayedNow
+                    Volume = var.Volume / var.Patterns
 
                     CurrentPlayID = ContentManager.PlayTune(SoundTune, SoundDuration, Volume=Volume, FrequencyType=self.LastSineWave)
-                    if SoundTune >= 1:
-                        var.SoundsBeingPlayedNow += 1
-                    else:
-                        var.SoundsBeingPlayedNow -= 1
 
                     if not CurrentPlayID is None:
                         self.PlayMode_LastSoundChannel = CurrentPlayID
-                        var.SoundsBeingPlayedNow -= 1
 
                 # -- Stop Playing song when it reach the end -- #
                 if self.SelectedTrack >= len(self.Tracks):
@@ -872,6 +861,7 @@ class TrackList:
 
     def SetCurrentPattern_ByID(self, PatternID):
         self.CurrentPattern = self.PatternList[PatternID]
+        self.CurrentPatternID = self.CurrentPattern.PatternID
 
     def PatternJump(self, PatternID):
         # -- Ensure that all tracks has been stopped before jumping -- #
@@ -1101,15 +1091,16 @@ class Button:
 
 
 class DropDownMenu:
-    def __init__(self, pPosition, ItemsList):
+    def __init__(self, pPosition, pItemsList):
         self.Position = pPosition
+        self.ItemsList = pItemsList
         self.Rectangle = pygame.Rect(pPosition[0], pPosition[1], 32, 32)
         self.MenuItems = list()
         self.SelectedItem = ""
         self.SizeUpdated = False
 
-        for i, item in enumerate(ItemsList):
-            self.MenuItems.append(Button(pygame.Rect(self.Rectangle[0] + 5, self.Rectangle[1] + 5 * i + 32, 0, 0), item, 12))
+        for i, item in enumerate(self.ItemsList):
+            self.MenuItems.append(Button(pygame.Rect(self.Rectangle[0] + 5, self.Rectangle[1] + 5 * i + 32, 0, 0), item[0], 12))
 
     def Render(self, DISPLAY):
         BluredBackground = pygame.Surface((self.Rectangle[2], self.Rectangle[3]))
@@ -1127,7 +1118,7 @@ class DropDownMenu:
             button.Rectangle[1] = self.Rectangle[1] + i * (button.Rectangle[3] + 2) + 2
 
             if button.ButtonState == 2:
-                self.SelectedItem = button.ButtonText
+                self.ItemsList[i][1]()
 
         if not self.SizeUpdated:
             self.SizeUpdated = True
@@ -1153,7 +1144,6 @@ class DropDownMenu:
     def EventUpdate(self, event):
         for item in self.MenuItems:
             item.Update(event)
-
 
 class ButtonsBar:
     def __init__(self, Rectangle, ButtonsList):

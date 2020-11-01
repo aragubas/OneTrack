@@ -77,7 +77,7 @@ class Process():
         self.POSITION = (800 / 2 - self.DISPLAY.get_width() / 2, 600 / 2 - self.DISPLAY.get_height() / 2)
 
     def Draw(self):
-        self.DISPLAY.fill((150, 150, 150))
+        self.DISPLAY.fill((15, 15, 42))
 
         self.SelectedModuleMode.Draw(self.DISPLAY)
 

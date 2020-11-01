@@ -81,11 +81,11 @@ def Draw(DISPLAY):
 
     TextX = 5
 
-    if not DialogIcon == None:
-        TextX = DialogIconDimensions[0] + 2
-        RootProcess.DefaultContents.ImageRender(DISPLAY, "/{0}.png".format(DialogIcon), 1, 5, 128, 128)
+    if DialogIcon is not None:
+        TextX = DialogIconDimensions[0] + 10
+        RootProcess.DefaultContents.ImageRender(DISPLAY, "/{0}.png".format(DialogIcon), 5, 5, 128, 128)
 
-    RootProcess.DefaultContents.FontRender(DISPLAY, "/Ubuntu_Bold.ttf", 14, DialogText, (240, 240, 240), TextX, 5)
+    RootProcess.DefaultContents.FontRender(DISPLAY, "/Ubuntu.ttf", 14, DialogText, (240, 240, 240), TextX, 5)
 
 
 def Update():

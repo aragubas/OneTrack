@@ -14,7 +14,7 @@
 #   limitations under the License.
 #
 #
-import pygame, os, pickle, io
+import pygame, os, pickle, io, time
 import Core
 from Core import cntMng
 from Core import MAIN
@@ -71,7 +71,6 @@ class Process():
     def GreyDialog(self, Title, Text, Icon="none"):
         var.AwaysUpdate = False
         Core.MAIN.CreateProcess("OneTrack/UnatachedDialog", "OneTrack Dialog", (var.ProcessReference, "DIALOG_OK", "{0};{1}".format(Title, Text), "icon:{0},".format(Icon)))
-
 
     def Draw(self):
         self.CurrentScreenToUpdate.GameDraw(self.DISPLAY)

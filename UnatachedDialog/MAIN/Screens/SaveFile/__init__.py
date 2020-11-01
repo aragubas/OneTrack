@@ -142,10 +142,12 @@ def UpdateFileList():
     AllFilesInDir = utils.Directory_FilesList(Core.GetAppDataFromAppName("OneTrack"))
 
     for file in AllFilesInDir:
-        FileAllPath = file
-        FileName = file.replace(Core.GetAppDataFromAppName("OneTrack"), "").replace(".oneprj", "")
+        # Check if file is a valid OneTrack Project
+        if file.endswith(".oneprj"):
+            FileAllPath = file
+            FileName = file.replace(Core.GetAppDataFromAppName("OneTrack"), "").replace(".oneprj", "")
 
-        ItemName = FileName[1:]
-        ItemDescription = "Saved on: {0}".format(FileAllPath)
+            ItemName = FileName[1:]
+            ItemDescription = "Saved on: {0}".format(FileAllPath)
 
-        FolderList.AddItem(ItemName, ItemDescription)
+            FolderList.AddItem(ItemName, ItemDescription)

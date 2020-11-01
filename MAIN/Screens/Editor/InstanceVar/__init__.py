@@ -32,5 +32,4 @@ PatternUpdateEntry = list()
 PatternIsUpdating = False
 AwaysUpdate = False
 ProcessReference = None
-Volume = 0.4
-SoundsBeingPlayedNow = 0
+Volume = 0.15
