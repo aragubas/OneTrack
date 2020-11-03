@@ -75,7 +75,6 @@ def ThemesManager_AddProperty(PropertyName, PropertyValue):
 
 ContentManager = None
 
-
 def StringToColorList(Input):
     ColorLst = Input.split(',')
 
@@ -191,6 +190,7 @@ class TrackBlock:
         self.SelectedField = 0
         self.MaxFields = 1
         self.Highlight = 0
+        self.RootActivated = False
 
         TrackPitch = TrackData[0]
         if TrackPitch == "-----":
@@ -223,7 +223,7 @@ class TrackBlock:
 
     def ReRender(self):
         # -- Set the Color Scheme -- #
-        if self.Active:
+        if self.Active and self.RootActivated:
             FrequencyBGColor = ThemesManager_GetProperty("TrackBlock_FrequencyBGColor_Active")
             DurationBGColor = ThemesManager_GetProperty("TrackBlock_DurationBGColor_Active")
 
@@ -239,7 +239,7 @@ class TrackBlock:
             FrequencyBGColor = ThemesManager_GetProperty("TrackBlock_FrequencyBGColor_Hightlight2")
             DurationBGColor = ThemesManager_GetProperty("TrackBlock_DurationBGColor_Hightlight2")
 
-        if self.Active:
+        if self.Active and self.RootActivated:
             FrequencyBGColor = ThemesManager_GetProperty("TrackBlock_FrequencyBGColor_Active")
             DurationBGColor = ThemesManager_GetProperty("TrackBlock_DurationBGColor_Active")
 
@@ -247,6 +247,9 @@ class TrackBlock:
             PitchLabelColor = ThemesManager_GetProperty("TrackBlock_NoteLabel_UnknowNote")
         else:
             PitchLabelColor = ThemesManager_GetProperty("TrackBlock_NoteLabel_KnowNote")
+
+        # Update Pitch Label
+        self.UpdatePitchLabel()
 
         # Fill the Background
         self.BlockSurface.fill(ThemesManager_GetProperty("BackgroundColor"))
@@ -260,8 +263,12 @@ class TrackBlock:
         shape.Shape_Rectangle(self.BlockSurface, DurationBGColor, (DurationX, self.DurationNumber.Rectangle[1], (self.TextWidth), self.DurationNumber.Rectangle[3]), 0, 0, 0, 5, 0, 5)
         self.DurationNumber.Render(self.BlockSurface)
 
-        LabelColor = ThemesManager_GetProperty("TrackBlock_InstanceLabelActiveColor")
         if not self.Active:
+            LabelColor = ThemesManager_GetProperty("TrackBlock_InstanceLabelDeactiveColor")
+        else:
+            LabelColor = ThemesManager_GetProperty("TrackBlock_InstanceLabelActiveColor")
+
+        if not self.RootActivated:
             LabelColor = ThemesManager_GetProperty("TrackBlock_InstanceLabelDeactiveColor")
 
         ContentManager.FontRender(self.BlockSurface, "/PressStart2P.ttf", 10, str(self.Instance).zfill(2), LabelColor, (DurationX + self.TextWidth) + 3, 1)
@@ -309,13 +316,13 @@ class TrackBlock:
 
         if self.SelectedField == 0:
             self.FrequencyNumber.EventUpdate(event)
-            self.UpdatePitchLabel()
 
         elif self.SelectedField == 1:
             self.DurationNumber.EventUpdate(event)
 
         if event.type == pygame.KEYUP:
             self.SurfaceUpdateTrigger = True
+
             if event.key == pygame.K_PAGEDOWN:
                 self.SelectedField -= 1
 
@@ -489,7 +496,8 @@ def GetWaveTypeByWaveCode(pWaveCode):
 class TrackColection:
     def __init__(self, pID, ZeroFillTracks=True):
         self.Tracks = list()
-        self.Scroll = 0
+        self.Scroll = 100
+        self.LastScroll = 0
         self.PlayMode = False
         self.SelectedTrack = 0
         self.PlayMode_TrackDelay = 0
@@ -501,6 +509,9 @@ class TrackColection:
         self.ID = pID
         self.UpdatePatternsCache = False
         self.LastSineWave = "square"
+        self.TargetScroll = 0
+        self.LastScrollValue = 0
+        self.ScrollAnimationScale = 5
 
         if ZeroFillTracks:
             for _ in range(var.Rows):
@@ -533,13 +544,21 @@ class TrackColection:
 
         for track in self.Tracks:
             # -- Set the Track Scroll -- #
-            if track.Instance == self.SelectedTrack:
+            if track.Active:
                 # -- Set the Track Scroll -- #
-                self.Scroll = self.Rectangle[3] / 2 - track.Rectangle[3] - track.Rectangle[1]
+                self.TargetScroll = self.Rectangle[3] / 2 - track.Rectangle[3] - track.Rectangle[1]
+
+                if self.Scroll > self.TargetScroll:
+                    self.Scroll -= abs(self.Scroll - self.TargetScroll) / self.ScrollAnimationScale
+
+                if self.Scroll < self.TargetScroll:
+                    self.Scroll += abs(self.Scroll - self.TargetScroll) / self.ScrollAnimationScale
 
             # -- Render the Track Pointer -- #
             if track.Instance == self.SelectedTrack and self.Active or track.Instance == self.SelectedTrack and var.PlayMode:
-                shape.Shape_Rectangle(DISPLAY, ThemesManager_GetProperty("TrackPointerColor"), (self.Rectangle[0] - 8, self.Scroll + track.Rectangle[1], 4, track.Rectangle[3]))
+                TrackPointerHeight = track.Rectangle[3] - abs(self.Scroll - self.TargetScroll) / (self.ScrollAnimationScale / 2)
+
+                shape.Shape_Rectangle(DISPLAY, ThemesManager_GetProperty("TrackPointerColor"), (self.Rectangle[0] - 8, self.Scroll + track.Rectangle[1], 4, TrackPointerHeight))
 
             if self.Scroll + track.Rectangle[1] >= DISPLAY.get_height() + track.TextHeight or self.Scroll + track.Rectangle[1] <= -track.TextHeight:
                 continue
@@ -548,19 +567,20 @@ class TrackColection:
             track.Render(DISPLAY)
 
     def Update(self):
-        for i, track in enumerate(self.Tracks):
+        i = -1
+        for track in self.Tracks:
+            i += 1
             track.Scroll = self.Scroll
             track.Instance = i
+            track.RootActivated = self.Active
+            if self.PlayMode:
+                track.RootActivated = True
+
+            #  Set Track Active State
+            track.Active = track.Instance == self.SelectedTrack
 
             #  Align X
             track.Rectangle[0] = self.Rectangle[0]
-
-            #  Set Track.Active
-            track.Active = track.Instance == self.SelectedTrack
-
-            #  Disable the track when it is useless
-            if not self.Active and not self.PlayMode:
-                track.Active = False
 
             #  Set Track Highlight Type
             if track.Instance % max(1, var.Highlight) == 0:
@@ -662,8 +682,6 @@ class TrackColection:
                     elif CurrentTrackObj.TrackData[1].startswith("END"):
                         self.EndPlayMode()
 
-                    #var.SoundsBeingPlayedNow -= 1
-
                 else:  # -- If not, Play Note -- #
                     SoundDuration = 0
                     SoundTune = 0
@@ -698,7 +716,6 @@ class TrackColection:
         self.PlayMode = False
         self.PlayMode_TrackDelay = 0
         self.PlayMode_CurrentTonePlayed = False
-        self.Scroll = 25
         self.PlayMode_LastSoundChannel = -1
         var.PlayMode = False
         self.LastSineWave = "square"
@@ -718,6 +735,7 @@ class TrackColection:
                     self.SelectedTrack = 0
                     var.GenerateSoundCache = True
                     var.PlayMode = True
+                    self.LastSineWave = "square"
                     ContentManager.StopAllChannels()
 
                 else:
@@ -871,6 +889,7 @@ class TrackList:
         if PatternID < len(self.PatternList):
             self.CurrentPattern = self.PatternList[PatternID]
             self.PatternList[PatternID].PlayAllTracks()
+            self.CurrentPatternID = self.CurrentPattern.PatternID
 
     def Render(self, DISPLAY):
         self.TracksSurface.fill(ThemesManager_GetProperty("BackgroundColor"))
@@ -916,7 +935,6 @@ class TrackList:
                     pattern.Update()
                     for block in pattern.Tracks:
                         block.Active = True
-
 
         # -- Update the Surface Size -- #
         if not self.LastRect == self.Rectangle:
@@ -980,7 +998,7 @@ class TrackList:
 
 class Button:
     def __init__(self, Rectangle, ButtonText, TextSize):
-        self.Rectangle = pygame.Rect(Rectangle[0], Rectangle[1], Rectangle[2], Rectangle[3])
+        self.Rectangle = utils.Convert.List_PygameRect(Rectangle)
         self.ButtonText = ButtonText
         self.TextSize = TextSize
         self.ButtonState = 0  # 0 - INACTIVE, 1 - DOWN, 2 - UP

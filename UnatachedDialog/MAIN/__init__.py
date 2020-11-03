@@ -88,7 +88,6 @@ class Process():
             Core.wmm.WindowManagerSignal(self, 0)
         self.SelectedModuleMode.Update()
 
-
     def CloseDialog(self):
         Core.wmm.WindowManagerSignal(self, 1)
         Core.wmm.WindowManagerSignal(self.RootProcess, 0)
@@ -97,6 +96,5 @@ class Process():
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_ESCAPE:
                 self.CloseDialog()
-
 
         self.SelectedModuleMode.EventUpdate(event)
