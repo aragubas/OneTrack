@@ -93,6 +93,7 @@ class EditableNumberView:
     def __init__(self, Rectangle, Value, FontSize=12):
         self.Rectangle = utils.Convert.List_PygameRect(Rectangle)
         self.Value = Value
+        self.InactiveColor = False
         self.SelectedCharIndex = 0
         self.SplitedAlgarims = list(self.Value)
         self.IsActive = True
@@ -113,6 +114,10 @@ class EditableNumberView:
 
             else:
                 self.Color = ThemesManager_GetProperty("EditableNumberView_ColorDeactive")
+
+            if self.InactiveColor:
+                self.Color = ThemesManager_GetProperty("EditableNumberView_ColorDeactive")
+
 
             ContentManager.FontRender(DISPLAY, "/PressStart2P.ttf", self.FontSize, str(Algarims), self.Color, self.Rectangle[0] + self.AlgarimsWidth * i, self.YOffset + self.Rectangle[1])
 
@@ -254,7 +259,9 @@ class TrackBlock:
         # Fill the Background
         self.BlockSurface.fill(ThemesManager_GetProperty("BackgroundColor"))
 
-        # -- Render the Frequency Region
+        self.FrequencyNumber.InactiveColor = not self.Active
+        self.DurationNumber.InactiveColor = not self.Active
+
         shape.Shape_Rectangle(self.BlockSurface, FrequencyBGColor, (self.FrequencyNumber.Rectangle[0], self.FrequencyNumber.Rectangle[1], self.FrequencyNumber.Rectangle[2], self.FrequencyNumber.Rectangle[3]), 0, 0, 5, 0, 5, 0)
         self.FrequencyNumber.Render(self.BlockSurface)
 
@@ -496,7 +503,7 @@ def GetWaveTypeByWaveCode(pWaveCode):
 class TrackColection:
     def __init__(self, pID, ZeroFillTracks=True):
         self.Tracks = list()
-        self.Scroll = 100
+        self.Scroll = 0
         self.LastScroll = 0
         self.PlayMode = False
         self.SelectedTrack = 0
@@ -546,17 +553,23 @@ class TrackColection:
             # -- Set the Track Scroll -- #
             if track.Active:
                 # -- Set the Track Scroll -- #
-                self.TargetScroll = self.Rectangle[3] / 2 - track.Rectangle[3] - track.Rectangle[1]
+                if var.ProcessReference.DefaultContents.Get_RegKey("/options/smooth_scroll", bool):
+                    self.TargetScroll = self.Rectangle[3] / 2 - track.Rectangle[3] - track.Rectangle[1]
 
-                if self.Scroll > self.TargetScroll:
-                    self.Scroll -= abs(self.Scroll - self.TargetScroll) / self.ScrollAnimationScale
+                    if self.Scroll > self.TargetScroll:
+                        self.Scroll -= abs(self.Scroll - self.TargetScroll) / self.ScrollAnimationScale
 
-                if self.Scroll < self.TargetScroll:
-                    self.Scroll += abs(self.Scroll - self.TargetScroll) / self.ScrollAnimationScale
+                    if self.Scroll < self.TargetScroll:
+                        self.Scroll += abs(self.Scroll - self.TargetScroll) / self.ScrollAnimationScale
+                else:
+                    self.Scroll = self.Rectangle[3] / 2 - track.Rectangle[3] - track.Rectangle[1]
 
             # -- Render the Track Pointer -- #
             if track.Instance == self.SelectedTrack and self.Active or track.Instance == self.SelectedTrack and var.PlayMode:
-                TrackPointerHeight = track.Rectangle[3] - abs(self.Scroll - self.TargetScroll) / (self.ScrollAnimationScale / 2)
+                if var.ProcessReference.DefaultContents.Get_RegKey("/options/smooth_scroll", bool):
+                    TrackPointerHeight = track.Rectangle[3] - abs(self.Scroll - self.TargetScroll) / (self.ScrollAnimationScale / 2)
+                else:
+                    TrackPointerHeight = track.Rectangle[3]
 
                 shape.Shape_Rectangle(DISPLAY, ThemesManager_GetProperty("TrackPointerColor"), (self.Rectangle[0] - 8, self.Scroll + track.Rectangle[1], 4, TrackPointerHeight))
 
@@ -1081,13 +1094,13 @@ class Button:
         # -- Set the Button Colors -- #
         IndicatorColor = (0, 0, 0)
 
+        self.BackgroundColor = ThemesManager_GetProperty("Button_BackgroundColor")
+
         if self.ButtonState == 0:
             IndicatorColor = ThemesManager_GetProperty("Button_Inactive_IndicatorColor")
-            self.BackgroundColor = ThemesManager_GetProperty("Button_Inactive_BackgroundColor")
 
         elif self.ButtonState == 1:
             IndicatorColor = ThemesManager_GetProperty("Button_Active_IndicatorColor")
-            self.BackgroundColor = ThemesManager_GetProperty("Button_Active_BackgroundColor")
 
         # -- Render Background -- #
         self.Surface.fill(self.BackgroundColor)

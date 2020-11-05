@@ -20,6 +20,7 @@ from Core import cntMng
 from OneTrack.UnatachedDialog.MAIN.Screens import LoadFile as LoadFileScreen
 from OneTrack.UnatachedDialog.MAIN.Screens import SaveFile as SaveFileScreen
 from OneTrack.UnatachedDialog.MAIN.Screens import DialogOkOnly as DialogOkOnlyScreen
+from OneTrack.UnatachedDialog.MAIN.Screens import Settings as DialogSettingsScreen
 
 
 class Process():
@@ -46,8 +47,12 @@ class Process():
         self.DefaultContents = cntMng.ContentManager()
         self.DefaultContents.SetSourceFolder("OneTrack/UnatachedDialog/")
         self.DefaultContents.SetFontPath("Data/fonts")
-        self.DefaultContents.LoadImagesInFolder("Data/img")
-        self.DefaultContents.LoadRegKeysInFolder("Data/reg")
+        self.DefaultContents.SetImageFolder("Data/img")
+        self.DefaultContents.SetRegKeysPath("Data/reg")
+
+        self.DefaultContents.LoadRegKeysInFolder()
+        self.DefaultContents.LoadImagesInFolder()
+
         self.DefaultContents.InitSoundSystem()
 
         self.RootProcess = self.INIT_ARGS[0]
@@ -71,6 +76,9 @@ class Process():
 
         if self.OperationType == "DIALOG_OK":
             self.SelectedModuleMode = DialogOkOnlyScreen
+
+        if self.OperationType == "DIALOG_SETTINGS":
+            self.SelectedModuleMode = DialogSettingsScreen
 
         self.SelectedModuleMode.Initialize(self)
 

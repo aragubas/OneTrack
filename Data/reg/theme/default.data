@@ -17,10 +17,8 @@ EditableNumberView_ColorActive;tuple;(100, 100, 100)
 EditableNumberView_ColorDeactive;tuple;(50, 50, 50)
 ### EDITOR: Button ###
 Button_Active_IndicatorColor;tuple;(46, 196, 182)
-Button_Active_BackgroundColor;tuple;(15, 27, 44)
 Button_Inactive_IndicatorColor;tuple;(255, 51, 102)
-Button_Inactive_BackgroundColor;tuple;(1, 22, 39)
-Button_BackgroundColor;tuple;(12, 22, 14)
+Button_BackgroundColor;tuple;(15, 27, 44)
 ### EDITOR: Input Box ###
 InputBox_COLOR_INACTIVE;tuple;(1, 22, 39)
 InputBox_COLOR_ACTIVE;tuple;(15, 27, 44)

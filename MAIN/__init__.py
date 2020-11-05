@@ -14,7 +14,7 @@
 #   limitations under the License.
 #
 #
-import pygame, os, pickle, io, time
+import pygame, os, pickle, io, time, traceback
 import Core
 from Core import cntMng
 from Core import MAIN
@@ -49,8 +49,12 @@ class Process():
         self.DefaultContents = cntMng.ContentManager()
         self.DefaultContents.SetSourceFolder("OneTrack/")
         self.DefaultContents.SetFontPath("Data/fonts")
-        self.DefaultContents.LoadImagesInFolder("Data/img")
-        self.DefaultContents.LoadRegKeysInFolder("Data/reg")
+        self.DefaultContents.SetImageFolder("Data/img")
+        self.DefaultContents.SetRegKeysPath("Data/reg")
+
+        self.DefaultContents.LoadRegKeysInFolder()
+        self.DefaultContents.LoadImagesInFolder()
+
         self.DefaultContents.InitSoundSystem()
 
         # Set the default content manager for the UI

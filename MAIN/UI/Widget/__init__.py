@@ -27,6 +27,7 @@ class Widget_Controller:
         self.LastInteractionID = -1
         self.LastInteractionType = None
         self.Active = False
+        self.ClickOffset = (0, 0)
 
     def Draw(self, DISPLAY):
         for widget in self.WidgetCollection:
@@ -42,7 +43,7 @@ class Widget_Controller:
         self.WidgetCollection.append(Widget)
 
     def Update(self):
-        self.Active = self.Rectangle.collidepoint(pygame.mouse.get_pos())
+        self.Active = pygame.Rect(self.Rectangle[0] + self.ClickOffset[0], self.Rectangle[1] + self.ClickOffset[1], self.Rectangle[2], self.Rectangle[3]).collidepoint((pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1]))
 
         if not self.Active:
             for widget in self.WidgetCollection:
@@ -58,20 +59,21 @@ class Widget_Controller:
 
     def EventUpdate(self, event):
         for widget in self.WidgetCollection:
-            if widget.AwaysUpdate:  # -- If aways update, update it no matter what
+            if widget.AwaysUpdate:  # -- If always update, update it no matter what
                 if widget.EventUpdateable:
                     widget.EventUpdate(event)
                     continue
+
             else:  # -- If not, only update when mouse is hovering it
-                if self.Active:
-                    ColideRect = pygame.Rect(self.Rectangle[0] + widget.Rectangle[0], self.Rectangle[1] + widget.Rectangle[1], widget.Rectangle[2], widget.Rectangle[3])
-                    if ColideRect.collidepoint(pygame.mouse.get_pos()):
-                        if widget.EventUpdateable:
-                            widget.CursorOffset = (self.Rectangle[0] + widget.Rectangle[0], self.Rectangle[1] + widget.Rectangle[1])
-                            widget.EventUpdate(event)
-                        widget.Active = True
-                    else:
-                        widget.Active = False
+                ColideRect = pygame.Rect(self.ClickOffset[0] + self.Rectangle[0] + widget.Rectangle[0], self.ClickOffset[1] + self.Rectangle[1] + widget.Rectangle[1], widget.Rectangle[2], widget.Rectangle[3])
+
+                if ColideRect.collidepoint(pygame.mouse.get_pos()):
+                    if widget.EventUpdateable:
+                        widget.CursorOffset = (ColideRect[0], ColideRect[1])
+                        widget.EventUpdate(event)
+                    widget.Active = True
+                else:
+                    widget.Active = False
 
     def GetWidget(self, WidgetID):
         for widget in self.WidgetCollection:
@@ -119,11 +121,10 @@ class Widget_ValueChanger:
 
     def Render(self, DISPLAY):
         # -- Render Background -- #
-        BGColor = UI.ThemesManager_GetProperty("Button_Active_BackgroundColor")
+        BGColor = UI.ThemesManager_GetProperty("Button_BackgroundColor")
         LineColor = UI.ThemesManager_GetProperty("Button_Active_IndicatorColor")
 
         if not self.Active:
-            BGColor = UI.ThemesManager_GetProperty("Button_Inactive_BackgroundColor")
             LineColor = UI.ThemesManager_GetProperty("Button_Inactive_IndicatorColor")
 
         shape.Shape_Rectangle(DISPLAY, BGColor, self.Rectangle)
@@ -149,7 +150,6 @@ class Widget_ValueChanger:
 
         if UI.ContentManager.GetFont_width("/Ubuntu_Bold.ttf", 12, self.TitleName) > self.Rectangle[2]:
             self.Rectangle[2] = self.Rectangle[2] + UI.ContentManager.GetFont_width("/Ubuntu_Bold.ttf", 12, self.TitleName)
-
 
         self.Changer.Rectangle[0] = self.Rectangle[0] + self.Rectangle[2] / 2 - UI.ContentManager.GetFont_width("/PressStart2P.ttf", 12, self.Changer.Value) / 2
 
@@ -361,9 +361,9 @@ class Widget_Button:
         self.Surface = pygame.Surface((self.Rectangle[2], self.Rectangle[3]))
         self.Centred_X = self.Rectangle[2] / 2 - UI.ContentManager.GetFont_width("/Ubuntu_Bold.ttf", self.FontSize - 2, self.Text) / 2
         self.Centred_Y = self.Rectangle[3] / 2 - UI.ContentManager.GetFont_height("/Ubuntu_Bold.ttf", self.FontSize - 2, self.Text) / 2
-        self.ButtonState = False
+        self.ButtonState = 0
         self.CursorOffset = (0, 0)
-        self.BgColor = UI.ThemesManager_GetProperty("Button_Inactive_BackgroundColor")
+        self.BgColor = UI.ThemesManager_GetProperty("Button_BackgroundColor")
         self.IndicatorColor = UI.ThemesManager_GetProperty("Button_Inactive_IndicatorColor")
 
     def Render(self, DISPLAY):
@@ -377,8 +377,8 @@ class Widget_Button:
 
         DISPLAY.blit(self.Surface, (self.Rectangle[0], self.Rectangle[1]))
 
-        if self.ButtonState:
-            self.ButtonState = False
+        if self.ButtonState == 2:
+            self.ButtonState = 0
 
     def Update(self):
         # -- Check if surface has the correct size -- #
@@ -394,20 +394,25 @@ class Widget_Button:
 
             self.LastRect = self.Rectangle
 
-        if self.Active and not self.ButtonState:
-            self.BgColor = UI.ThemesManager_GetProperty("Button_Active_BackgroundColor")
+        self.BgColor = UI.ThemesManager_GetProperty("Button_BackgroundColor")
+        self.IndicatorColor = UI.ThemesManager_GetProperty("Button_Inactive_IndicatorColor")
+
+        if not self.Active:
+            self.IndicatorColor = UI.ThemesManager_GetProperty("Button_Inactive_IndicatorColor")
+
+            return
+
+        if self.ButtonState == 0:
+            self.IndicatorColor = UI.ThemesManager_GetProperty("Button_Inactive_IndicatorColor")
+
+        elif self.ButtonState == 1:
             self.IndicatorColor = UI.ThemesManager_GetProperty("Button_Active_IndicatorColor")
 
-        elif self.ButtonState:
-            self.BgColor = UI.ThemesManager_GetProperty("Button_Active_IndicatorColor")
-            self.IndicatorColor = UI.ThemesManager_GetProperty("Button_Inactive_IndicatorColor")
-
-        else:
-            self.BgColor = UI.ThemesManager_GetProperty("Button_Inactive_BackgroundColor")
-            self.IndicatorColor = UI.ThemesManager_GetProperty("Button_Inactive_IndicatorColor")
-
     def EventUpdate(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            self.ButtonState = 1
+
         if event.type == pygame.MOUSEBUTTONUP:
-            self.ButtonState = True
+            self.ButtonState = 0
             self.InteractionType = True
 

@@ -15,6 +15,7 @@
 #
 #
 import pygame, os, pickle, io
+import Core
 from Core import cntMng
 from Core import MAIN
 from Core import appData
@@ -44,7 +45,7 @@ def Initialize():
     ButtonsList = list()
     ButtonsList.append(UI.Button(pygame.Rect(0, 0, 0, 0), "File", 14))
     TopBarControls = UI.ButtonsBar((3, 5, 800, 32), ButtonsList)
-    DropDownFileMenuList = (("Load", DropDownButtonsActions_LoadButton), ("Save", DropDownButtonsActions_SaveButton), ("New File", DropDownButtonsActions_NewFileButton), ("About", DropDownButtonsActions_AboutButton))
+    DropDownFileMenuList = (("Load", DropDownButtonsActions_LoadButton), ("Save", DropDownButtonsActions_SaveButton), ("New File", DropDownButtonsActions_NewFileButton), ("About", DropDownButtonsActions_AboutButton), ("Settings", DropDownButtonsActions_SettingsButton))
     DropDownFileMenu = UI.DropDownMenu(pygame.Rect(10, 35, 120, 65), DropDownFileMenuList)
 
     OptionsBar.Initialize()
@@ -52,6 +53,8 @@ def Initialize():
     SoundCacheMessage.Initialize()
 
     NewMusicFile()
+
+    #DropDownButtonsActions_SettingsButton()
 
 def GameDraw(DISPLAY):
     global track_list
@@ -350,6 +353,12 @@ def DropDownButtonsActions_AboutButton():
     var.FileMenuEnabled = False
 
     var.ProcessReference.GreyDialog("About", var.ProcessReference.DefaultContents.Get_RegKey("/dialog/about/text").replace("$version", var.ProcessReference.DefaultContents.Get_RegKey("/version")), "logo")
+
+def DropDownButtonsActions_SettingsButton():
+    DropDownFileMenu.SelectedItem = ""
+    var.FileMenuEnabled = False
+
+    Core.MAIN.CreateProcess("OneTrack/UnatachedDialog", "OneTrack Dialog", (var.ProcessReference, "DIALOG_SETTINGS"))
 
 
 def EventUpdate(event):
