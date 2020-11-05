@@ -14,7 +14,8 @@
 #   limitations under the License.
 #
 #
-import pygame
+import pygame, Core
+
 
 FileMenuEnabled = False
 DisableControls = False
@@ -32,4 +33,10 @@ PatternUpdateEntry = list()
 PatternIsUpdating = False
 AwaysUpdate = False
 ProcessReference = None
-Volume = 0.15
+Volume = 0.1
+DefaultContent = Core.cntMng.ContentManager
+
+def LoadDefaultValues():
+    global Volume
+
+    Volume = DefaultContent.Get_RegKey("/options/VolumeMultiplier", float)

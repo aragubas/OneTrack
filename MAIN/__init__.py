@@ -69,6 +69,7 @@ class Process():
         self.TITLEBAR_TEXT = "OneTrack v{0}".format(self.DefaultContents.Get_RegKey("/version"))
 
         var.ProcessReference = self
+        var.LoadDefaultValues()
         Editor.Initialize()
         LagIndicator.Initialize()
 

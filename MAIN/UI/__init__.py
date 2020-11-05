@@ -259,8 +259,9 @@ class TrackBlock:
         # Fill the Background
         self.BlockSurface.fill(ThemesManager_GetProperty("BackgroundColor"))
 
-        self.FrequencyNumber.InactiveColor = not self.Active
-        self.DurationNumber.InactiveColor = not self.Active
+        if var.DefaultContent.Get_RegKey("/options/disabled_block_color", bool):
+            self.FrequencyNumber.InactiveColor = not self.Active
+            self.DurationNumber.InactiveColor = not self.Active
 
         shape.Shape_Rectangle(self.BlockSurface, FrequencyBGColor, (self.FrequencyNumber.Rectangle[0], self.FrequencyNumber.Rectangle[1], self.FrequencyNumber.Rectangle[2], self.FrequencyNumber.Rectangle[3]), 0, 0, 5, 0, 5, 0)
         self.FrequencyNumber.Render(self.BlockSurface)
@@ -553,7 +554,7 @@ class TrackColection:
             # -- Set the Track Scroll -- #
             if track.Active:
                 # -- Set the Track Scroll -- #
-                if var.ProcessReference.DefaultContents.Get_RegKey("/options/smooth_scroll", bool):
+                if var.DefaultContent.Get_RegKey("/options/smooth_scroll", bool):
                     self.TargetScroll = self.Rectangle[3] / 2 - track.Rectangle[3] - track.Rectangle[1]
 
                     if self.Scroll > self.TargetScroll:
@@ -566,10 +567,14 @@ class TrackColection:
 
             # -- Render the Track Pointer -- #
             if track.Instance == self.SelectedTrack and self.Active or track.Instance == self.SelectedTrack and var.PlayMode:
-                if var.ProcessReference.DefaultContents.Get_RegKey("/options/smooth_scroll", bool):
-                    TrackPointerHeight = track.Rectangle[3] - abs(self.Scroll - self.TargetScroll) / (self.ScrollAnimationScale / 2)
-                else:
+                if not var.DefaultContent.Get_RegKey("/options/trackpointer_animation", bool):
                     TrackPointerHeight = track.Rectangle[3]
+
+                else:
+                    if var.DefaultContent.Get_RegKey("/options/smooth_scroll", bool):
+                        TrackPointerHeight = track.Rectangle[3] - abs(self.Scroll - self.TargetScroll) / (self.ScrollAnimationScale / 2)
+                    else:
+                        TrackPointerHeight = track.Rectangle[3]
 
                 shape.Shape_Rectangle(DISPLAY, ThemesManager_GetProperty("TrackPointerColor"), (self.Rectangle[0] - 8, self.Scroll + track.Rectangle[1], 4, TrackPointerHeight))
 
@@ -580,6 +585,7 @@ class TrackColection:
             track.Render(DISPLAY)
 
     def Update(self):
+        self.ScrollAnimationScale = var.DefaultContent.Get_RegKey("/options/animation_scale", int)
         i = -1
         for track in self.Tracks:
             i += 1
@@ -730,9 +736,9 @@ class TrackColection:
         self.PlayMode_TrackDelay = 0
         self.PlayMode_CurrentTonePlayed = False
         self.PlayMode_LastSoundChannel = -1
-        var.PlayMode = False
         self.LastSineWave = "square"
         var.SoundsBeingPlayedNow = 0
+        var.PlayMode = False
 
     def EventUpdate(self, event):
         if self.Active:
@@ -746,9 +752,9 @@ class TrackColection:
                     self.PlayMode_TrackDelay = 0
                     self.PlayMode_CurrentTonePlayed = False
                     self.SelectedTrack = 0
+                    self.LastSineWave = "square"
                     var.GenerateSoundCache = True
                     var.PlayMode = True
-                    self.LastSineWave = "square"
                     ContentManager.StopAllChannels()
 
                 else:

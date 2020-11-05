@@ -54,8 +54,6 @@ def Initialize():
 
     NewMusicFile()
 
-    #DropDownButtonsActions_SettingsButton()
-
 def GameDraw(DISPLAY):
     global track_list
     global TopBarControls

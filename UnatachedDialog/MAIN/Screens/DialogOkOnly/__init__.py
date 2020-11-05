@@ -93,3 +93,6 @@ def Update():
 
 def EventUpdate(event):
     pass
+
+def WhenClosing():
+    pass

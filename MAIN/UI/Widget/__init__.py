@@ -29,6 +29,9 @@ class Widget_Controller:
         self.Active = False
         self.ClickOffset = (0, 0)
 
+    def Clear(self):
+        self.WidgetCollection.clear()
+
     def Draw(self, DISPLAY):
         for widget in self.WidgetCollection:
             widget.Render(DISPLAY)
@@ -415,4 +418,87 @@ class Widget_Button:
         if event.type == pygame.MOUSEBUTTONUP:
             self.ButtonState = 0
             self.InteractionType = True
+
+
+class Widget_Textbox:
+    def __init__(self, pFontName, pDefaultText, pFontSize, pColor, pX, pY, pWidth, pWidgetID):
+        if pWidgetID == -1:
+            raise ValueError("WidgetID cannot be -1")
+
+        self.ID = pWidgetID
+        self.InteractionType = None
+        self.Active = False
+        self.EventUpdateable = True
+        self.DefaultText = pDefaultText
+        self.Text = self.DefaultText
+        self.FontSize = pFontSize
+        self.FontName = pFontName
+        self.Color = pColor
+        self.X = pX
+        self.Y = pY
+        self.Width = pWidth
+        self.Height = UI.ContentManager.GetFont_height(pFontName, pFontSize, "ABC")
+        self.AwaysUpdate = False
+        self.CursorOffset = (0, 0)
+        self.Rectangle = pygame.Rect(self.X, self.Y, self.Width, self.Height)
+        self.color = UI.ThemesManager_GetProperty("InputBox_COLOR_ACTIVE")
+        self.LastHeight = 1
+        self.CustomWidth = False
+        self.CharacterLimit = 0
+
+    def Set_X(self, Value):
+        if not self.Rectangle[0] == Value:
+            self.Rectangle = pygame.Rect(Value, self.Rectangle[1], self.Rectangle[2], self.Rectangle[3])
+
+    def Set_Y(self, Value):
+        if not self.Rectangle[1] == Value:
+            self.Rectangle = pygame.Rect(self.Rectangle[0], Value, self.Rectangle[2], self.Rectangle[3])
+
+    def Render(self, DISPLAY):
+        # Blit the rect.
+        shape.Shape_Rectangle(DISPLAY, (15, 15, 15), self.Rectangle)
+
+        if self.Text == self.DefaultText:
+            UI.ContentManager.FontRender(DISPLAY, UI.ThemesManager_GetProperty("InputBox_FontFile"), self.FontSize, self.Text, (140, 140, 140), self.Rectangle[0], self.Rectangle[1])
+        else:
+            if not self.Text == "":
+                UI.ContentManager.FontRender(DISPLAY, UI.ThemesManager_GetProperty("InputBox_FontFile"), self.FontSize, self.Text, (240, 240, 240), self.Rectangle[0], self.Rectangle[1])
+
+        if not self.Active:
+            shape.Shape_Rectangle(DISPLAY, (255, 51, 102), (self.Rectangle[0], self.Rectangle[1] - 1, self.Rectangle[2], 1))
+        else:
+            shape.Shape_Rectangle(DISPLAY, (46, 196, 182), (self.Rectangle[0], self.Rectangle[1] - 1, self.Rectangle[2], 1))
+
+    def Update(self):
+        # -- Resize the Textbox -- #
+        try:
+            if not self.CustomWidth:
+                self.Width = max(100, UI.ContentManager.GetFont_width(UI.ThemesManager_GetProperty("InputBox_FontFile"), self.FontSize, self.Text) + 10)
+            self.Rectangle[2] = self.Width
+            self.Rectangle[3] = UI.ContentManager.GetFont_height(UI.ThemesManager_GetProperty("InputBox_FontFile"), self.FontSize, self.Text)
+            self.LastHeight = self.Rectangle[3]
+        except:
+            if not self.CustomWidth:
+                self.Rectangle[2] = 100
+            self.Rectangle[3] = self.LastHeight
+
+        if self.Text == "":
+            self.Rectangle = pygame.Rect(self.Rectangle[0], self.Rectangle[1], self.Rectangle[2], self.Height)
+
+    def EventUpdate(self, event):
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_BACKSPACE:
+                if len(self.Text) > 0:
+                    self.Text = self.Text[:-1]
+                else:
+                    self.Text = self.DefaultText
+
+            else:
+                if not self.CharacterLimit == 0:
+                    if len(self.Text) < self.CharacterLimit:
+                        self.Text += event.unicode
+                else:
+                    self.Text += event.unicode
+
+            self.InteractionType = self.Text
 

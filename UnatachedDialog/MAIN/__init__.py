@@ -97,6 +97,8 @@ class Process():
         self.SelectedModuleMode.Update()
 
     def CloseDialog(self):
+        self.SelectedModuleMode.WhenClosing()
+
         Core.wmm.WindowManagerSignal(self, 1)
         Core.wmm.WindowManagerSignal(self.RootProcess, 0)
 

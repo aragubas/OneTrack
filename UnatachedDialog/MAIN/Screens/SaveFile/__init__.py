@@ -151,3 +151,6 @@ def UpdateFileList():
             ItemDescription = "Saved on: {0}".format(FileAllPath)
 
             FolderList.AddItem(ItemName, ItemDescription)
+
+def WhenClosing():
+    pass
