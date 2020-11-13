@@ -20,6 +20,7 @@ from OneTrack.MAIN import UI
 
 from Core import MAIN
 from Core import utils
+from Core import SHAPES
 
 LagIndicatorSurface = pygame.Surface
 LagTextWidth = 0
@@ -52,12 +53,12 @@ def Draw(DISPLAY):
     if not LagEnabled:
         return
 
-    LagIndicatorSurface.fill((0, 0, 0))
-    LagIndicatorSurface.set_alpha(Alpha)
+    LagText = "LAG: " + utils.FormatNumber(MAIN.clock.get_fps(), 2)
+    LagTextWidth = UI.ContentManager.GetFont_width("/PressStart2P.ttf", 14, LagText)
+    LagTextHeight = UI.ContentManager.GetFont_height("/PressStart2P.ttf", 14, LagText)
 
-    UI.ContentManager.FontRender(LagIndicatorSurface, "/PressStart2P.ttf", 14, "LAG", LagTextColor, 2, 2)
-
-    DISPLAY.blit(LagIndicatorSurface, (5, 5))
+    SHAPES.Shape_Rectangle(DISPLAY, (0, 0, 0), (5 - 2, 5 - 2, LagTextWidth + 4, LagTextHeight + 4), 0, 3)
+    UI.ContentManager.FontRender(DISPLAY, "/PressStart2P.ttf", 14, LagText, LagTextColor, 5, 5)
 
 def Update():
     global Alpha
@@ -67,26 +68,16 @@ def Update():
 
     FPS = MAIN.clock.get_fps()
 
-    if FPS <= 35:
-        Alpha = 255
-
-    elif FPS <= 40:
-        Alpha = 127
-
-    elif FPS <= 45:
-        Alpha = 63
-
-    elif FPS <= 50:
-        Alpha = 32
-
-    elif FPS <= 55:
-        Alpha = 15
-
-    elif FPS >= 57:
+    if FPS >= 58:
         Alpha = 0
 
+    else:
+        Alpha = 255
 
-    if not Alpha == 0:
+    if Alpha == 0:
+        LagEnabled = False
+
+    else:
         LagEnabled = True
 
     if not LagEnabled:

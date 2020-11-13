@@ -16,12 +16,13 @@
 #
 import pygame
 import Core
+from Core import fx
 from Core import cntMng
 from OneTrack.UnatachedDialog.MAIN.Screens import LoadFile as LoadFileScreen
 from OneTrack.UnatachedDialog.MAIN.Screens import SaveFile as SaveFileScreen
 from OneTrack.UnatachedDialog.MAIN.Screens import DialogOkOnly as DialogOkOnlyScreen
 from OneTrack.UnatachedDialog.MAIN.Screens import Settings as DialogSettingsScreen
-
+RootDefaultContents = None
 
 class Process():
     def __init__(self, pPID, pProcessName, pROOT_MODULE, pInitArgs):
@@ -38,8 +39,12 @@ class Process():
         self.TITLEBAR_RECTANGLE = pygame.Rect(self.POSITION[0], self.POSITION[1], self.DISPLAY.get_width(), 15)
         self.TITLEBAR_TEXT = "OneTrack Dialog"
         self.WindowDragEnable = False
+        self.WINDOW_OPACITY = 255
 
     def Initialize(self):
+        global RootDefaultContents
+
+        RootDefaultContents = None
         # Focus to this window
         Core.wmm.WindowManagerSignal(self, 0)
 
@@ -69,36 +74,38 @@ class Process():
         self.SelectedModuleMode = None
 
         if self.OperationType == "OPEN":
-            self.SelectedModuleMode = LoadFileScreen
+            self.SelectedModuleMode = LoadFileScreen.Screen(self)
 
         if self.OperationType == "SAVE":
-            self.SelectedModuleMode = SaveFileScreen
+            self.SelectedModuleMode = SaveFileScreen.Screen(self)
 
         if self.OperationType == "DIALOG_OK":
-            self.SelectedModuleMode = DialogOkOnlyScreen
+            self.SelectedModuleMode = DialogOkOnlyScreen.Screen(self)
 
         if self.OperationType == "DIALOG_SETTINGS":
-            self.SelectedModuleMode = DialogSettingsScreen
-
-        self.SelectedModuleMode.Initialize(self)
+            self.SelectedModuleMode = DialogSettingsScreen.Screen(self)
 
         self.POSITION = (800 / 2 - self.DISPLAY.get_width() / 2, 600 / 2 - self.DISPLAY.get_height() / 2)
 
+        RootDefaultContents = self.RootProcess.DefaultContents
+
     def Draw(self):
-        self.DISPLAY.fill((15, 15, 42))
+        global RootDefaultContents
+
+        if RootDefaultContents.Get_RegKey("/options/looking_glass", bool):
+            self.DISPLAY.blit(fx.Simple_BlurredRectangle(Core.MAIN.DISPLAY, (self.POSITION[0], self.POSITION[1], self.DISPLAY.get_width(), self.DISPLAY.get_height())), (0, 0))
+
+        else:
+            self.DISPLAY.fill((0, 0, 0))
 
         self.SelectedModuleMode.Draw(self.DISPLAY)
 
         return self.DISPLAY
 
     def Update(self):
-        if not self.APPLICATION_HAS_FOCUS:
-            Core.wmm.WindowManagerSignal(self, 0)
         self.SelectedModuleMode.Update()
 
     def CloseDialog(self):
-        self.SelectedModuleMode.WhenClosing()
-
         Core.wmm.WindowManagerSignal(self, 1)
         Core.wmm.WindowManagerSignal(self.RootProcess, 0)
 

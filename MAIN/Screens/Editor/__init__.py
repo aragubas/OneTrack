@@ -35,6 +35,7 @@ track_list = UI.TrackList
 # -- Top Toolbar -- #
 TopBarControls = UI.ButtonsBar
 DropDownFileMenu = UI.DropDownMenu
+LastScreenFrame = None
 
 def Initialize():
     global track_list
@@ -58,21 +59,29 @@ def GameDraw(DISPLAY):
     global track_list
     global TopBarControls
     global DropDownFileMenu
+    global LastScreenFrame
 
     if not var.DisableControls:
-        DISPLAY.fill((UI.ThemesManager_GetProperty("BackgroundColor")))
+        if not var.FileMenuEnabled:
+            DISPLAY.fill((UI.ThemesManager_GetProperty("BackgroundColor")))
 
-        track_list.Render(DISPLAY)
-        TopBarControls.Render(DISPLAY)
+            track_list.Render(DISPLAY)
+            TopBarControls.Render(DISPLAY)
 
-        OptionsBar.Draw(DISPLAY)
-        EditorBar.Draw(DISPLAY)
+            OptionsBar.Draw(DISPLAY)
+            EditorBar.Draw(DISPLAY)
 
-        # -- Render DropDown Menus -- #
-        if var.FileMenuEnabled:
+            SoundCacheMessage.Draw(DISPLAY)
+
+            LastScreenFrame = DISPLAY.copy()
+
+        else:
+            DISPLAY.blit(Core.fx.Simple_BlurredRectangle(LastScreenFrame, (0, 0, 800, 600), 2, 50), (0, 0))
+
+            TopBarControls.Render(DISPLAY)
+
             DropDownFileMenu.Render(DISPLAY)
 
-        SoundCacheMessage.Draw(DISPLAY)
 
 def SaveMusicData(FilePath):
     global track_list
@@ -262,7 +271,21 @@ def LoadMusicData(FileName):
 
     OptionsBar.UpdateChanger()
 
-    if FileImportedFromOlderVersion and not var.ProcessReference.DefaultContents.Get_RegKey("/dialog/imported_older_version/show_once", bool):
+    # Re-Update all tracks
+    for track in track_list.PatternList:
+        track.UpdateTracksPosition()
+        for TrackCol in track.Tracks:
+            for block in TrackCol.Tracks:
+                block.Active = True
+                block.HighlightUpdated = False
+                block.SurfaceUpdateTrigger = True
+                block.DisabledTrigger = False
+                block.RootActivated = True
+                block.ResetSurface()
+                block.Update()
+                block.ReRender()
+
+    if not FileImportedFromOlderVersion and not var.ProcessReference.DefaultContents.Get_RegKey("/dialog/imported_older_version/show_once", bool):
         var.ProcessReference.GreyDialog(var.ProcessReference.DefaultContents.Get_RegKey("/dialog/imported_older_version/title"), var.ProcessReference.DefaultContents.Get_RegKey("/dialog/imported_older_version/text"))
         var.ProcessReference.DefaultContents.Write_RegKey("/dialog/imported_older_version/show_once", "True")
 
@@ -307,23 +330,24 @@ def Update():
         return
 
     TopBarControls.Update()
+    UpdateTopBar()
+
+    if var.FileMenuEnabled:
+        DropDownFileMenu.Update()
+        return
+
     track_list.Update()
     OptionsBar.Update()
     EditorBar.Update()
     SoundCacheMessage.Update()
 
-    if var.FileMenuEnabled:
-        DropDownFileMenu.Update()
-
-    #region Top Bar Update
+def UpdateTopBar():
     if TopBarControls.ClickedButtonIndex == 0:
         if not var.FileMenuEnabled:
             var.FileMenuEnabled = True
 
         else:
             var.FileMenuEnabled = False
-
-    #endregion
 
 def DropDownButtonsActions_SaveButton():
     DropDownFileMenu.SelectedItem = ""
@@ -365,10 +389,10 @@ def EventUpdate(event):
     global DropDownFileMenu
 
     if not var.DisableControls:
-        TopBarControls.EventUpdate(event)
-        track_list.EventUpdate(event)
-        OptionsBar.EventUpdate(event)
-        EditorBar.EventUpdate(event)
+        if not var.FileMenuEnabled:
+            track_list.EventUpdate(event)
+            OptionsBar.EventUpdate(event)
+            EditorBar.EventUpdate(event)
 
-        if var.FileMenuEnabled:
-            DropDownFileMenu.EventUpdate(event)
+        DropDownFileMenu.EventUpdate(event)
+        TopBarControls.EventUpdate(event)

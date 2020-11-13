@@ -23,6 +23,7 @@ from Core import shape
 from Core import fx
 from Core import appData
 from Core import utils
+from Core import cntMng
 from math import log2, pow
 
 
@@ -40,6 +41,9 @@ def ThemesManager_LoadTheme(ThemeName):
     print("OneTrack : Loading UI Theme '" + ThemeName + "'")
     for key in var.DefaultContent.Get_RegKey("/theme/{0}".format(ThemeName)).splitlines():
         if key.startswith("#"):
+            continue
+
+        if len(key) < 3:
             continue
 
         ThemeDataTag = key.split(";")[0]
@@ -73,7 +77,7 @@ def ThemesManager_AddProperty(PropertyName, PropertyValue):
 
 #endregion
 
-ContentManager = None
+ContentManager = cntMng.ContentManager
 
 def StringToColorList(Input):
     ColorLst = Input.split(',')
@@ -117,7 +121,6 @@ class EditableNumberView:
 
             if self.InactiveColor:
                 self.Color = ThemesManager_GetProperty("EditableNumberView_ColorDeactive")
-
 
             ContentManager.FontRender(DISPLAY, "/PressStart2P.ttf", self.FontSize, str(Algarims), self.Color, self.Rectangle[0] + self.AlgarimsWidth * i, self.YOffset + self.Rectangle[1])
 
@@ -196,6 +199,7 @@ class TrackBlock:
         self.MaxFields = 1
         self.Highlight = 0
         self.RootActivated = False
+        self.HighlightUpdated = False
 
         TrackPitch = TrackData[0]
         if TrackPitch == "-----":
@@ -206,6 +210,7 @@ class TrackBlock:
         self.SurfaceUpdateTrigger = True
         self.DisabledTrigger = True
         self.ReRender()
+        self.NoteLabelWidth = ContentManager.GetFont_width("/PressStart2P.ttf", 10, "0000")
 
     def Render(self, DISPLAY):
         # -- If surface needs to be Updated -- #
@@ -263,12 +268,12 @@ class TrackBlock:
             self.FrequencyNumber.InactiveColor = not self.Active
             self.DurationNumber.InactiveColor = not self.Active
 
-        shape.Shape_Rectangle(self.BlockSurface, FrequencyBGColor, (self.FrequencyNumber.Rectangle[0], self.FrequencyNumber.Rectangle[1], self.FrequencyNumber.Rectangle[2], self.FrequencyNumber.Rectangle[3]), 0, 0, 5, 0, 5, 0)
+        shape.Shape_Rectangle(self.BlockSurface, FrequencyBGColor, (self.FrequencyNumber.Rectangle[0] - 1, self.FrequencyNumber.Rectangle[1] - 2, self.FrequencyNumber.Rectangle[2] + 1, self.FrequencyNumber.Rectangle[3] + 1), 0, 0, 5, 0, 5, 0)
         self.FrequencyNumber.Render(self.BlockSurface)
 
         # -- Render the Duration Region
         DurationX = (self.FrequencyNumber.Rectangle[0] + self.TextWidth)
-        shape.Shape_Rectangle(self.BlockSurface, DurationBGColor, (DurationX, self.DurationNumber.Rectangle[1], (self.TextWidth), self.DurationNumber.Rectangle[3]), 0, 0, 0, 5, 0, 5)
+        shape.Shape_Rectangle(self.BlockSurface, DurationBGColor, (DurationX - 1, self.DurationNumber.Rectangle[1] - 2, self.TextWidth + 1, self.DurationNumber.Rectangle[3] + 1), 0, 0, 0, 5, 0, 5)
         self.DurationNumber.Render(self.BlockSurface)
 
         if not self.Active:
@@ -288,25 +293,25 @@ class TrackBlock:
         self.BlockSurface = pygame.Surface((self.Rectangle[2], self.Rectangle[3]))
 
     def Update(self):
-        NoteLabelWidth = ContentManager.GetFont_width("/PressStart2P.ttf", 10, "0000")
+        if self.Active or self.SurfaceUpdateTrigger:
+            self.Rectangle = pygame.Rect(self.Rectangle[0], (self.TextHeight + 10) * self.Instance, self.NoteLabelWidth + self.FrequencyNumber.Rectangle[2] + self.DurationNumber.Rectangle[2] + 25, self.Rectangle[3])
 
-        self.Rectangle = pygame.Rect(self.Rectangle[0], (self.TextHeight + 10) * self.Instance, NoteLabelWidth + self.FrequencyNumber.Rectangle[2] + self.DurationNumber.Rectangle[2] + 25, self.Rectangle[3])
-        self.FrequencyNumber.Rectangle = pygame.Rect(NoteLabelWidth, 1, self.TextWidth, self.TextHeight)
-        self.DurationNumber.Rectangle = pygame.Rect(self.FrequencyNumber.Rectangle[0] + self.FrequencyNumber.Rectangle[2] + 2, 1, self.TextWidth, self.TextHeight)
+            if not self.LastRect == self.Rectangle:
+                self.LastRect = self.Rectangle
+                self.FrequencyNumber.Rectangle = pygame.Rect(self.NoteLabelWidth, 1, self.TextWidth, self.TextHeight)
+                self.DurationNumber.Rectangle = pygame.Rect(self.FrequencyNumber.Rectangle[0] + self.FrequencyNumber.Rectangle[2] + 2, 1, self.TextWidth, self.TextHeight)
 
-        if not self.LastRect == self.Rectangle:
-            self.LastRect = self.Rectangle
-            self.ResetSurface()
+                self.ResetSurface()
 
-        self.FrequencyNumber.Update()
-        self.FrequencyNumber.IsActive = self.SelectedField == 0
+            self.FrequencyNumber.Update()
+            self.FrequencyNumber.IsActive = self.SelectedField == 0
 
-        self.DurationNumber.Update()
-        self.DurationNumber.IsActive = self.SelectedField == 1
+            self.DurationNumber.Update()
+            self.DurationNumber.IsActive = self.SelectedField == 1
 
-        # -- Update the Track Data -- #
-        self.TrackData[0] = self.FrequencyNumber.Value
-        self.TrackData[1] = self.DurationNumber.Value
+            # -- Update the Track Data -- #
+            self.TrackData[0] = self.FrequencyNumber.Value
+            self.TrackData[1] = self.DurationNumber.Value
 
     def UpdatePitchLabel(self):
         if not self.FrequencyNumber.Value == "-----":
@@ -350,6 +355,7 @@ class TrackBlock:
                         CurrentValue = int(self.FrequencyNumber.Value)
                         Result = CurrentValue * 2
 
+
                         if Result >= 99999:
                             Result = 0
 
@@ -368,97 +374,11 @@ class TrackBlock:
                         self.FrequencyNumber.Value = str(Result).zfill(5)
                         self.FrequencyNumber.SplitedAlgarims = list(self.FrequencyNumber.Value)
 
-                # -- Note C -- #
-                if event.key == pygame.K_z:
-                    self.FrequencyNumber.Value = str(GetNote("C", var.Editor_CurrentOctave))
+                # -- Get the note by pygame KeyCode -- #
+                KeyPath = "/note_by_key/" + str(event.key)
 
-                    self.FrequencyNumber.SplitedAlgarims.clear()
-                    self.FrequencyNumber.SplitedAlgarims = list(self.FrequencyNumber.Value)
-                    self.UpdatePitchLabel()
-
-                # -- Note C# -- #
-                if event.key == pygame.K_s:
-                    self.FrequencyNumber.Value = str(GetNote("C#", var.Editor_CurrentOctave))
-
-                    self.FrequencyNumber.SplitedAlgarims.clear()
-                    self.FrequencyNumber.SplitedAlgarims = list(self.FrequencyNumber.Value)
-                    self.UpdatePitchLabel()
-
-                # -- Note D -- #
-                if event.key == pygame.K_x:
-                    self.FrequencyNumber.Value = str(GetNote("D", var.Editor_CurrentOctave))
-
-                    self.FrequencyNumber.SplitedAlgarims.clear()
-                    self.FrequencyNumber.SplitedAlgarims = list(self.FrequencyNumber.Value)
-                    self.UpdatePitchLabel()
-
-                # -- Note D# -- #
-                if event.key == pygame.K_d:
-                    self.FrequencyNumber.Value = str(GetNote("D#", var.Editor_CurrentOctave))
-
-                    self.FrequencyNumber.SplitedAlgarims.clear()
-                    self.FrequencyNumber.SplitedAlgarims = list(self.FrequencyNumber.Value)
-                    self.UpdatePitchLabel()
-
-                # -- Note E -- #
-                if event.key == pygame.K_c:
-                    self.FrequencyNumber.Value = str(GetNote("E", var.Editor_CurrentOctave))
-
-                    self.FrequencyNumber.SplitedAlgarims.clear()
-                    self.FrequencyNumber.SplitedAlgarims = list(self.FrequencyNumber.Value)
-                    self.UpdatePitchLabel()
-
-                # -- Note F -- #
-                if event.key == pygame.K_v:
-                    self.FrequencyNumber.Value = str(GetNote("F", var.Editor_CurrentOctave))
-
-                    self.FrequencyNumber.SplitedAlgarims.clear()
-                    self.FrequencyNumber.SplitedAlgarims = list(self.FrequencyNumber.Value)
-                    self.UpdatePitchLabel()
-
-                # -- Note F# -- #
-                if event.key == pygame.K_g:
-                    self.FrequencyNumber.Value = str(GetNote("F#", var.Editor_CurrentOctave))
-
-                    self.FrequencyNumber.SplitedAlgarims.clear()
-                    self.FrequencyNumber.SplitedAlgarims = list(self.FrequencyNumber.Value)
-                    self.UpdatePitchLabel()
-
-                # -- Note G -- #
-                if event.key == pygame.K_b:
-                    self.FrequencyNumber.Value = str(GetNote("G", var.Editor_CurrentOctave))
-
-                    self.FrequencyNumber.SplitedAlgarims.clear()
-                    self.FrequencyNumber.SplitedAlgarims = list(self.FrequencyNumber.Value)
-                    self.UpdatePitchLabel()
-
-                # -- Note G# -- #
-                if event.key == pygame.K_h:
-                    self.FrequencyNumber.Value = str(GetNote("G#", var.Editor_CurrentOctave))
-
-                    self.FrequencyNumber.SplitedAlgarims.clear()
-                    self.FrequencyNumber.SplitedAlgarims = list(self.FrequencyNumber.Value)
-                    self.UpdatePitchLabel()
-
-                # -- Note A -- #
-                if event.key == pygame.K_n:
-                    self.FrequencyNumber.Value = str(GetNote("A", var.Editor_CurrentOctave))
-
-                    self.FrequencyNumber.SplitedAlgarims.clear()
-                    self.FrequencyNumber.SplitedAlgarims = list(self.FrequencyNumber.Value)
-                    self.UpdatePitchLabel()
-
-                # -- Note A# -- #
-                if event.key == pygame.K_j:
-                    self.FrequencyNumber.Value = str(GetNote("A#", var.Editor_CurrentOctave))
-
-                    self.FrequencyNumber.SplitedAlgarims.clear()
-                    self.FrequencyNumber.SplitedAlgarims = list(self.FrequencyNumber.Value)
-                    self.UpdatePitchLabel()
-
-                # -- Note B -- #
-                if event.key == pygame.K_m:
-                    self.FrequencyNumber.Value = str(GetNote("B", var.Editor_CurrentOctave))  # The most satanic line
+                if var.DefaultContent.KeyExists(KeyPath):
+                    self.FrequencyNumber.Value = str(GetNote(var.DefaultContent.Get_RegKey(KeyPath), var.Editor_CurrentOctave))
 
                     self.FrequencyNumber.SplitedAlgarims.clear()
                     self.FrequencyNumber.SplitedAlgarims = list(self.FrequencyNumber.Value)
@@ -517,9 +437,11 @@ class TrackColection:
         self.ID = pID
         self.UpdatePatternsCache = False
         self.LastSineWave = "square"
+        self.LastDefaultDuration = 20
         self.TargetScroll = 0
         self.LastScrollValue = 0
         self.ScrollAnimationScale = 5
+        self.UpdateTrigger = False
 
         if ZeroFillTracks:
             for _ in range(var.Rows):
@@ -547,6 +469,17 @@ class TrackColection:
 
             ContentManager.GetTune_FromTuneCache(Frequency, Duration, 44000, SinewaveType)
 
+    def UpdateTrackBlocks(self):
+        print("Updating all trackblocks...")
+        for block in self.Tracks:
+            block.Active = True
+            block.SurfaceUpdateTrigger = True
+            block.RootActivated = True
+            block.HighlightUpdated = False
+            block.Update()
+            block.ReRender()
+            block.ResetSurface()
+
     def Draw(self, DISPLAY):
         self.ScreenSize = (DISPLAY.get_width(), DISPLAY.get_height())
 
@@ -554,16 +487,15 @@ class TrackColection:
             # -- Set the Track Scroll -- #
             if track.Active:
                 # -- Set the Track Scroll -- #
-                if var.DefaultContent.Get_RegKey("/options/smooth_scroll", bool):
-                    self.TargetScroll = self.Rectangle[3] / 2 - track.Rectangle[3] - track.Rectangle[1]
+                if not var.PlayMode:
+                    if var.DefaultContent.Get_RegKey("/options/per_track_scroll", bool):
+                        if self.Active:
+                            self.UpdateTrackScroll(track)
+                    else:
+                        self.UpdateTrackScroll(track)
 
-                    if self.Scroll > self.TargetScroll:
-                        self.Scroll -= abs(self.Scroll - self.TargetScroll) / self.ScrollAnimationScale
-
-                    if self.Scroll < self.TargetScroll:
-                        self.Scroll += abs(self.Scroll - self.TargetScroll) / self.ScrollAnimationScale
                 else:
-                    self.Scroll = self.Rectangle[3] / 2 - track.Rectangle[3] - track.Rectangle[1]
+                    self.UpdateTrackScroll(track)
 
             # -- Render the Track Pointer -- #
             if track.Instance == self.SelectedTrack and self.Active or track.Instance == self.SelectedTrack and var.PlayMode:
@@ -584,6 +516,41 @@ class TrackColection:
             # Render the Track
             track.Render(DISPLAY)
 
+    def UpdateTrackScroll(self, track):
+        if var.DefaultContent.Get_RegKey("/options/smooth_scroll", bool):
+            self.TargetScroll = self.Rectangle[3] / 2 - track.Rectangle[3] - track.Rectangle[1]
+
+            if self.Scroll > self.TargetScroll:
+                self.Scroll -= abs(self.Scroll - self.TargetScroll) / self.ScrollAnimationScale
+
+            if self.Scroll < self.TargetScroll:
+                self.Scroll += abs(self.Scroll - self.TargetScroll) / self.ScrollAnimationScale
+        else:
+            self.Scroll = self.Rectangle[3] / 2 - track.Rectangle[3] - track.Rectangle[1]
+
+    def AlingRowsNumber(self):
+        if self.UpdateTrigger and len(self.Tracks) == var.Rows:
+            self.UpdateTrigger = False
+
+            self.UpdateTrackBlocks()
+
+        # If row number is higher than current rows number
+        if len(self.Tracks) > var.Rows:
+            self.Tracks.pop()
+            self.SelectedTrack = 0
+            var.SelectedTrack = 0
+            self.UpdatePatternsCache = True
+            var.PatternIsUpdating = True
+            self.UpdateTrigger = True
+
+        if len(self.Tracks) < var.Rows:
+            self.AddBlankTrack()
+            self.SelectedTrack = 0
+            var.SelectedTrack = 0
+            self.UpdatePatternsCache = True
+            var.PatternIsUpdating = True
+            self.UpdateTrigger = True
+
     def Update(self):
         self.ScrollAnimationScale = var.DefaultContent.Get_RegKey("/options/animation_scale", int)
         i = -1
@@ -592,59 +559,38 @@ class TrackColection:
             track.Scroll = self.Scroll
             track.Instance = i
             track.RootActivated = self.Active
+
             if self.PlayMode:
                 track.RootActivated = True
 
             #  Set Track Active State
             track.Active = track.Instance == self.SelectedTrack
 
+            if var.DefaultContent.Get_RegKey("/options/per_track_scroll", bool) and not var.PlayMode:
+                track.Active = track.Instance == self.SelectedTrack and self.Active
+
             #  Align X
-            track.Rectangle[0] = self.Rectangle[0]
+            if track.Active or track.SurfaceUpdateTrigger:
+                track.Rectangle[0] = self.Rectangle[0]
 
             #  Set Track Highlight Type
-            if track.Instance % max(1, var.Highlight) == 0:
-                track.Highlight = 1
+            if not track.HighlightUpdated:
+                track.HighlightUpdated = True
+                track.SurfaceUpdateTrigger = True
+                if track.Instance % max(1, var.Highlight) == 0:
+                    track.Highlight = 1
 
-            if track.Instance % max(1, var.HighlightSecond) == 0:
-                track.Highlight = 2
+                if track.Instance % max(1, var.HighlightSecond) == 0:
+                    track.Highlight = 2
 
-            if not track.Instance % max(1, var.HighlightSecond) == 0 and not track.Instance % max(1, var.Highlight) == 0:
-                track.Highlight = 0
+                if not track.Instance % max(1, var.HighlightSecond) == 0 and not track.Instance % max(1, var.Highlight) == 0:
+                    track.Highlight = 0
 
             #  Update Track Code
             track.Update()
 
-        # -- Align the Track Number -- #
-        if len(self.Tracks) > var.Rows:
-            self.Tracks.pop()
-            self.SelectedTrack = 0
-            var.SelectedTrack = 0
-            self.UpdatePatternsCache = True
-            var.PatternIsUpdating = True
-
-            if not "APTN_T_GT".format(self.ID) in var.PatternUpdateEntry:
-                var.PatternUpdateEntry.append("APTN_T_GT")
-
-        if len(self.Tracks) < var.Rows:
-            self.AddBlankTrack()
-            self.UpdatePatternsCache = True
-            self.SelectedTrack = 0
-            var.SelectedTrack = 0
-            var.PatternIsUpdating = True
-
-            if "APTN_T_LT" not in var.PatternUpdateEntry:
-                var.PatternUpdateEntry.append("APTN_T_LT")
-
-            for block in self.Tracks:
-                block.Active = True
-                block.Update()
-
-        if not len(self.Tracks) < var.Rows and not len(self.Tracks) > var.Rows:
-            if "APTN_T_GT" in var.PatternUpdateEntry:
-                var.PatternUpdateEntry.remove("APTN_T_GT")
-
-            if "APTN_T_LT" in var.PatternUpdateEntry:
-                var.PatternUpdateEntry.remove("APTN_T_LT")
+        # -- Align the Rows Number -- #
+        self.AlingRowsNumber()
 
         # -- Update the Rectangle -- #
         self.Rectangle = pygame.Rect(self.Rectangle[0], self.Rectangle[1], self.Tracks[self.SelectedTrack].Rectangle[2], self.Rectangle[3])
@@ -661,7 +607,7 @@ class TrackColection:
                 self.PlayMode_TrackDelay = 0
 
                 # -- Play Command -- #
-                if CurrentTrackObj.TrackData[0] == "-----":
+                try:
                     # -- StopSoundChannels Command -- #
                     if "-----" in CurrentTrackObj.TrackData[1]:
                         ContentManager.StopAllChannels()
@@ -677,6 +623,28 @@ class TrackColection:
                         FadeTime = int(FadeTime.replace("-", ""))
 
                         ContentManager.FadeoutSound(self.PlayMode_LastSoundChannel, FadeTime)
+
+                    # -- Fade All Command -- #
+                    elif CurrentTrackObj.TrackData[1].startswith("A"):
+                        SplitedAgrs = list(CurrentTrackObj.TrackData[1])
+                        FadeTime = ""
+
+                        for i, arg in enumerate(SplitedAgrs):
+                            if i > 1:
+                                FadeTime += arg
+                        FadeTime = int(FadeTime.replace("-", ""))
+
+                        ContentManager.FadeoutAllSounds(FadeTime)
+
+                    # -- Duration Command -- #
+                    elif CurrentTrackObj.TrackData[1].startswith("D"):
+                        SplitedAgrs = list(CurrentTrackObj.TrackData[1])
+                        DurationTime = ""
+
+                        for i, arg in enumerate(SplitedAgrs):
+                            if i > 1:
+                                DurationTime += arg
+                        self.LastDefaultDuration = int(DurationTime.replace("-", ""))
 
                     # -- Waveform Command -- #
                     elif CurrentTrackObj.TrackData[1].startswith("W"):
@@ -700,29 +668,29 @@ class TrackColection:
                     # -- END Command -- #
                     elif CurrentTrackObj.TrackData[1].startswith("END"):
                         self.EndPlayMode()
+                except:
+                    pass
 
-                else:  # -- If not, Play Note -- #
-                    SoundDuration = 0
-                    SoundTune = 0
+                SoundTune = 0
 
-                    # -- Convert the Time to the Correct Time -- #
-                    try:
-                        SoundDuration = int(CurrentTrackObj.TrackData[1]) / var.BPM
-                    except ValueError:
-                        pass
+                # -- Convert the Time to the Correct Time -- #
+                try:
+                    SoundDuration = int(CurrentTrackObj.TrackData[1]) / var.BPM
+                except ValueError:
+                    SoundDuration = self.LastDefaultDuration / var.BPM
 
-                    try:
-                        SoundTune = int(CurrentTrackObj.TrackData[0])
-                    except ValueError:
-                        pass
+                try:
+                    SoundTune = int(CurrentTrackObj.TrackData[0])
+                except ValueError:
+                    pass
 
-                    # -- If not SoundTune is null, Play the Tune -- #
-                    Volume = var.Volume / var.Patterns
+                # -- If not SoundTune is null, Play the Tune -- #
+                Volume = var.Volume / var.Patterns
 
-                    CurrentPlayID = ContentManager.PlayTune(SoundTune, SoundDuration, Volume=Volume, FrequencyType=self.LastSineWave)
+                CurrentPlayID = ContentManager.PlayTune(SoundTune, SoundDuration, Volume=Volume, FrequencyType=self.LastSineWave)
 
-                    if not CurrentPlayID is None:
-                        self.PlayMode_LastSoundChannel = CurrentPlayID
+                if not CurrentPlayID is None:
+                    self.PlayMode_LastSoundChannel = CurrentPlayID
 
                 # -- Stop Playing song when it reach the end -- #
                 if self.SelectedTrack >= len(self.Tracks):
@@ -802,12 +770,19 @@ class Pattern:
             self.UpdateTracksPosition()
 
     def UpdateTracksPosition(self):
+        print("Updating Track Positions...")
         for i, track in enumerate(self.Tracks):
             # -- Update Tracks Position -- #
             if i == 0:
                 track.Rectangle[0] = 5
             else:
                 track.Rectangle[0] = self.Tracks[i - 1].Rectangle[0] + self.Tracks[i - 1].Rectangle[2]
+
+    def UpdateTracksBlocks(self):
+        for track in self.Tracks:
+            track.UpdateTrackBlocks()
+            track.Update()
+            track.UpdateTracksPos()
 
     def AddBlankTrack(self):
         self.Tracks.append(TrackColection(len(self.Tracks)))
@@ -839,27 +814,19 @@ class Pattern:
             self.ActiveTrackID = 0
             var.PatternIsUpdating = True
 
-            if not "APN_GT" in var.PatternUpdateEntry:
-                var.PatternUpdateEntry.append("APN_GT")
+            for track in self.Tracks:
+                track.UpdateTrackBlocks()
 
         if len(self.Tracks) < var.Patterns:
             self.ActiveTrackID = 0
             self.AddBlankTrack()
             var.PatternIsUpdating = True
 
-            if not "APN_LT" in var.PatternUpdateEntry:
-                var.PatternUpdateEntry.append("APN_LT")
+            for track in self.Tracks:
+                track.UpdateTrackBlocks()
 
         if not len(self.Tracks) < var.Patterns and not len(self.Tracks) > var.Patterns:
             var.PatternIsBeingUpdated = False
-
-            if "APN_GT" in var.PatternUpdateEntry:
-                Index1 = var.PatternUpdateEntry.index("APN_GT")
-                var.PatternUpdateEntry.pop(Index1)
-
-            if "APN_LT" in var.PatternUpdateEntry:
-                Index2 = var.PatternUpdateEntry.index("APN_LT")
-                var.PatternUpdateEntry.pop(Index2)
 
     def EventUpdate(self, event):
         for track in self.Tracks:
@@ -891,10 +858,12 @@ class TrackList:
         self.AddNewPattern()
 
     def AddNewPattern(self):
+        var.PatternIsUpdating = True
         NewPatternID = len(self.PatternList)
-        self.PatternList.append(Pattern(len(self.PatternList)))
 
+        self.PatternList.append(Pattern(len(self.PatternList)))
         self.SetCurrentPattern_ByID(NewPatternID)
+
 
     def SetCurrentPattern_ByID(self, PatternID):
         self.CurrentPattern = self.PatternList[PatternID]
@@ -938,22 +907,15 @@ class TrackList:
         self.CurrentPattern.Update()
 
         # -- Pattern Update Routine -- #
-        if len(var.PatternUpdateEntry) >= 1:
+        if var.PatternIsUpdating:
+            var.PatternIsUpdating = False
+            var.GenerateSoundCache = True
+            var.GenerateSoundCache_MessageSeen = False
+
             for pattern in self.PatternList:
                 pattern.Update()
                 for block in pattern.Tracks:
                     block.Active = True
-
-        else:
-            if var.PatternIsUpdating:
-                var.PatternIsUpdating = False
-                var.GenerateSoundCache = True
-                var.GenerateSoundCache_MessageSeen = False
-
-                for pattern in self.PatternList:
-                    pattern.Update()
-                    for block in pattern.Tracks:
-                        block.Active = True
 
         # -- Update the Surface Size -- #
         if not self.LastRect == self.Rectangle:
@@ -966,21 +928,39 @@ class TrackList:
             for patterns in self.PatternList:
                 for track in patterns.Tracks:
                     CollectionLastSinewaveForm = "square"
+                    CollectionLastDuration = 20
                     for collactions in track.Tracks:
                         try:
                             collactions.SurfaceUpdateTrigger = True
                             collactions.Active = True
                             SinewaveType = CollectionLastSinewaveForm
 
-                            if not collactions.TrackData[0] == "-----":
-                                Freqn = int(collactions.TrackData[0])
-                                SoundDuration = int(collactions.TrackData[1]) / var.BPM
+                            if collactions.TrackData[1].startswith("W"):
+                                WaveformCommand = collactions.TrackData[1][1:]
+                                CollectionLastSinewaveForm = GetWaveTypeByWaveCode(WaveformCommand)
 
-                                ContentManager.GetTune_FromTuneCache(Freqn, SoundDuration, 44000, SinewaveType)
-                            else:
-                                if collactions.TrackData[1].startswith("W"):
-                                    WaveformCommand = collactions.TrackData[1][1:]
-                                    CollectionLastSinewaveForm = GetWaveTypeByWaveCode(WaveformCommand)
+                            if collactions.TrackData[1].startswith("D"):
+                                SplitedAgrs = list(collactions.TrackData[1])
+                                DurationTime = ""
+
+                                for i, arg in enumerate(SplitedAgrs):
+                                    if i > 1:
+                                        DurationTime += arg
+                                CollectionLastDuration = int(DurationTime.replace("-", ""))
+
+
+                            try:
+                                Freqn = int(collactions.TrackData[0])
+                            except:
+                                Freqn = 0
+
+                            try:
+                                SoundDuration = int(collactions.TrackData[1]) / var.BPM
+                            except:
+                                SoundDuration = CollectionLastDuration / var.BPM
+
+                            ContentManager.GetTune_FromTuneCache(Freqn, SoundDuration, 44000, SinewaveType)
+
 
                         except ValueError:
                             continue
@@ -1140,10 +1120,8 @@ class DropDownMenu:
             self.MenuItems.append(Button(pygame.Rect(self.Rectangle[0] + 5, self.Rectangle[1] + 5 * i + 32, 0, 0), item[0], 12))
 
     def Render(self, DISPLAY):
-        BluredBackground = pygame.Surface((self.Rectangle[2], self.Rectangle[3]))
-        BluredBackground.blit(DISPLAY, (0, 0), self.Rectangle)
-        shape.Shape_Rectangle(DISPLAY, (30, 15, 32), self.Rectangle, 5)
-        DISPLAY.blit(fx.Surface_Blur(BluredBackground, 20), self.Rectangle)
+        DISPLAY.blit(fx.Simple_BlurredRectangle(DISPLAY, self.Rectangle), self.Rectangle)
+        shape.Shape_Rectangle(DISPLAY, ThemesManager_GetProperty("DropDownMenu_BorderColor"), self.Rectangle, 1, 3)
 
         for button in self.MenuItems:
             button.Render(DISPLAY)

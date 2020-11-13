@@ -19,88 +19,71 @@ import pygame
 from OneTrack.MAIN import UI
 from Core import utils
 
-RootProcess = None
-FolderList = UI.VerticalListWithDescription
-OptionsBar = UI.ButtonsBar
-FileListUpdated = False
+class Screen:
+    def __init__(self, pRootProcess):
+        self.RootProcess = pRootProcess
 
-def Initialize(pRoot_Process):
-    global RootProcess
-    global FolderList
-    global OptionsBar
-    global FileListUpdated
-    RootProcess = pRoot_Process
+        # Set the correct screen size
+        self.RootProcess.DISPLAY = pygame.Surface((300, 350))
 
-    # Set the correct screen size
-    RootProcess.DISPLAY = pygame.Surface((300, 350))
+        self.FolderList = UI.VerticalListWithDescription(pygame.Rect(0, 24, 300, 15))
 
-    FolderList = UI.VerticalListWithDescription(pygame.Rect(0, 24, 300, 15))
-    ButtonsList = list()
-    ButtonsList.append(UI.Button(pygame.Rect(0, 0, 0, 0), "Select", 12))
-    OptionsBar = UI.ButtonsBar((0, 0, 0, 0), ButtonsList)
-    RootProcess.TITLEBAR_TEXT = "Open File"
-    FileListUpdated = False
+        ButtonsList = list()
+        ButtonsList.append(UI.Button(pygame.Rect(0, 0, 0, 0), "Select", 12))
 
+        self.OptionsBar = UI.ButtonsBar((0, 0, 0, 0), ButtonsList)
+        self.RootProcess.TITLEBAR_TEXT = "Open File"
+        self.FileListUpdated = False
 
-def Draw(DISPLAY):
-    # -- Render the Folder List -- #
-    FolderList.Render(DISPLAY)
+    def Draw(self, DISPLAY):
+        # -- Render the Folder List -- #
+        self.FolderList.Render(DISPLAY)
 
-    # -- Render the Buttons -- #
-    OptionsBar.Render(DISPLAY)
+        # -- Render the Buttons -- #
+        self.OptionsBar.Render(DISPLAY)
 
-def Update():
-    global FolderList
-    global OptionsBar
-    global FileListUpdated
+    def Update(self):
+        if not self.FileListUpdated:
+            self.FileListUpdated = True
+            self.UpdateFileList()
 
-    if not FileListUpdated:
-        FileListUpdated = True
-        UpdateFileList()
+        self.FolderList.Set_W(self.RootProcess.DISPLAY.get_width())
+        self.FolderList.Set_H(self.RootProcess.DISPLAY.get_height() - 35)
 
-    FolderList.Set_W(RootProcess.DISPLAY.get_width())
-    FolderList.Set_H(RootProcess.DISPLAY.get_height() - 35)
+        # -------------------------------------------------
+        self.FolderList.ColisionXOffset = self.RootProcess.POSITION[0] + self.FolderList.Rectangle[0]
+        self.FolderList.ColisionYOffset = self.RootProcess.POSITION[1] + 15 + self.FolderList.Rectangle[1]
 
-    # -------------------------------------------------
-    FolderList.ColisionXOffset = RootProcess.POSITION[0] + FolderList.Rectangle[0]
-    FolderList.ColisionYOffset = RootProcess.POSITION[1] + 15 + FolderList.Rectangle[1]
+        self.OptionsBar.Update()
+        #-------------------------------
+        self.OptionsBar.ColisionXOffset = self.RootProcess.POSITION[0]
+        self.OptionsBar.ColisionYOffset = self.RootProcess.POSITION[1] + 15
 
-    OptionsBar.Update()
-    #-------------------------------
-    OptionsBar.ColisionXOffset = RootProcess.POSITION[0]
-    OptionsBar.ColisionYOffset = RootProcess.POSITION[1] + 15
+        SelectedFile = self.FolderList.LastItemClicked
 
-    SelectedFile = FolderList.LastItemClicked
+        if self.OptionsBar.ClickedButtonIndex == 0:
+            self.OptionsBar.ClickedButtonIndex = -1
 
-    if OptionsBar.ClickedButtonIndex == 0:
-        OptionsBar.ClickedButtonIndex = -1
+            if not SelectedFile == "null":
+                self.RootProcess.RootProcess.CurrentScreenToUpdate.LoadMusicData(Core.GetAppDataFromAppName("OneTrack") + Core.TaiyouPath_CorrectSlash + SelectedFile)
+                Core.wmm.WindowManagerSignal(self.RootProcess, 1)
 
-        if not SelectedFile == "null":
-            RootProcess.RootProcess.CurrentScreenToUpdate.LoadMusicData(Core.GetAppDataFromAppName("OneTrack") + Core.TaiyouPath_CorrectSlash + SelectedFile)
-            Core.wmm.WindowManagerSignal(RootProcess, 1)
+    def EventUpdate(self, event):
+        self.FolderList.Update(event)
+        self.OptionsBar.EventUpdate(event)
 
-def EventUpdate(event):
-    FolderList.Update(event)
-    OptionsBar.EventUpdate(event)
+    def UpdateFileList(self):
+        print("Load : Updating File List...")
+        self.FolderList.ClearItems()
+        AllFilesInDir = utils.Directory_FilesList(Core.GetAppDataFromAppName("OneTrack"))
 
+        for file in AllFilesInDir:
+            # Check if file is a valid OneTrack Project
+            if file.endswith(".oneprj"):
+                FileAllPath = file
+                FileName = file.replace(Core.GetAppDataFromAppName("OneTrack"), "").replace(".oneprj", "")
 
-def UpdateFileList():
-    global FolderList
+                ItemName = FileName[1:]
+                ItemDescription = "Saved on: {0}".format(FileAllPath)
 
-    print("Load : Updating File List...")
-    FolderList.ClearItems()
-    AllFilesInDir = utils.Directory_FilesList(Core.GetAppDataFromAppName("OneTrack"))
-
-    for file in AllFilesInDir:
-        # Check if file is a valid OneTrack Project
-        if file.endswith(".oneprj"):
-            FileAllPath = file
-            FileName = file.replace(Core.GetAppDataFromAppName("OneTrack"), "").replace(".oneprj", "")
-
-            ItemName = FileName[1:]
-            ItemDescription = "Saved on: {0}".format(FileAllPath)
-
-            FolderList.AddItem(ItemName, ItemDescription)
-
-def WhenClosing():
-    pass
+                self.FolderList.AddItem(ItemName, ItemDescription)

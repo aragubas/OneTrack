@@ -40,13 +40,30 @@ class Process():
         self.TITLEBAR_RECTANGLE = pygame.Rect(self.POSITION[0], self.POSITION[1], self.DISPLAY.get_width(), 15)
         self.TITLEBAR_TEXT = "OneTrack"
         self.WindowDragEnable = False
+        self.DeleteInstanceOnFirstCycle = False
+        self.DialogPID = -1
+        self.DefaultContents = cntMng.ContentManager()
+
+    def CheckForAnotherInstances(self):
+        # Check if there is not another instance of OneTrack
+        for process in Core.MAIN.ProcessList:
+            if process.PID != self.PID:
+                if process.IS_GRAPHICAL and process.FULLSCREEN == self.FULLSCREEN:
+                    if process.EXECUTABLE_PATH == self.EXECUTABLE_PATH:
+                        # Another instance detected
+                        self.DialogPID = self.GreyDialog("Multiple instance detection", "OneTrack does not support multiple instances.\n\nOnly 1 instance of OneTrack is allowed.", "warn")
+                        self.DeleteInstanceOnFirstCycle = True
 
     def Initialize(self):
+        var.ProcessReference = self
+
         # Initialize Variables
         self.CurrentScreenToUpdate = Editor
 
+        print("Initializing {0}...".format(self.TITLEBAR_TEXT))
+
+
         # Initialize Content Manager
-        self.DefaultContents = cntMng.ContentManager()
         self.DefaultContents.SetSourceFolder("OneTrack/")
         self.DefaultContents.SetFontPath("Data/fonts")
         self.DefaultContents.SetImageFolder("Data/img")
@@ -62,20 +79,25 @@ class Process():
         var.DefaultContent = self.DefaultContents
 
         # Load UI Theme
-        UI.ThemesManager_LoadTheme(self.DefaultContents.Get_RegKey("/selected_theme"))
+        try:
+            UI.ThemesManager_LoadTheme(self.DefaultContents.Get_RegKey("/selected_theme"))
+        except:
+            print("Error while loading selected theme\nUsing fallback theme")
+            self.DefaultContents.Write_RegKey("/selected_theme", "default")
+
+            UI.ThemesManager_LoadTheme(self.DefaultContents.Get_RegKey("/selected_theme"))
 
         MAIN.ReceiveCommand(0, 60)
 
         self.TITLEBAR_TEXT = "OneTrack v{0}".format(self.DefaultContents.Get_RegKey("/version"))
 
-        var.ProcessReference = self
         var.LoadDefaultValues()
         Editor.Initialize()
         LagIndicator.Initialize()
 
     def GreyDialog(self, Title, Text, Icon="none"):
         var.AwaysUpdate = False
-        Core.MAIN.CreateProcess("OneTrack/UnatachedDialog", "OneTrack Dialog", (var.ProcessReference, "DIALOG_OK", "{0};{1}".format(Title, Text), "icon:{0},".format(Icon)))
+        return Core.MAIN.CreateProcess("OneTrack/UnatachedDialog", "OneTrack Dialog", (var.ProcessReference, "DIALOG_OK", "{0};{1}".format(Title, Text), "icon:{0},".format(Icon)))
 
     def Draw(self):
         self.CurrentScreenToUpdate.GameDraw(self.DISPLAY)
@@ -86,6 +108,10 @@ class Process():
         return self.DISPLAY
 
     def Update(self):
+        if self.DeleteInstanceOnFirstCycle and not self.DialogPID in Core.MAIN.ProcessList_PID:
+            print("ACABOU")
+            Core.MAIN.KillProcessByPID(self.PID)
+
         if not self.APPLICATION_HAS_FOCUS and var.AwaysUpdate is False:
             return
 
@@ -95,4 +121,10 @@ class Process():
 
     def EventUpdate(self, event):
         self.CurrentScreenToUpdate.EventUpdate(event)
+
+        if event.type == pygame.KEYUP:
+            if event.key == 1073741895:
+                print("Theme & RegKeys reloaded")
+                UI.ContentManager.ReloadRegistry()
+                UI.ThemesManager_LoadTheme(self.DefaultContents.Get_RegKey("/selected_theme"))
 

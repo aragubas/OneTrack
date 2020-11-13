@@ -19,80 +19,69 @@ import pygame
 from OneTrack.MAIN import UI
 from Core import utils
 
-RootProcess = None
-DialogTitle = ""
-DialogText = ""
-DialogIcon = None
-DialogIconDimensions = (128, 128)
 
-def Initialize(pRoot_Process):
-    global RootProcess
-    global DialogTitle
-    global DialogText
-    global DialogIcon
-    global DialogIconDimensions
-    RootProcess = pRoot_Process
+class Screen:
+    def __init__(self, pRoot_Process):
+        self.RootProcess = pRoot_Process
 
-    # Set the correct screen size
-    RootProcess.DISPLAY = pygame.Surface((400, 150))
+        self.Args = self.RootProcess.INIT_ARGS[2].split(';')
+        self.DialogTitle = self.Args[0]
+        self.DialogText = self.Args[1]
+        self.DialogIcon = None
+        self.DialogIconDimensions = (128, 128)
 
-    Args = RootProcess.INIT_ARGS[2].split(';')
-    DialogTitle = Args[0]
-    DialogText = Args[1] + "\n\nPress 'ESC' to close dialog"
-    DialogIcon = None
+        self.RootProcess.TITLEBAR_TEXT = self.DialogTitle
 
-    RootProcess.TITLEBAR_TEXT = DialogTitle
+        if not self.RootProcess.OptionalParameters == None:
+            SplitedParameters = self.RootProcess.OptionalParameters.split(",")
 
-    if not RootProcess.OptionalParameters == None:
-        SplitedParameters = RootProcess.OptionalParameters.split(",")
+            for parameter in SplitedParameters:
+                print(parameter)
+                ParameterSplit = parameter.split(":")
 
-        for parameter in SplitedParameters:
-            print(parameter)
-            ParameterSplit = parameter.split(":")
+                if ParameterSplit[0] == "icon":
+                    self.DialogIcon = ParameterSplit[1]
+                    print("DialogIcon set to: " + self.DialogIcon)
+                    continue
 
-            if ParameterSplit[0] == "icon":
-                DialogIcon = ParameterSplit[1]
-                print("DialogIcon set to: " + DialogIcon)
-                continue
+        if self.DialogIcon == "none":
+            self.DialogIcon = None
 
-    if DialogIcon == "none":
-        DialogIcon = None
+        self.DialogSize = (self.RootProcess.DefaultContents.GetFont_width("/Ubuntu_Bold.ttf", 14, self.DialogText) + 10, self.RootProcess.DefaultContents.GetFont_height("/Ubuntu_Bold.ttf", 14, self.DialogText) + 5)
+        self.DialogSize = list(self.DialogSize)
 
-    DialogSize = (RootProcess.DefaultContents.GetFont_width("/Ubuntu_Bold.ttf", 14, DialogText) + 10, RootProcess.DefaultContents.GetFont_height("/Ubuntu_Bold.ttf", 14, DialogText) + 5)
-    DialogSize = list(DialogSize)
+        if not self.DialogIcon == None:
+            self.DialogSize = (self.RootProcess.DefaultContents.GetFont_width("/Ubuntu_Bold.ttf", 14, self.DialogText) + 10 + self.DialogIconDimensions[0] + 2, self.RootProcess.DefaultContents.GetFont_height("/Ubuntu_Bold.ttf", 14, self.DialogText) + 5)
+            self.DialogSize = list(self.DialogSize)
 
-    if not DialogIcon == None:
-        DialogSize = (RootProcess.DefaultContents.GetFont_width("/Ubuntu_Bold.ttf", 14, DialogText) + 10 + DialogIconDimensions[0] + 2, RootProcess.DefaultContents.GetFont_height("/Ubuntu_Bold.ttf", 14, DialogText) + 5)
-        DialogSize = list(DialogSize)
+            if self.DialogSize[0] < self.DialogIconDimensions[0]:
+                self.DialogSize[0] += self.DialogIconDimensions[0]
 
-        if DialogSize[0] < DialogIconDimensions[0]:
-            DialogSize[0] += DialogIconDimensions[0]
+            if self.DialogSize[1] < self.DialogIconDimensions[1]:
+                self.DialogSize[1] += self.DialogIconDimensions[1]
 
-        if DialogSize[1] < DialogIconDimensions[1]:
-            DialogSize[1] += DialogIconDimensions[1]
+        print(self.DialogSize)
 
-    RootProcess.DISPLAY = pygame.Surface(DialogSize)
+        # Set the Minimal Size
+        if self.DialogSize[0] < 120:
+            self.DialogSize = (120, self.DialogSize[1])
 
+        if self.DialogSize[1] < 110:
+            self.DialogSize = (self.DialogSize[0], 110)
 
-def Draw(DISPLAY):
-    global DialogText
-    global DialogIcon
-    global DialogIconDimensions
+        self.RootProcess.DISPLAY = pygame.Surface(self.DialogSize)
 
-    TextX = 5
+    def Draw(self, DISPLAY):
+        TextX = 5
 
-    if DialogIcon is not None:
-        TextX = DialogIconDimensions[0] + 10
-        RootProcess.DefaultContents.ImageRender(DISPLAY, "/{0}.png".format(DialogIcon), 5, 5, 128, 128)
+        if self.DialogIcon is not None:
+            TextX = self.DialogIconDimensions[0] + 10
+            self.RootProcess.DefaultContents.ImageRender(DISPLAY, "/{0}.png".format(self.DialogIcon), 5, 5, 128, 128, SmoothScaling=True)
 
-    RootProcess.DefaultContents.FontRender(DISPLAY, "/Ubuntu.ttf", 14, DialogText, (240, 240, 240), TextX, 5)
+        self.RootProcess.DefaultContents.FontRender(DISPLAY, "/Ubuntu.ttf", 14, self.DialogText, (240, 240, 240), TextX, 5)
 
+    def Update(self):
+        pass
 
-def Update():
-    pass
-
-def EventUpdate(event):
-    pass
-
-def WhenClosing():
-    pass
+    def EventUpdate(self, event):
+        pass

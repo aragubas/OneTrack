@@ -45,6 +45,9 @@ class Widget_Controller:
     def Append(self, Widget):
         self.WidgetCollection.append(Widget)
 
+        for widget in self.WidgetCollection:
+            widget.Update()
+
     def Update(self):
         self.Active = pygame.Rect(self.Rectangle[0] + self.ClickOffset[0], self.Rectangle[1] + self.ClickOffset[1], self.Rectangle[2], self.Rectangle[3]).collidepoint((pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1]))
 
@@ -421,7 +424,7 @@ class Widget_Button:
 
 
 class Widget_Textbox:
-    def __init__(self, pFontName, pDefaultText, pFontSize, pColor, pX, pY, pWidth, pWidgetID):
+    def __init__(self, pFontName, pDefaultText, pFontSize, pColor, pX, pY, pWidgetID):
         if pWidgetID == -1:
             raise ValueError("WidgetID cannot be -1")
 
@@ -436,12 +439,11 @@ class Widget_Textbox:
         self.Color = pColor
         self.X = pX
         self.Y = pY
-        self.Width = pWidth
+        self.Width = UI.ContentManager.GetFont_width(pFontName, pFontSize, pDefaultText)
         self.Height = UI.ContentManager.GetFont_height(pFontName, pFontSize, "ABC")
         self.AwaysUpdate = False
         self.CursorOffset = (0, 0)
         self.Rectangle = pygame.Rect(self.X, self.Y, self.Width, self.Height)
-        self.color = UI.ThemesManager_GetProperty("InputBox_COLOR_ACTIVE")
         self.LastHeight = 1
         self.CustomWidth = False
         self.CharacterLimit = 0
