@@ -17,18 +17,19 @@
 import pygame, Core
 
 
-FileMenuEnabled = False
-DisableControls = False
 BPM = 150
 Rows = 32
 Highlight = 4
 HighlightSecond = 16
+Editor_CurrentOctave = 4
+Patterns = 2
+
+FileMenuEnabled = False
+DisableControls = False
 GenerateSoundCache = True
 GenerateSoundCache_MessageSeen = False
-Editor_CurrentOctave = 4
 PlayMode = False
 SelectedTrack = 0
-Patterns = 2
 PatternIsUpdating = False
 AwaysUpdate = False
 ProcessReference = None

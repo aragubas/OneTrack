@@ -14,7 +14,7 @@
 #   limitations under the License.
 #
 #
-import pygame, re
+import pygame, re, Core
 from Core import utils
 import OneTrack.MAIN as Main
 from OneTrack.MAIN import UI
@@ -216,7 +216,7 @@ def Draw(DISPLAY):
 
     WidgetCollection.Draw(OptionsBarSurface)
 
-    DISPLAY.blit(OptionsBarSurface, (800 / 2 - OptionsBarSurface.get_width() / 2 + 15, 5))
-    WidgetCollection.Rectangle[0] = 800 / 2 - OptionsBarSurface.get_width() / 2 + 15
+    DISPLAY.blit(OptionsBarSurface, (Core.MAIN.ScreenWidth / 2 - OptionsBarSurface.get_width() / 2 + 15, 5))
+    WidgetCollection.Rectangle[0] = Core.MAIN.ScreenWidth / 2 - OptionsBarSurface.get_width() / 2 + 15
     WidgetCollection.Rectangle[1] = 5
 

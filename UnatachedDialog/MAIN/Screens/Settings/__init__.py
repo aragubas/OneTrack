@@ -29,6 +29,10 @@ class Screen:
         self.WidgetController = UI.Widget.Widget_Controller((0, 0, self.Root_Process.DISPLAY.get_width(), self.Root_Process.DISPLAY.get_height()))
         self.ReloadUI()
 
+        self.LastThemeName = ""
+        self.LastAnimationScale = ""
+        self.LastVolumeMultiplier = ""
+
     def ReloadUI(self):
         self.WidgetController.Clear()
 
@@ -63,6 +67,9 @@ class Screen:
         self.WidgetController.Append(UI.Widget.Widget_Button(var.DefaultContent.Get_RegKey("/options/per_track_scroll"), 14, 5, 185, 15))
         self.WidgetController.Append(UI.Widget.Widget_Label("/Ubuntu.ttf", "Per-Track Scroll", 14, (230, 230, 230), UI.ContentManager.GetFont_width("/Ubuntu_Bold.ttf", 14, "False") + 10, 185, 16))
 
+        # Looking Glass
+        self.WidgetController.Append(UI.Widget.Widget_Button(var.DefaultContent.Get_RegKey("/options/looking_glass"), 14, 5, 215, 17))
+        self.WidgetController.Append(UI.Widget.Widget_Label("/Ubuntu.ttf", "Looking Glass Windows", 14, (230, 230, 230), UI.ContentManager.GetFont_width("/Ubuntu_Bold.ttf", 14, "False") + 10, 215, 18))
 
     def Update(self):
         self.WidgetController.Update()
@@ -130,11 +137,11 @@ class Screen:
                 CurrentText = "10"
 
             # Check if theme exists
-            LastAnimationScale = CurrentText
+            self.LastAnimationScale = CurrentText
 
         # Animation Apply
         if self.WidgetController.LastInteractionID == 11:
-            UwU = LastAnimationScale
+            UwU = self.LastAnimationScale
             if not UwU.isdigit():
                 UwU = "10"
 
@@ -148,11 +155,11 @@ class Screen:
             CurrentText = self.WidgetController.LastInteractionType
 
             # Check if theme exists
-            LastVolumeMultiplier = CurrentText
+            self.LastVolumeMultiplier = CurrentText
 
         # Volume Multiplier Apply
         if self.WidgetController.LastInteractionID == 14:
-            ActualValue = LastVolumeMultiplier
+            ActualValue = self.LastVolumeMultiplier
             print(ActualValue)
 
             try:
@@ -177,6 +184,13 @@ class Screen:
                 var.DefaultContent.Write_RegKey("/options/per_track_scroll", "True")
             self.ReloadUI()
 
+        # Looking Glass Option
+        if self.WidgetController.LastInteractionID == 17:
+            if var.DefaultContent.Get_RegKey("/options/looking_glass", bool):
+                var.DefaultContent.Write_RegKey("/options/looking_glass", "False")
+            else:
+                var.DefaultContent.Write_RegKey("/options/looking_glass", "True")
+            self.ReloadUI()
 
     def Draw(self, DISPLAY):
         self.WidgetController.Draw(DISPLAY)
@@ -190,3 +204,4 @@ class Screen:
         var.LoadDefaultValues()
         UI.ThemesManager_LoadTheme(UI.ContentManager.Get_RegKey("/selected_theme"))
         var.GenerateSoundCache = True
+        var.PlayMode = True

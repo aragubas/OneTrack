@@ -32,7 +32,7 @@ class Process():
         self.ROOT_MODULE = pROOT_MODULE
         self.IS_GRAPHICAL = True
         self.INIT_ARGS = pInitArgs
-        self.DISPLAY = pygame.Surface((800, 600))
+        self.DISPLAY = pygame.Surface((Core.MAIN.ScreenWidth, Core.MAIN.ScreenHeight))
         self.LAST_SURFACE = self.DISPLAY.copy()
         self.APPLICATION_HAS_FOCUS = True
         self.POSITION = (0, 0)
@@ -62,6 +62,7 @@ class Process():
 
         print("Initializing {0}...".format(self.TITLEBAR_TEXT))
 
+        self.CheckForAnotherInstances()
 
         # Initialize Content Manager
         self.DefaultContents.SetSourceFolder("OneTrack/")
@@ -109,7 +110,6 @@ class Process():
 
     def Update(self):
         if self.DeleteInstanceOnFirstCycle and not self.DialogPID in Core.MAIN.ProcessList_PID:
-            print("ACABOU")
             Core.MAIN.KillProcessByPID(self.PID)
 
         if not self.APPLICATION_HAS_FOCUS and var.AwaysUpdate is False:

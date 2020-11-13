@@ -14,7 +14,7 @@
 #   limitations under the License.
 #
 #
-import pygame
+import pygame, Core
 from OneTrack.MAIN import UI
 from OneTrack.MAIN.Screens.Editor import InstanceVar as var
 
@@ -46,8 +46,8 @@ def Draw(DISPLAY):
 
     WidgetCollection.Draw(Surface)
 
-    DISPLAY.blit(Surface, (800 / 2 - Surface.get_width() / 2 + 15, DISPLAY.get_height() - Surface.get_height() - 5))
-    WidgetCollection.Rectangle[0] = 800 / 2 - Surface.get_width() / 2 + 15
+    DISPLAY.blit(Surface, (Core.MAIN.ScreenWidth / 2 - Surface.get_width() / 2 + 15, DISPLAY.get_height() - Surface.get_height() - 5))
+    WidgetCollection.Rectangle[0] = Core.MAIN.ScreenWidth / 2 - Surface.get_width() / 2 + 15
     WidgetCollection.Rectangle[1] = DISPLAY.get_height() - Surface.get_height() - 5
 
 def Update():

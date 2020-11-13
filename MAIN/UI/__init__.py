@@ -14,7 +14,7 @@
 #   limitations under the License.
 #
 #
-import pygame, os
+import pygame, os, Core
 from OneTrack import MAIN as Main
 from OneTrack.MAIN.Screens import Editor
 from OneTrack.MAIN.UI import Widget as Widget
@@ -265,8 +265,13 @@ class TrackBlock:
         self.BlockSurface.fill(ThemesManager_GetProperty("BackgroundColor"))
 
         if var.DefaultContent.Get_RegKey("/options/disabled_block_color", bool):
-            self.FrequencyNumber.InactiveColor = not self.Active
-            self.DurationNumber.InactiveColor = not self.Active
+            if not self.RootActivated or not self.Active:
+                self.FrequencyNumber.InactiveColor = True
+                self.DurationNumber.InactiveColor = True
+
+        if self.Active and self.RootActivated:
+            self.FrequencyNumber.InactiveColor = False
+            self.DurationNumber.InactiveColor = False
 
         shape.Shape_Rectangle(self.BlockSurface, FrequencyBGColor, (self.FrequencyNumber.Rectangle[0] - 1, self.FrequencyNumber.Rectangle[1] - 2, self.FrequencyNumber.Rectangle[2] + 1, self.FrequencyNumber.Rectangle[3] + 1), 0, 0, 5, 0, 5, 0)
         self.FrequencyNumber.Render(self.BlockSurface)
@@ -504,7 +509,7 @@ class TrackColection:
 
                 else:
                     if var.DefaultContent.Get_RegKey("/options/smooth_scroll", bool):
-                        TrackPointerHeight = track.Rectangle[3] - abs(self.Scroll - self.TargetScroll) / (self.ScrollAnimationScale / 2)
+                        TrackPointerHeight = track.Rectangle[3] - abs(self.Scroll - self.TargetScroll) / (self.ScrollAnimationScale / 3)
                     else:
                         TrackPointerHeight = track.Rectangle[3]
 
@@ -863,7 +868,6 @@ class TrackList:
 
         self.PatternList.append(Pattern(len(self.PatternList)))
         self.SetCurrentPattern_ByID(NewPatternID)
-
 
     def SetCurrentPattern_ByID(self, PatternID):
         self.CurrentPattern = self.PatternList[PatternID]

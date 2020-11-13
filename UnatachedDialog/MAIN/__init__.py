@@ -85,7 +85,7 @@ class Process():
         if self.OperationType == "DIALOG_SETTINGS":
             self.SelectedModuleMode = DialogSettingsScreen.Screen(self)
 
-        self.POSITION = (800 / 2 - self.DISPLAY.get_width() / 2, 600 / 2 - self.DISPLAY.get_height() / 2)
+        self.POSITION = (Core.MAIN.ScreenWidth / 2 - self.DISPLAY.get_width() / 2, Core.MAIN.ScreenHeight / 2 - self.DISPLAY.get_height() / 2)
 
         RootDefaultContents = self.RootProcess.DefaultContents
 

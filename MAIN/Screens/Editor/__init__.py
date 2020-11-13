@@ -45,7 +45,7 @@ def Initialize():
     # Add all widgets
     ButtonsList = list()
     ButtonsList.append(UI.Button(pygame.Rect(0, 0, 0, 0), "File", 14))
-    TopBarControls = UI.ButtonsBar((3, 5, 800, 32), ButtonsList)
+    TopBarControls = UI.ButtonsBar((3, 5, Core.MAIN.ScreenWidth, 32), ButtonsList)
     DropDownFileMenuList = (("Load", DropDownButtonsActions_LoadButton), ("Save", DropDownButtonsActions_SaveButton), ("New File", DropDownButtonsActions_NewFileButton), ("About", DropDownButtonsActions_AboutButton), ("Settings", DropDownButtonsActions_SettingsButton))
     DropDownFileMenu = UI.DropDownMenu(pygame.Rect(10, 35, 120, 65), DropDownFileMenuList)
 
@@ -76,7 +76,7 @@ def GameDraw(DISPLAY):
             LastScreenFrame = DISPLAY.copy()
 
         else:
-            DISPLAY.blit(Core.fx.Simple_BlurredRectangle(LastScreenFrame, (0, 0, 800, 600), 2, 50), (0, 0))
+            DISPLAY.blit(Core.fx.Simple_BlurredRectangle(LastScreenFrame, (0, 0, Core.MAIN.ScreenWidth, Core.MAIN.ScreenHeight), 2, 50), (0, 0))
 
             TopBarControls.Render(DISPLAY)
 
@@ -285,13 +285,14 @@ def LoadMusicData(FileName):
                 block.Update()
                 block.ReRender()
 
-    if not FileImportedFromOlderVersion and not var.ProcessReference.DefaultContents.Get_RegKey("/dialog/imported_older_version/show_once", bool):
+    if FileImportedFromOlderVersion and not var.ProcessReference.DefaultContents.Get_RegKey("/dialog/imported_older_version/show_once", bool):
         var.ProcessReference.GreyDialog(var.ProcessReference.DefaultContents.Get_RegKey("/dialog/imported_older_version/title"), var.ProcessReference.DefaultContents.Get_RegKey("/dialog/imported_older_version/text"))
         var.ProcessReference.DefaultContents.Write_RegKey("/dialog/imported_older_version/show_once", "True")
 
 def NewMusicFile():
     global track_list
 
+    track_list = UI.TrackList()
     del track_list
     tge.utils.GarbageCollector_Collect()
 
@@ -302,7 +303,7 @@ def NewMusicFile():
     var.ProcessReference.TITLEBAR_TEXT = "OneTrack v{0}".format(var.ProcessReference.DefaultContents.Get_RegKey("/version"))
 
     track_list = UI.TrackList()
-    track_list.Rectangle = pygame.Rect(0, 100, 800, 400)
+    track_list.Rectangle = pygame.Rect(0, 100, Core.MAIN.ScreenWidth, Core.MAIN.ScreenHeight - 200)
 
     var.BPM = 150
     var.Rows = 32

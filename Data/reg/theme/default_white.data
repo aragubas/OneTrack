@@ -21,8 +21,8 @@ TrackBlock_NoteLabel_KnowNote;tuple;(255, 255, 255)
 
 ### EDITOR: EditableNumberView ###
 EditableNumberView_ColorSelected;tuple;(255, 255, 255)
-EditableNumberView_ColorActive;tuple;(100, 100, 100)
-EditableNumberView_ColorDeactive;tuple;(50, 50, 50)
+EditableNumberView_ColorActive;tuple;(70, 70, 75)
+EditableNumberView_ColorDeactive;tuple;(125, 125, 125)
 
 ### EDITOR: Button ###
 Button_Active_IndicatorColor;tuple;(186, 130, 182)
