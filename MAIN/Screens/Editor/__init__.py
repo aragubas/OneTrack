@@ -76,7 +76,7 @@ def GameDraw(DISPLAY):
             LastScreenFrame = DISPLAY.copy()
 
         else:
-            DISPLAY.blit(Core.fx.Simple_BlurredRectangle(LastScreenFrame, (0, 0, Core.MAIN.ScreenWidth, Core.MAIN.ScreenHeight), 2, 50), (0, 0))
+            DISPLAY.blit(LastScreenFrame, (0, 0))
 
             TopBarControls.Render(DISPLAY)
 

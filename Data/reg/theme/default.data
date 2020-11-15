@@ -49,3 +49,7 @@ VerticalListWithDescription_Selected_BorderColor;tuple;(255, 51, 102)
 VerticalListWithDescription_ItemNameFont;str;/Ubuntu_Bold.ttf
 VerticalListWithDescription_ItemDescriptionFont;str;/Ubuntu.ttf
 
+### OneTrack Unatached Dialog ###
+Dialog_BG_Color;tuple;(20, 20, 38)
+
+

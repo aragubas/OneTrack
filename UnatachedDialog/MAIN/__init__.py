@@ -22,6 +22,7 @@ from OneTrack.UnatachedDialog.MAIN.Screens import LoadFile as LoadFileScreen
 from OneTrack.UnatachedDialog.MAIN.Screens import SaveFile as SaveFileScreen
 from OneTrack.UnatachedDialog.MAIN.Screens import DialogOkOnly as DialogOkOnlyScreen
 from OneTrack.UnatachedDialog.MAIN.Screens import Settings as DialogSettingsScreen
+from OneTrack.MAIN import UI
 RootDefaultContents = None
 
 class Process():
@@ -88,6 +89,12 @@ class Process():
         self.POSITION = (Core.MAIN.ScreenWidth / 2 - self.DISPLAY.get_width() / 2, Core.MAIN.ScreenHeight / 2 - self.DISPLAY.get_height() / 2)
 
         RootDefaultContents = self.RootProcess.DefaultContents
+        try:
+            self.BGColor = UI.ThemesManager_GetProperty("Dialog_BG_Color")
+
+
+        except:
+            self.BGColor = (16, 14, 18)
 
     def Draw(self):
         global RootDefaultContents
@@ -96,7 +103,7 @@ class Process():
             self.DISPLAY.blit(fx.Simple_BlurredRectangle(Core.MAIN.DISPLAY, (self.POSITION[0], self.POSITION[1], self.DISPLAY.get_width(), self.DISPLAY.get_height())), (0, 0))
 
         else:
-            self.DISPLAY.fill((0, 0, 0))
+            self.DISPLAY.fill(self.BGColor)
 
         self.SelectedModuleMode.Draw(self.DISPLAY)
 

@@ -530,6 +530,7 @@ class TrackColection:
 
             if self.Scroll < self.TargetScroll:
                 self.Scroll += abs(self.Scroll - self.TargetScroll) / self.ScrollAnimationScale
+
         else:
             self.Scroll = self.Rectangle[3] / 2 - track.Rectangle[3] - track.Rectangle[1]
 
