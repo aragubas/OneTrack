@@ -16,9 +16,9 @@
 #
 import pygame, os, pickle, io, time, traceback
 import Core
-from Core import cntMng
+from Core import CntMng
 from Core import MAIN
-from Core import appData
+from Core import AppData
 import Core as tge
 from OneTrack.MAIN.Screens import Editor
 from OneTrack.MAIN import LagIndicator
@@ -42,7 +42,7 @@ class Process():
         self.WindowDragEnable = False
         self.DeleteInstanceOnFirstCycle = False
         self.DialogPID = -1
-        self.DefaultContents = cntMng.ContentManager()
+        self.DefaultContents = CntMng.ContentManager()
 
     def CheckForAnotherInstances(self):
         # Check if there is not another instance of OneTrack
@@ -53,16 +53,16 @@ class Process():
                         # Another instance detected
                         self.DialogPID = self.GreyDialog("Multiple instance detection", "OneTrack does not support multiple instances.\n\nOnly 1 instance of OneTrack is allowed.", "warn")
                         self.DeleteInstanceOnFirstCycle = True
+                        return True
+        return False
 
     def Initialize(self):
         var.ProcessReference = self
 
-        # Initialize Variables
-        self.CurrentScreenToUpdate = Editor
-
         print("Initializing {0}...".format(self.TITLEBAR_TEXT))
 
-        self.CheckForAnotherInstances()
+        # Initialize Variables
+        self.CurrentScreenToUpdate = Editor
 
         # Initialize Content Manager
         self.DefaultContents.SetSourceFolder("OneTrack/")
@@ -74,6 +74,10 @@ class Process():
         self.DefaultContents.LoadImagesInFolder()
 
         self.DefaultContents.InitSoundSystem()
+
+        if self.CheckForAnotherInstances():
+            return
+
 
         # Set the default content manager for the UI
         UI.ContentManager = self.DefaultContents

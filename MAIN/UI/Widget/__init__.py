@@ -15,14 +15,14 @@
 #
 #
 import pygame
-from Core import utils
-from Core import shape
+from Core import Utils
+from Core import Shape
 from OneTrack import MAIN as Main
 from OneTrack.MAIN import UI
 
 class Widget_Controller:
     def __init__(self, Rectangle):
-        self.Rectangle = utils.Convert.List_PygameRect(Rectangle)
+        self.Rectangle = Utils.Convert.List_PygameRect(Rectangle)
         self.WidgetCollection = list()
         self.LastInteractionID = -1
         self.LastInteractionType = None
@@ -91,7 +91,7 @@ class Widget_PictureBox:
         if WidgetID == -1:
             raise ValueError("WidgetID cannot be -1")
 
-        self.Rectangle = utils.Convert.List_PygameRect(Rectangle)
+        self.Rectangle = Utils.Convert.List_PygameRect(Rectangle)
         self.ImageName = ImageName
         self.ID = WidgetID
         self.InteractionType = None
@@ -114,7 +114,7 @@ class Widget_ValueChanger:
         if WidgetID == -1:
             raise ValueError("WidgetID cannot be -1")
 
-        self.Rectangle = utils.Convert.List_PygameRect((Position[0], Position[1], 48, 34))
+        self.Rectangle = Utils.Convert.List_PygameRect((Position[0], Position[1], 48, 34))
         self.TitleName = TitleName
         self.ID = WidgetID
         self.Changer = UI.EditableNumberView(pygame.Rect(self.Rectangle[0], self.Rectangle[1] + 17, self.Rectangle[2], self.Rectangle[3] - 17), ChangerInitialValue)
@@ -133,8 +133,8 @@ class Widget_ValueChanger:
         if not self.Active:
             LineColor = UI.ThemesManager_GetProperty("Button_Inactive_IndicatorColor")
 
-        shape.Shape_Rectangle(DISPLAY, BGColor, self.Rectangle)
-        shape.Shape_Rectangle(DISPLAY, LineColor, self.Rectangle, 1)
+        Shape.Shape_Rectangle(DISPLAY, BGColor, self.Rectangle)
+        Shape.Shape_Rectangle(DISPLAY, LineColor, self.Rectangle, 1)
 
         # -- Render Change Title -- #
         TitleX = self.Rectangle[0] + self.Rectangle[2] / 2 - UI.ContentManager.GetFont_width("/Ubuntu_Bold.ttf", 12, self.TitleName) / 2
@@ -177,7 +177,7 @@ class Widget_Label:
         self.Color = Color
         self.X = X
         self.Y = Y
-        self.Rectangle = utils.Convert.List_PygameRect((X, Y, UI.ContentManager.GetFont_width(self.FontName, FontSize, self.Text), UI.ContentManager.GetFont_height(self.FontName, FontSize, self.Text)))
+        self.Rectangle = Utils.Convert.List_PygameRect((X, Y, UI.ContentManager.GetFont_width(self.FontName, FontSize, self.Text), UI.ContentManager.GetFont_height(self.FontName, FontSize, self.Text)))
         self.AwaysUpdate = False
         self.CursorOffset = (0, 0)
 
@@ -185,7 +185,7 @@ class Widget_Label:
         UI.ContentManager.FontRender(DISPLAY, self.FontName, self.FontSize, self.Text, self.Color, self.Rectangle[0], self.Rectangle[1])
 
     def Update(self):
-        self.Rectangle = utils.Convert.List_PygameRect((self.X, self.Y, UI.ContentManager.GetFont_width(self.FontName, self.FontSize, self.Text), UI.ContentManager.GetFont_height(self.FontName, self.FontSize, self.Text)))
+        self.Rectangle = Utils.Convert.List_PygameRect((self.X, self.Y, UI.ContentManager.GetFont_width(self.FontName, self.FontSize, self.Text), UI.ContentManager.GetFont_height(self.FontName, self.FontSize, self.Text)))
 
     def EventUpdate(self, event):
         pass
@@ -201,7 +201,7 @@ class Widget_PianoKeys:
         self.EventUpdateable = True
         self.X = X
         self.Y = Y
-        self.Rectangle = utils.Convert.List_PygameRect((X, Y, 380, 45))
+        self.Rectangle = Utils.Convert.List_PygameRect((X, Y, 380, 45))
         self.Surface = pygame.Surface((self.Rectangle[2], self.Rectangle[3]))
         self.LastRect = pygame.Rect(0, 0, 0, 0)
         self.LastNote = -1
@@ -215,7 +215,7 @@ class Widget_PianoKeys:
 
         # -- Render Background -- #
         self.Surface.fill((190, 190, 190))
-        shape.Shape_Rectangle(self.Surface, (100, 100, 100), (0, 0, self.Rectangle[2], self.Rectangle[3]), 5)
+        Shape.Shape_Rectangle(self.Surface, (100, 100, 100), (0, 0, self.Rectangle[2], self.Rectangle[3]), 5)
 
         for i in range(12):
             NoteLabel = self.GetNote_ByIndex(i)
@@ -246,9 +246,9 @@ class Widget_PianoKeys:
                 TextColor = (0, 0, 0)
 
             if not IsHighNote:
-                shape.Shape_Rectangle(self.Surface, BackgroundColor, (X, Y, Width, Height), 0, 0, 5, 5)
+                Shape.Shape_Rectangle(self.Surface, BackgroundColor, (X, Y, Width, Height), 0, 0, 5, 5)
             else:
-                shape.Shape_Rectangle(self.Surface, BackgroundColor, (X, Y, Width, Height), 0, 0, 0, 0, 5, 5)
+                Shape.Shape_Rectangle(self.Surface, BackgroundColor, (X, Y, Width, Height), 0, 0, 0, 0, 5, 5)
 
             UI.ContentManager.FontRender(self.Surface, "/PressStart2P.ttf", 12, NoteLabel, TextColor, TextX, Y + 5)
 
@@ -362,7 +362,7 @@ class Widget_Button:
         self.FontSize = FontSize
         self.TextWidth = UI.ContentManager.GetFont_width("/Ubuntu_Bold.ttf", self.FontSize, self.Text)
         self.TextHeight = UI.ContentManager.GetFont_height("/Ubuntu_Bold.ttf", self.FontSize, self.Text)
-        self.Rectangle = utils.Convert.List_PygameRect((X - 2, Y - 2, self.TextWidth + 4, self.TextHeight + 4))
+        self.Rectangle = Utils.Convert.List_PygameRect((X - 2, Y - 2, self.TextWidth + 4, self.TextHeight + 4))
         self.LastRect = self.Rectangle
         self.Surface = pygame.Surface((self.Rectangle[2], self.Rectangle[3]))
         self.Centred_X = self.Rectangle[2] / 2 - UI.ContentManager.GetFont_width("/Ubuntu_Bold.ttf", self.FontSize - 2, self.Text) / 2
@@ -374,9 +374,9 @@ class Widget_Button:
 
     def Render(self, DISPLAY):
         # -- Render Background -- #
-        shape.Shape_Rectangle(self.Surface, self.BgColor, (0, 0, self.Rectangle[2], self.Rectangle[3]))
+        Shape.Shape_Rectangle(self.Surface, self.BgColor, (0, 0, self.Rectangle[2], self.Rectangle[3]))
         # -- Render Indicator -- #
-        shape.Shape_Rectangle(self.Surface, self.IndicatorColor, (0, 0, self.Rectangle[2], self.Rectangle[3]), 1)
+        Shape.Shape_Rectangle(self.Surface, self.IndicatorColor, (0, 0, self.Rectangle[2], self.Rectangle[3]), 1)
 
         # -- Render the Button Text -- #
         UI.ContentManager.FontRender(self.Surface, "/Ubuntu_Bold.ttf", self.FontSize - 2, self.Text, (240, 240, 240), self.Centred_X, self.Centred_Y)
@@ -394,7 +394,7 @@ class Widget_Button:
             # -- Update all Size and Position Variables -- #
             self.TextWidth = UI.ContentManager.GetFont_width("/Ubuntu_Bold.ttf", self.FontSize, self.Text)
             self.TextHeight = UI.ContentManager.GetFont_height("/Ubuntu_Bold.ttf", self.FontSize, self.Text)
-            self.Rectangle = utils.Convert.List_PygameRect((self.Rectangle[0] - 2, self.Rectangle[1] - 2, self.TextWidth + 4, self.TextHeight + 4))
+            self.Rectangle = Utils.Convert.List_PygameRect((self.Rectangle[0] - 2, self.Rectangle[1] - 2, self.TextWidth + 4, self.TextHeight + 4))
             self.Centred_X = self.Rectangle[2] / 2 - UI.ContentManager.GetFont_width("/Ubuntu_Bold.ttf", self.FontSize - 2, self.Text) / 2
             self.Centred_Y = self.Rectangle[3] / 2 - UI.ContentManager.GetFont_height("/Ubuntu_Bold.ttf", self.FontSize - 2, self.Text) / 2
 
@@ -458,7 +458,7 @@ class Widget_Textbox:
 
     def Render(self, DISPLAY):
         # Blit the rect.
-        shape.Shape_Rectangle(DISPLAY, (15, 15, 15), self.Rectangle)
+        Shape.Shape_Rectangle(DISPLAY, (15, 15, 15), self.Rectangle)
 
         if self.Text == self.DefaultText:
             UI.ContentManager.FontRender(DISPLAY, UI.ThemesManager_GetProperty("InputBox_FontFile"), self.FontSize, self.Text, (140, 140, 140), self.Rectangle[0], self.Rectangle[1])
@@ -467,9 +467,9 @@ class Widget_Textbox:
                 UI.ContentManager.FontRender(DISPLAY, UI.ThemesManager_GetProperty("InputBox_FontFile"), self.FontSize, self.Text, (240, 240, 240), self.Rectangle[0], self.Rectangle[1])
 
         if not self.Active:
-            shape.Shape_Rectangle(DISPLAY, (255, 51, 102), (self.Rectangle[0], self.Rectangle[1] - 1, self.Rectangle[2], 1))
+            Shape.Shape_Rectangle(DISPLAY, (255, 51, 102), (self.Rectangle[0], self.Rectangle[1] - 1, self.Rectangle[2], 1))
         else:
-            shape.Shape_Rectangle(DISPLAY, (46, 196, 182), (self.Rectangle[0], self.Rectangle[1] - 1, self.Rectangle[2], 1))
+            Shape.Shape_Rectangle(DISPLAY, (46, 196, 182), (self.Rectangle[0], self.Rectangle[1] - 1, self.Rectangle[2], 1))
 
     def Update(self):
         # -- Resize the Textbox -- #

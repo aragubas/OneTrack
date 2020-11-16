@@ -15,7 +15,7 @@
 #
 #
 import pygame, Core
-
+from Core import CntMng
 
 BPM = 150
 Rows = 32
@@ -34,7 +34,7 @@ PatternIsUpdating = False
 AwaysUpdate = False
 ProcessReference = None
 Volume = 0.1
-DefaultContent = Core.cntMng.ContentManager
+DefaultContent = CntMng.ContentManager
 
 def LoadDefaultValues():
     global Volume

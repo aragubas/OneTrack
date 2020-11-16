@@ -16,10 +16,10 @@
 #
 import pygame, os, pickle, io
 import Core
-from Core import cntMng
+from Core import CntMng
 from Core import MAIN
-from Core import appData
-from Core import shape
+from Core import AppData
+from Core import Shape
 import Core as tge
 from OneTrack.MAIN import UI
 from OneTrack.MAIN import SaveFileDialog
@@ -114,7 +114,7 @@ def SaveMusicData(FilePath):
 
         ProjectDataFile += "$end\n"
 
-    tge.appData.WriteAppData(FilePath, ProjectDataFile)
+    AppData.WriteAppData(FilePath, ProjectDataFile)
 
 def LoadMusicData(FileName):
     global track_list
@@ -294,7 +294,7 @@ def NewMusicFile():
 
     track_list = UI.TrackList()
     del track_list
-    tge.utils.GarbageCollector_Collect()
+    tge.Utils.GarbageCollector_Collect()
 
     # -- Unload the Current SoundCahce -- #
     UI.ContentManager.UnloadSoundTuneCache()

@@ -16,8 +16,8 @@
 #
 import pygame
 import Core
-from Core import fx
-from Core import cntMng
+from Core import Fx
+from Core import CntMng
 from OneTrack.UnatachedDialog.MAIN.Screens import LoadFile as LoadFileScreen
 from OneTrack.UnatachedDialog.MAIN.Screens import SaveFile as SaveFileScreen
 from OneTrack.UnatachedDialog.MAIN.Screens import DialogOkOnly as DialogOkOnlyScreen
@@ -50,7 +50,7 @@ class Process():
         Core.wmm.WindowManagerSignal(self, 0)
 
         # Initialize Content Manager
-        self.DefaultContents = cntMng.ContentManager()
+        self.DefaultContents = CntMng.ContentManager()
         self.DefaultContents.SetSourceFolder("OneTrack/UnatachedDialog/")
         self.DefaultContents.SetFontPath("Data/fonts")
         self.DefaultContents.SetImageFolder("Data/img")
@@ -100,7 +100,7 @@ class Process():
         global RootDefaultContents
 
         if RootDefaultContents.Get_RegKey("/options/looking_glass", bool):
-            self.DISPLAY.blit(fx.Simple_BlurredRectangle(Core.MAIN.DISPLAY, (self.POSITION[0], self.POSITION[1], self.DISPLAY.get_width(), self.DISPLAY.get_height())), (0, 0))
+            self.DISPLAY.blit(Fx.Simple_BlurredRectangle(Core.MAIN.DISPLAY, (self.POSITION[0], self.POSITION[1], self.DISPLAY.get_width(), self.DISPLAY.get_height())), (0, 0))
 
         else:
             self.DISPLAY.fill(self.BGColor)

@@ -15,11 +15,11 @@
 #
 #
 import pygame
-from Core import utils
+from Core import Utils
 import Core
 import OneTrack.MAIN.Screens.Editor as Main
 from OneTrack.MAIN.Screens.Editor import InstanceVar as var
-from Core import fx
+from Core import Fx
 
 # -- Window's Controls -- #
 UnatachedDialogOpened = False

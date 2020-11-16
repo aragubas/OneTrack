@@ -15,7 +15,7 @@
 #
 #
 import pygame, re, Core
-from Core import utils
+from Core import Utils
 import OneTrack.MAIN as Main
 from OneTrack.MAIN import UI
 from OneTrack.MAIN.Screens import Editor

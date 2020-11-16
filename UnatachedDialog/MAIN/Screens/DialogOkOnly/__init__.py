@@ -17,7 +17,7 @@
 import Core
 import pygame
 from OneTrack.MAIN import UI
-from Core import utils
+from Core import Utils
 
 
 class Screen:

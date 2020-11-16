@@ -36,17 +36,19 @@ class Screen:
     def ReloadUI(self):
         self.WidgetController.Clear()
 
+        ButtonFalseSize = UI.ContentManager.GetFont_width("/Ubuntu_Bold.ttf", 14, "False")
+
         # Smooth Scroll Option
         self.WidgetController.Append(UI.Widget.Widget_Button(var.DefaultContent.Get_RegKey("/options/smooth_scroll"), 14, 5, 5, 0))
-        self.WidgetController.Append(UI.Widget.Widget_Label("/Ubuntu.ttf", "Smooth Scrolling", 14, (230, 230, 230), UI.ContentManager.GetFont_width("/Ubuntu_Bold.ttf", 14, "False") + 10, 5, 1))
+        self.WidgetController.Append(UI.Widget.Widget_Label("/Ubuntu.ttf", "Smooth Scrolling", 14, (230, 230, 230), ButtonFalseSize + 10, 5, 1))
 
         # Disable Dynamic Color Option
         self.WidgetController.Append(UI.Widget.Widget_Button(var.DefaultContent.Get_RegKey("/options/disabled_block_color"), 14, 5, 35, 2))
-        self.WidgetController.Append(UI.Widget.Widget_Label("/Ubuntu.ttf", "Dynamic Block Color", 14, (230, 230, 230), UI.ContentManager.GetFont_width("/Ubuntu_Bold.ttf", 14, "False") + 10, 35, 3))
+        self.WidgetController.Append(UI.Widget.Widget_Label("/Ubuntu.ttf", "Dynamic Block Color", 14, (230, 230, 230), ButtonFalseSize + 10, 35, 3))
 
         # Trackpointer Animation Option
         self.WidgetController.Append(UI.Widget.Widget_Button(var.DefaultContent.Get_RegKey("/options/trackpointer_animation"), 14, 5, 65, 4))
-        self.WidgetController.Append(UI.Widget.Widget_Label("/Ubuntu.ttf", "Animated Trackpointer", 14, (230, 230, 230), UI.ContentManager.GetFont_width("/Ubuntu_Bold.ttf", 14, "False") + 10, 65, 5))
+        self.WidgetController.Append(UI.Widget.Widget_Label("/Ubuntu.ttf", "Animated Trackpointer", 14, (230, 230, 230), ButtonFalseSize + 10, 65, 5))
 
         # Selected Theme
         self.WidgetController.Append(UI.Widget.Widget_Textbox("/Ubuntu.ttf", var.DefaultContent.Get_RegKey("/selected_theme"), 14, (230, 230, 230), 120, 95, 6))
@@ -65,11 +67,15 @@ class Screen:
 
         # PerTrack Scroll
         self.WidgetController.Append(UI.Widget.Widget_Button(var.DefaultContent.Get_RegKey("/options/per_track_scroll"), 14, 5, 185, 15))
-        self.WidgetController.Append(UI.Widget.Widget_Label("/Ubuntu.ttf", "Per-Track Scroll", 14, (230, 230, 230), UI.ContentManager.GetFont_width("/Ubuntu_Bold.ttf", 14, "False") + 10, 185, 16))
+        self.WidgetController.Append(UI.Widget.Widget_Label("/Ubuntu.ttf", "Per-Track Scroll", 14, (230, 230, 230), ButtonFalseSize + 10, 185, 16))
 
         # Looking Glass
         self.WidgetController.Append(UI.Widget.Widget_Button(var.DefaultContent.Get_RegKey("/options/looking_glass"), 14, 5, 215, 17))
-        self.WidgetController.Append(UI.Widget.Widget_Label("/Ubuntu.ttf", "Looking Glass Windows", 14, (230, 230, 230), UI.ContentManager.GetFont_width("/Ubuntu_Bold.ttf", 14, "False") + 10, 215, 18))
+        self.WidgetController.Append(UI.Widget.Widget_Label("/Ubuntu.ttf", "Looking Glass Windows", 14, (230, 230, 230), ButtonFalseSize + 10, 215, 18))
+
+        # Square Trackpointer
+        self.WidgetController.Append(UI.Widget.Widget_Button(var.DefaultContent.Get_RegKey("/options/block_trackpointer"), 14, 5, 245, 19))
+        self.WidgetController.Append(UI.Widget.Widget_Label("/Ubuntu.ttf", "Toggle Arrow/Block Trackpointer", 14, (230, 230, 230), ButtonFalseSize + 10, 245, 20))
 
     def Update(self):
         self.WidgetController.Update()
@@ -191,6 +197,15 @@ class Screen:
             else:
                 var.DefaultContent.Write_RegKey("/options/looking_glass", "True")
             self.ReloadUI()
+
+        # Block Trackpointer Option
+        if self.WidgetController.LastInteractionID == 19:
+            if var.DefaultContent.Get_RegKey("/options/block_trackpointer", bool):
+                var.DefaultContent.Write_RegKey("/options/block_trackpointer", "False")
+            else:
+                var.DefaultContent.Write_RegKey("/options/block_trackpointer", "True")
+            self.ReloadUI()
+
 
     def Draw(self, DISPLAY):
         self.WidgetController.Draw(DISPLAY)

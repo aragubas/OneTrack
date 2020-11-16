@@ -17,7 +17,7 @@
 import Core
 import pygame
 from OneTrack.MAIN import UI
-from Core import utils
+from Core import Utils
 
 class Screen:
     def __init__(self, pRoot_Process):
@@ -104,7 +104,7 @@ class Screen:
     def UpdateFileList(self):
         print("Save : Updating File List...")
         self.FolderList.ClearItems()
-        AllFilesInDir = utils.Directory_FilesList(Core.GetAppDataFromAppName("OneTrack"))
+        AllFilesInDir = Utils.Directory_FilesList(Core.GetAppDataFromAppName("OneTrack"))
 
         for file in AllFilesInDir:
             # Check if file is a valid OneTrack Project

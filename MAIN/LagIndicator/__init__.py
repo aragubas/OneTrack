@@ -19,7 +19,7 @@ from OneTrack import MAIN as Main
 from OneTrack.MAIN import UI
 
 from Core import MAIN
-from Core import utils
+from Core import Utils
 from Core import SHAPES
 
 LagIndicatorSurface = pygame.Surface
@@ -28,7 +28,7 @@ LagTextHeight = 0
 LagTextColor = ()
 LagEnabled = False
 Alpha = 0
-FlashingAnimation = utils.AnimationController
+FlashingAnimation = Utils.AnimationController
 
 def Initialize():
     global LagIndicatorSurface
@@ -42,7 +42,7 @@ def Initialize():
 
     LagIndicatorSurface = pygame.Surface((LagTextWidth + 4, LagTextHeight + 4))
     LagTextColor = (255, 0, 0)
-    FlashingAnimation = utils.AnimationController(5, 255, multiplierRestart=True)
+    FlashingAnimation = Utils.AnimationController(5, 255, multiplierRestart=True)
 
 def Draw(DISPLAY):
     global LagIndicatorSurface
@@ -53,7 +53,7 @@ def Draw(DISPLAY):
     if not LagEnabled:
         return
 
-    LagText = "LAG: " + utils.FormatNumber(MAIN.clock.get_fps(), 2)
+    LagText = "LAG: " + Utils.FormatNumber(MAIN.clock.get_fps(), 2)
     LagTextWidth = UI.ContentManager.GetFont_width("/PressStart2P.ttf", 14, LagText)
     LagTextHeight = UI.ContentManager.GetFont_height("/PressStart2P.ttf", 14, LagText)
 

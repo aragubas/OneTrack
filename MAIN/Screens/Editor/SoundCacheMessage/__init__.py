@@ -34,7 +34,7 @@ def Draw(DISPLAY):
 
     Area = pygame.Rect(DISPLAY.get_width() / 2 - UI.ContentManager.GetFont_width("/PressStart2P.ttf", 14, GeneratingCacheMessage) / 2, 75, UI.ContentManager.GetFont_width("/PressStart2P.ttf", 14, GeneratingCacheMessage) + 5, UI.ContentManager.GetFont_height("/PressStart2P.ttf", 14, GeneratingCacheMessage) + 5)
 
-    Core.fx.BlurredRectangle(DISPLAY, Area, 15, 150)
+    Core.Fx.BlurredRectangle(DISPLAY, Area, 15, 150)
     UI.ContentManager.FontRender(DISPLAY, "/PressStart2P.ttf", 14, GeneratingCacheMessage, (255, 255, 255), Area[0] + 5, Area[1] + 3)
 
 

@@ -19,11 +19,11 @@ from OneTrack import MAIN as Main
 from OneTrack.MAIN.Screens import Editor
 from OneTrack.MAIN.UI import Widget as Widget
 from OneTrack.MAIN.Screens.Editor import InstanceVar as var
-from Core import shape
-from Core import fx
-from Core import appData
-from Core import utils
-from Core import cntMng
+from Core import Shape
+from Core import Fx
+from Core import AppData
+from Core import Utils
+from Core import CntMng
 from math import log2, pow
 
 
@@ -52,7 +52,7 @@ def ThemesManager_LoadTheme(ThemeName):
         ThemeRawData = None
 
         if ThemeDataType == "tuple":
-            ThemeRawData = utils.Convert.Parse_Tuple(ThemeData)
+            ThemeRawData = Utils.Convert.Parse_Tuple(ThemeData)
 
         if ThemeDataType == "int":
             ThemeRawData = int(ThemeData)
@@ -77,7 +77,7 @@ def ThemesManager_AddProperty(PropertyName, PropertyValue):
 
 #endregion
 
-ContentManager = cntMng.ContentManager
+ContentManager = CntMng.ContentManager
 
 def StringToColorList(Input):
     ColorLst = Input.split(',')
@@ -95,7 +95,7 @@ def ColorListToString(Input):
 
 class EditableNumberView:
     def __init__(self, Rectangle, Value, FontSize=12):
-        self.Rectangle = utils.Convert.List_PygameRect(Rectangle)
+        self.Rectangle = Utils.Convert.List_PygameRect(Rectangle)
         self.Value = Value
         self.InactiveColor = False
         self.SelectedCharIndex = 0
@@ -273,12 +273,12 @@ class TrackBlock:
             self.FrequencyNumber.InactiveColor = False
             self.DurationNumber.InactiveColor = False
 
-        shape.Shape_Rectangle(self.BlockSurface, FrequencyBGColor, (self.FrequencyNumber.Rectangle[0] - 1, self.FrequencyNumber.Rectangle[1] - 2, self.FrequencyNumber.Rectangle[2] + 1, self.FrequencyNumber.Rectangle[3] + 1), 0, 0, 5, 0, 5, 0)
+        Shape.Shape_Rectangle(self.BlockSurface, FrequencyBGColor, (self.FrequencyNumber.Rectangle[0] - 1, self.FrequencyNumber.Rectangle[1] - 2, self.FrequencyNumber.Rectangle[2] + 1, self.FrequencyNumber.Rectangle[3] + 1), 0, 0, 5, 0, 5, 0)
         self.FrequencyNumber.Render(self.BlockSurface)
 
         # -- Render the Duration Region
         DurationX = (self.FrequencyNumber.Rectangle[0] + self.TextWidth)
-        shape.Shape_Rectangle(self.BlockSurface, DurationBGColor, (DurationX - 1, self.DurationNumber.Rectangle[1] - 2, self.TextWidth + 1, self.DurationNumber.Rectangle[3] + 1), 0, 0, 0, 5, 0, 5)
+        Shape.Shape_Rectangle(self.BlockSurface, DurationBGColor, (DurationX - 1, self.DurationNumber.Rectangle[1] - 2, self.TextWidth + 1, self.DurationNumber.Rectangle[3] + 1), 0, 0, 0, 5, 0, 5)
         self.DurationNumber.Render(self.BlockSurface)
 
         if not self.Active:
@@ -447,6 +447,8 @@ class TrackColection:
         self.LastScrollValue = 0
         self.ScrollAnimationScale = 5
         self.UpdateTrigger = False
+        self.TargetTrackpointerHeight = 0
+        self.TrackpointerHeight = 0
 
         if ZeroFillTracks:
             for _ in range(var.Rows):
@@ -503,17 +505,23 @@ class TrackColection:
                     self.UpdateTrackScroll(track)
 
             # -- Render the Track Pointer -- #
-            if track.Instance == self.SelectedTrack and self.Active or track.Instance == self.SelectedTrack and var.PlayMode:
-                if not var.DefaultContent.Get_RegKey("/options/trackpointer_animation", bool):
-                    TrackPointerHeight = track.Rectangle[3]
+            if self.Active and track.Instance == self.SelectedTrack and not var.PlayMode:
+                if var.DefaultContent.Get_RegKey("/options/trackpointer_animation", bool):
+                    self.TargetTrackpointerHeight = track.Rectangle[3] - (abs(self.Scroll - self.TargetScroll) / self.ScrollAnimationScale)
 
+                    if self.TrackpointerHeight > self.TargetTrackpointerHeight:
+                        self.TrackpointerHeight -= abs(self.TrackpointerHeight - self.TargetTrackpointerHeight) / self.ScrollAnimationScale
+
+                    if self.TrackpointerHeight < self.TargetTrackpointerHeight:
+                        self.TrackpointerHeight += abs(self.TrackpointerHeight - self.TargetTrackpointerHeight) / self.ScrollAnimationScale
                 else:
-                    if var.DefaultContent.Get_RegKey("/options/smooth_scroll", bool):
-                        TrackPointerHeight = track.Rectangle[3] - abs(self.Scroll - self.TargetScroll) / (self.ScrollAnimationScale / 3)
-                    else:
-                        TrackPointerHeight = track.Rectangle[3]
+                    self.TrackpointerHeight = track.Rectangle[3]
 
-                shape.Shape_Rectangle(DISPLAY, ThemesManager_GetProperty("TrackPointerColor"), (self.Rectangle[0] - 8, self.Scroll + track.Rectangle[1], 4, TrackPointerHeight))
+                # Render Trackpointer
+                if var.DefaultContent.Get_RegKey("/options/block_trackpointer", bool):
+                    var.DefaultContent.ImageRender(DISPLAY, "/pointer.png", self.Rectangle[0] - 12, self.Scroll + track.Rectangle[1], max(0, self.TrackpointerHeight - 1), track.Rectangle[3], SmoothScaling=True)
+                else:
+                    Shape.Shape_Rectangle(DISPLAY, ThemesManager_GetProperty("TrackPointerColor"), (abs(self.Rectangle[0] - 10), abs(self.Scroll + track.Rectangle[1]), max(0, self.TrackpointerHeight - 8), abs(track.Rectangle[3])))
 
             if self.Scroll + track.Rectangle[1] >= DISPLAY.get_height() + track.TextHeight or self.Scroll + track.Rectangle[1] <= -track.TextHeight:
                 continue
@@ -558,6 +566,10 @@ class TrackColection:
             self.UpdateTrigger = True
 
     def Update(self):
+        if not self.Active:
+            self.TargetTrackpointerHeight = 0
+            self.TrackpointerHeight = 0
+
         self.ScrollAnimationScale = var.DefaultContent.Get_RegKey("/options/animation_scale", int)
         i = -1
         for track in self.Tracks:
@@ -897,7 +909,7 @@ class TrackList:
             PatternName_BackgroundColor = ThemesManager_GetProperty("TrackSelectedPattern_PlayMode_BackgroundColor")
             PatternName_FontColor = ThemesManager_GetProperty("TrackSelectedPattern_PlayMode_FontColor")
 
-        shape.Shape_Rectangle(self.TracksSurface, PatternName_BackgroundColor, (0, 0, DISPLAY.get_width(), 18))
+        Shape.Shape_Rectangle(self.TracksSurface, PatternName_BackgroundColor, (0, 0, DISPLAY.get_width(), 18))
         ContentManager.FontRender(self.TracksSurface, "/PressStart2P.ttf", 12, SelectedPatternText, PatternName_FontColor, 5, 4)
 
         DISPLAY.blit(self.TracksSurface, (self.Rectangle[0], self.Rectangle[1]))
@@ -1002,7 +1014,7 @@ class TrackList:
 
 class Button:
     def __init__(self, Rectangle, ButtonText, TextSize):
-        self.Rectangle = utils.Convert.List_PygameRect(Rectangle)
+        self.Rectangle = Utils.Convert.List_PygameRect(Rectangle)
         self.ButtonText = ButtonText
         self.TextSize = TextSize
         self.ButtonState = 0  # 0 - INACTIVE, 1 - DOWN, 2 - UP
@@ -1097,7 +1109,7 @@ class Button:
         self.Surface.fill(self.BackgroundColor)
 
         # -- Indicator Bar -- #
-        shape.Shape_Rectangle(self.Surface, IndicatorColor, (0, 0, self.Rectangle[2], self.Rectangle[3]), 1, 0)
+        Shape.Shape_Rectangle(self.Surface, IndicatorColor, (0, 0, self.Rectangle[2], self.Rectangle[3]), 1, 0)
 
         # -- Text -- #
         X = self.Rectangle[2] / 2 - ContentManager.GetFont_width(self.FontFile, self.TextSize, self.ButtonText) / 2
@@ -1125,8 +1137,8 @@ class DropDownMenu:
             self.MenuItems.append(Button(pygame.Rect(self.Rectangle[0] + 5, self.Rectangle[1] + 5 * i + 32, 0, 0), item[0], 12))
 
     def Render(self, DISPLAY):
-        DISPLAY.blit(fx.Simple_BlurredRectangle(DISPLAY, self.Rectangle), self.Rectangle)
-        shape.Shape_Rectangle(DISPLAY, ThemesManager_GetProperty("DropDownMenu_BorderColor"), self.Rectangle, 1, 3)
+        DISPLAY.blit(Fx.Simple_BlurredRectangle(DISPLAY, self.Rectangle), self.Rectangle)
+        Shape.Shape_Rectangle(DISPLAY, ThemesManager_GetProperty("DropDownMenu_BorderColor"), self.Rectangle, 1, 3)
 
         for button in self.MenuItems:
             button.Render(DISPLAY)
@@ -1246,7 +1258,7 @@ class Window:
 
         BluredBackground = pygame.Surface((WindowBorderRectangle[2], WindowBorderRectangle[3]))
         BluredBackground.blit(DISPLAY, (0, 0), self.WindowRectangle)
-        fx.BlurredRectangle(BluredBackground, (0, 0, WindowBorderRectangle[2], WindowBorderRectangle[3]), 75, 100, (100, 100, 100))
+        Fx.BlurredRectangle(BluredBackground, (0, 0, WindowBorderRectangle[2], WindowBorderRectangle[3]), 75, 100, (100, 100, 100))
         self.WindowSurface.blit(BluredBackground, (0, 0))
 
         # -- Draw the Resize Block -- #
@@ -1254,11 +1266,11 @@ class Window:
             ContentManager.ImageRender(self.WindowSurface, "/window/resize.png", self.WindowRectangle[2] - 12, self.WindowRectangle[3], self.ResizeRectangle[2], self.ResizeRectangle[3], True)
 
         # -- Draw the window title -- #
-        fx.BlurredRectangle(self.WindowSurface, (0, 0, self.TitleBarRectangle[2], self.TitleBarRectangle[3] + 2), 5, 100, (100, 100, 100))
+        Fx.BlurredRectangle(self.WindowSurface, (0, 0, self.TitleBarRectangle[2], self.TitleBarRectangle[3] + 2), 5, 100, (100, 100, 100))
         ContentManager.FontRender(self.WindowSurface, "/Ubuntu_Thin.ttf", 20, self.Title, (250, 250, 255), self.TitleBarRectangle[2] / 2 - ContentManager.GetFont_width("/Ubuntu_Thin.ttf", 20, self.Title) / 2, -1)
 
         # -- Draw the Window Border -- #
-        shape.Shape_Rectangle(self.WindowSurface, (0, 0, 0), (0, 0, WindowBorderRectangle[2], WindowBorderRectangle[3]), 1)
+        Shape.Shape_Rectangle(self.WindowSurface, (0, 0, 0), (0, 0, WindowBorderRectangle[2], WindowBorderRectangle[3]), 1)
 
         DISPLAY.blit(self.WindowSurface, (self.WindowRectangle[0], self.WindowRectangle[1]))
 
@@ -1350,10 +1362,10 @@ class VerticalListWithDescription:
                 BorderColor = ThemesManager_GetProperty("VerticalListWithDescription_Selected_BorderColor")
 
             # -- Background -- #
-            shape.Shape_Rectangle(self.ListSurface, BackgroundColor, ItemRect)
+            Shape.Shape_Rectangle(self.ListSurface, BackgroundColor, ItemRect)
 
             # -- Indicator Bar -- #
-            shape.Shape_Rectangle(self.ListSurface, BorderColor, ItemRect, 1)
+            Shape.Shape_Rectangle(self.ListSurface, BorderColor, ItemRect, 1)
 
             # -- Render Item Name -- #
             ContentManager.FontRender(self.ListSurface, ThemesManager_GetProperty("VerticalListWithDescription_ItemNameFont"), 14, itemNam, ItemNameFontColor, TextsX + ItemRect[0], ItemRect[1] + 5)
@@ -1485,7 +1497,7 @@ class InputBox:
         self.colisionRect = pygame.Rect(self.rect[0] + self.ColisionOffsetX, self.rect[1] + self.ColisionOffsetY, self.rect[2], self.rect[3])
 
         # Blit the rect.
-        shape.Shape_Rectangle(screen, (15, 15, 15), self.rect)
+        Shape.Shape_Rectangle(screen, (15, 15, 15), self.rect)
 
         if self.text == self.DefaultText:
             ContentManager.FontRender(screen, ThemesManager_GetProperty("InputBox_FontFile"), self.FontSize, self.text, (140, 140, 140), self.rect[0], self.rect[1])
@@ -1494,6 +1506,6 @@ class InputBox:
                 ContentManager.FontRender(screen, ThemesManager_GetProperty("InputBox_FontFile"), self.FontSize, self.text, (240, 240, 240), self.rect[0], self.rect[1])
 
         if not self.active:
-            shape.Shape_Rectangle(screen, (255, 51, 102), (self.rect[0], self.rect[1] - 1, self.rect[2], 1))
+            Shape.Shape_Rectangle(screen, (255, 51, 102), (self.rect[0], self.rect[1] - 1, self.rect[2], 1))
         else:
-            shape.Shape_Rectangle(screen, (46, 196, 182), (self.rect[0], self.rect[1] - 1, self.rect[2], 1))
+            Shape.Shape_Rectangle(screen, (46, 196, 182), (self.rect[0], self.rect[1] - 1, self.rect[2], 1))
