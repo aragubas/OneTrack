@@ -1,0 +1,2 @@
+The folder OneTrack must go on the [Taiyou/Applications] folder.
+and the folder OneTrack_data must go on [Taiyou/Data/app/] folder.
