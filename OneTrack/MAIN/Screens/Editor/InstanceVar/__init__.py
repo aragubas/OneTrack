@@ -14,8 +14,9 @@
 #   limitations under the License.
 #
 #
-import pygame, Core
-from Core import CntMng
+import pygame
+from System import Core
+from System.Core import CntMng
 
 BPM = 150
 Rows = 32

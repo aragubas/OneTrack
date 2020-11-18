@@ -14,7 +14,8 @@
 #   limitations under the License.
 #
 #
-import pygame, Core
+import pygame
+from System import Core
 from OneTrack.MAIN import UI
 from OneTrack.MAIN.Screens.Editor import InstanceVar as var
 

@@ -14,16 +14,17 @@
 #   limitations under the License.
 #
 #
-import pygame, os, Core
+import pygame, os
+from System import Core
 from OneTrack import MAIN as Main
 from OneTrack.MAIN.Screens import Editor
 from OneTrack.MAIN.UI import Widget as Widget
 from OneTrack.MAIN.Screens.Editor import InstanceVar as var
-from Core import Shape
-from Core import Fx
-from Core import AppData
-from Core import Utils
-from Core import CntMng
+from System.Core import Shape
+from System.Core import Fx
+from System.Core import AppData
+from System.Core import Utils
+from System.Core import CntMng
 from math import log2, pow
 
 

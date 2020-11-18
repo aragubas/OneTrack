@@ -2,9 +2,9 @@
 OneTrack is a 2-Bit ish Tracker program made with [Taiyou Framework](https://github.com/aragubas/taiyou-framework)
 
 ### Instalation Guide
-First, download a fresh copy of [Taiyou Framework](https://github.com/aragubas/taiyou-framework)
-Extract to any path you like
-Then, download OneTrack and 
+Download the lasted build of OneTrack compacted inside a "Taiyou Application Packpage"
+And install it using Built-In Packpage Installer (present on new Taiyou Framework Version)
+
 ## Place it inside a folder called ``OneTrack`` on the Root Directory of Taiyou Framework
 **warning, this is case sensetive**
 Then, go to the file "Selected.txt" and type ``OneTrack``

@@ -14,8 +14,9 @@
 #   limitations under the License.
 #
 #
-import pygame, re, Core
-from Core import Utils
+import pygame, re
+from System import Core
+from System.Core import Utils
 import OneTrack.MAIN as Main
 from OneTrack.MAIN import UI
 from OneTrack.MAIN.Screens import Editor

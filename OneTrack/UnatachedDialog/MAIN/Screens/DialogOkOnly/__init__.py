@@ -14,10 +14,10 @@
 #   limitations under the License.
 #
 #
-import Core
+import System.Core as Core
 import pygame
 from OneTrack.MAIN import UI
-from Core import Utils
+from System.Core import Utils
 
 
 class Screen:

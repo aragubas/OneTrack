@@ -15,12 +15,12 @@
 #
 #
 import pygame, os, pickle, io
-import Core
-from Core import CntMng
-from Core import MAIN
-from Core import AppData
-from Core import Shape
-import Core as tge
+import System.Core as Core
+from System.Core import CntMng
+from System.Core import MAIN
+from System.Core import AppData
+from System.Core import Shape
+import System.Core as tge
 from OneTrack.MAIN import UI
 from OneTrack.MAIN import SaveFileDialog
 from OneTrack.MAIN import OpenFileDialog

@@ -15,9 +15,9 @@
 #
 #
 import pygame
-import Core
-from Core import Fx
-from Core import CntMng
+import System.Core as Core
+from System.Core import Fx
+from System.Core import CntMng
 from OneTrack.UnatachedDialog.MAIN.Screens import LoadFile as LoadFileScreen
 from OneTrack.UnatachedDialog.MAIN.Screens import SaveFile as SaveFileScreen
 from OneTrack.UnatachedDialog.MAIN.Screens import DialogOkOnly as DialogOkOnlyScreen
@@ -51,7 +51,7 @@ class Process():
 
         # Initialize Content Manager
         self.DefaultContents = CntMng.ContentManager()
-        self.DefaultContents.SetSourceFolder("OneTrack/UnatachedDialog/")
+        self.DefaultContents.SetSourceFolder("OneTrack_data/UnatachedDialog/")
         self.DefaultContents.SetFontPath("fonts")
         self.DefaultContents.SetImageFolder("img")
         self.DefaultContents.SetRegKeysPath("reg")

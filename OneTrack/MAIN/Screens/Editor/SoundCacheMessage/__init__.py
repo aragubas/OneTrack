@@ -15,7 +15,7 @@
 #
 #
 import pygame
-import Core
+import System.Core as Core
 from OneTrack.MAIN.Screens.Editor import InstanceVar as var
 from OneTrack import MAIN as Main
 from OneTrack.MAIN import UI

@@ -15,11 +15,11 @@
 #
 #
 import pygame, os, pickle, io, time, traceback
-import Core
-from Core import CntMng
-from Core import MAIN
-from Core import AppData
-import Core as tge
+import System.Core as Core
+from System.Core import CntMng
+from System.Core import MAIN
+from System.Core import AppData
+import System.Core as tge
 from OneTrack.MAIN.Screens import Editor
 from OneTrack.MAIN import LagIndicator
 from OneTrack.MAIN import UI
