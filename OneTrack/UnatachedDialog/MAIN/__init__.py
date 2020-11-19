@@ -41,6 +41,7 @@ class Process():
         self.TITLEBAR_TEXT = "OneTrack Dialog"
         self.WindowDragEnable = False
         self.WINDOW_OPACITY = 255
+        self.ICON = None
 
     def Initialize(self):
         global RootDefaultContents

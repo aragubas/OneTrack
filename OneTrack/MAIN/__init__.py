@@ -43,6 +43,7 @@ class Process():
         self.DeleteInstanceOnFirstCycle = False
         self.DialogPID = -1
         self.DefaultContents = CntMng.ContentManager()
+        self.ICON = None
 
     def CheckForAnotherInstances(self):
         # Check if there is not another instance of OneTrack
@@ -77,7 +78,6 @@ class Process():
 
         if self.CheckForAnotherInstances():
             return
-
 
         # Set the default content manager for the UI
         UI.ContentManager = self.DefaultContents
