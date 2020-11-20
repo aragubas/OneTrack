@@ -29,7 +29,7 @@ def Initialize():
     Surface = pygame.Surface((680, 90))
 
     WidgetCollection = UI.Widget.Widget_Controller((0, 5, 680, 90))
-    WidgetCollection.Append(UI.Widget.Widget_Label("/PressStart2P.ttf", "Current Octave: 7", 12, (230, 230, 230), 2, 5, 0))
+    WidgetCollection.Append(UI.Widget.Widget_Label("/PressStart2P.ttf", "Current Octave: null", 12, (230, 230, 230), 2, 5, 0))
     WidgetCollection.Append(UI.Widget.Widget_PianoKeys(2, 24, 0))
 
     obj = WidgetCollection.GetWidget(0)

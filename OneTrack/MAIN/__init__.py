@@ -79,6 +79,8 @@ class Process():
         if self.CheckForAnotherInstances():
             return
 
+        self.ICON = self.DefaultContents.GetImage("/icon.png")
+
         # Set the default content manager for the UI
         UI.ContentManager = self.DefaultContents
         var.DefaultContent = self.DefaultContents

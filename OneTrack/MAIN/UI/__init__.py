@@ -68,9 +68,14 @@ def ThemesManager_LoadTheme(ThemeName):
     print("OneTrack : Theme Loaded sucefully")
 
 def ThemesManager_GetProperty(pPropertyName):
-    Index = ThemesList_PropertyNames.index(pPropertyName)
+    try:
+        Index = ThemesList_PropertyNames.index(pPropertyName)
 
-    return ThemesList_Properties[Index]
+        return ThemesList_Properties[Index]
+    except Exception:
+        print("Error while loading property on the current theme.\nDefaulting to Fallback Theme...")
+        var.DefaultContent.Write_RegKey("/selected_theme", "default")
+        ThemesManager_LoadTheme("default")
 
 def ThemesManager_AddProperty(PropertyName, PropertyValue):
     ThemesList_Properties.append(PropertyValue)
@@ -92,7 +97,6 @@ def StringToColorList(Input):
 
 def ColorListToString(Input):
     return ''.join((Input[0], ",", Input[1], ",", Input[2], ",", Input[3]))
-
 
 class EditableNumberView:
     def __init__(self, Rectangle, Value, FontSize=12):
