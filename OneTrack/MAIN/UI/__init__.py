@@ -68,14 +68,9 @@ def ThemesManager_LoadTheme(ThemeName):
     print("OneTrack : Theme Loaded sucefully")
 
 def ThemesManager_GetProperty(pPropertyName):
-    try:
-        Index = ThemesList_PropertyNames.index(pPropertyName)
+    Index = ThemesList_PropertyNames.index(pPropertyName)
 
-        return ThemesList_Properties[Index]
-    except Exception:
-        print("Error while loading property on the current theme.\nDefaulting to Fallback Theme...")
-        var.DefaultContent.Write_RegKey("/selected_theme", "default")
-        ThemesManager_LoadTheme("default")
+    return ThemesList_Properties[Index]
 
 def ThemesManager_AddProperty(PropertyName, PropertyValue):
     ThemesList_Properties.append(PropertyValue)
@@ -97,6 +92,7 @@ def StringToColorList(Input):
 
 def ColorListToString(Input):
     return ''.join((Input[0], ",", Input[1], ",", Input[2], ",", Input[3]))
+
 
 class EditableNumberView:
     def __init__(self, Rectangle, Value, FontSize=12):
@@ -951,6 +947,7 @@ class TrackList:
                 for track in patterns.Tracks:
                     CollectionLastSinewaveForm = "square"
                     CollectionLastDuration = 20
+
                     for collactions in track.Tracks:
                         try:
                             collactions.SurfaceUpdateTrigger = True
@@ -958,10 +955,15 @@ class TrackList:
                             SinewaveType = CollectionLastSinewaveForm
 
                             if collactions.TrackData[1].startswith("W"):
+                                print("    -Waveform Command Received")
+
                                 WaveformCommand = collactions.TrackData[1][1:]
                                 CollectionLastSinewaveForm = GetWaveTypeByWaveCode(WaveformCommand)
 
+                                print("    -Waveform has been set to: " + str(CollectionLastSinewaveForm))
+
                             if collactions.TrackData[1].startswith("D"):
+                                print("    -Duration Command Received")
                                 SplitedAgrs = list(collactions.TrackData[1])
                                 DurationTime = ""
 
@@ -970,19 +972,23 @@ class TrackList:
                                         DurationTime += arg
                                 CollectionLastDuration = int(DurationTime.replace("-", ""))
 
+                                print("    -Duration has been set to: " + str(CollectionLastDuration))
 
                             try:
                                 Freqn = int(collactions.TrackData[0])
                             except:
                                 Freqn = 0
+                            print("    -Frequency has been set to: " + str(Freqn))
 
                             try:
                                 SoundDuration = int(collactions.TrackData[1]) / var.BPM
                             except:
                                 SoundDuration = CollectionLastDuration / var.BPM
+                            print("    -Sound Duration has been set to: " + str(SoundDuration))
 
+                            print("Cache generating function started.")
                             ContentManager.GetTune_FromTuneCache(Freqn, SoundDuration, 44000, SinewaveType)
-
+                            print("Cache generating function ended.")
 
                         except ValueError:
                             continue
@@ -1036,8 +1042,9 @@ class Button:
         self.Surface = pygame.Surface((Rectangle[2], Rectangle[3]))
         self.ColisionXOffset = 0
         self.ColisionYOffset = 0
+        self.ClearState = False
 
-    def Update(self, event):
+    def EventUpdate(self, event):
         # -- Set the Custom Colision Rectangle -- #
         self.ColisionRectangle = pygame.Rect(self.ColisionXOffset + self.Rectangle[0], self.ColisionYOffset + self.Rectangle[1], self.Rectangle[2], self.Rectangle[3])
 
@@ -1051,6 +1058,7 @@ class Button:
                 if self.ButtonDowed:
                     self.ButtonState = 2
                     self.ButtonDowed = False
+                    self.ClearState = True
 
             if event.type == pygame.MOUSEMOTION:  # Change the Cursor
                 if self.ColisionRectangle.collidepoint(pygame.mouse.get_pos()):
@@ -1064,6 +1072,11 @@ class Button:
             self.ButtonState = 0
             if self.CursorSettedToggle:
                 self.CursorSettedToggle = False
+
+    def Update(self):
+        if self.ClearState:
+            self.ClearState = False
+            self.ButtonState = 0
 
     def Set_X(self, Value):
         self.Rectangle[0] = Value
@@ -1125,9 +1138,6 @@ class Button:
         # -- Draw the Button -- #
         DISPLAY.blit(self.Surface, (self.Rectangle[0], self.Rectangle[1]))
 
-        if self.ButtonState == 2:
-            self.ButtonState = 0
-
 
 class DropDownMenu:
     def __init__(self, pPosition, pItemsList):
@@ -1157,6 +1167,8 @@ class DropDownMenu:
             if button.ButtonState == 2:
                 self.ItemsList[i][1]()
 
+            button.Update()
+
         if not self.SizeUpdated:
             self.SizeUpdated = True
             self.UpdateSize()
@@ -1180,7 +1192,7 @@ class DropDownMenu:
 
     def EventUpdate(self, event):
         for item in self.MenuItems:
-            item.Update(event)
+            item.EventUpdate(event)
 
 class ButtonsBar:
     def __init__(self, Rectangle, ButtonsList):
@@ -1210,9 +1222,11 @@ class ButtonsBar:
             if button.ButtonState == 2:
                 self.ClickedButtonIndex = i
 
+            button.Update()
+
     def EventUpdate(self, event):
         for button in self.ButtonsList:
-            button.Update(event)
+            button.EventUpdate(event)
 
 
 class Window:

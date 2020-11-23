@@ -17,6 +17,7 @@
 import pygame
 from OneTrack import MAIN as Main
 from OneTrack.MAIN import UI
+from Applications.OneTrack.MAIN.Screens.Editor import InstanceVar as var
 
 from System.Core import MAIN
 from System.Core import Utils
@@ -53,12 +54,15 @@ def Draw(DISPLAY):
     if not LagEnabled:
         return
 
-    LagText = "LAG: " + Utils.FormatNumber(MAIN.clock.get_fps(), 2)
+    if var.ProcessReference is None:
+        return
+
+    LagText = "LAG: " + Utils.FormatNumber(var.ProcessReference.Timer.get_fps(), 2)
     LagTextWidth = UI.ContentManager.GetFont_width("/PressStart2P.ttf", 14, LagText)
     LagTextHeight = UI.ContentManager.GetFont_height("/PressStart2P.ttf", 14, LagText)
 
     SHAPES.Shape_Rectangle(DISPLAY, (0, 0, 0), (5 - 2, 5 - 2, LagTextWidth + 4, LagTextHeight + 4), 0, 3)
-    UI.ContentManager.FontRender(DISPLAY, "/PressStart2P.ttf", 14, LagText, LagTextColor, 5, 5)
+    UI.ContentManager.FontRender(DISPLAY, "/PressStart2P.ttf", 14, LagText, LagTextColor, 5, 5, 24, 24, S)
 
 def Update():
     global Alpha

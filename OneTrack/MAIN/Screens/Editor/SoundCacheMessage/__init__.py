@@ -22,20 +22,29 @@ from OneTrack.MAIN import UI
 
 
 MessageSeenDelay = 0
+LoadingAnimationFrame = 0
 
 def Initialize():
     pass
 
 def Draw(DISPLAY):
+    global LoadingAnimationFrame
     if not var.GenerateSoundCache and not var.GenerateSoundCache_MessageSeen:
         return
 
     GeneratingCacheMessage = var.ProcessReference.DefaultContents.Get_RegKey("/strings/generating_cache")
 
-    Area = pygame.Rect(DISPLAY.get_width() / 2 - UI.ContentManager.GetFont_width("/PressStart2P.ttf", 14, GeneratingCacheMessage) / 2, 75, UI.ContentManager.GetFont_width("/PressStart2P.ttf", 14, GeneratingCacheMessage) + 5, UI.ContentManager.GetFont_height("/PressStart2P.ttf", 14, GeneratingCacheMessage) + 5)
+    Area = pygame.Rect(DISPLAY.get_width() / 2 - (UI.ContentManager.GetFont_width("/PressStart2P.ttf", 14, GeneratingCacheMessage) + 27) / 2, 75, UI.ContentManager.GetFont_width("/PressStart2P.ttf", 14, GeneratingCacheMessage) + 27, UI.ContentManager.GetFont_height("/PressStart2P.ttf", 14, GeneratingCacheMessage) + 5)
 
     Core.Fx.BlurredRectangle(DISPLAY, Area, 15, 150)
-    UI.ContentManager.FontRender(DISPLAY, "/PressStart2P.ttf", 14, GeneratingCacheMessage, (255, 255, 255), Area[0] + 5, Area[1] + 3)
+    UI.ContentManager.FontRender(DISPLAY, "/PressStart2P.ttf", 14, GeneratingCacheMessage, (255, 255, 255), Area[0] + Area[3] - 4 + 5, Area[1] + 3)
+
+    # Draw the Loading Wax
+    LoadingAnimationFrame += 1
+    if LoadingAnimationFrame >= 34:
+        LoadingAnimationFrame = 1
+
+    UI.ContentManager.ImageRender(DISPLAY, "/loading_anim/cursor_{0}.png".format(LoadingAnimationFrame), Area[0] + 2, Area[1] + 2, Area[3] - 4, Area[3] - 4, True)
 
 
 def Update():

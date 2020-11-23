@@ -53,17 +53,3 @@ VerticalListWithDescription_ItemDescriptionFont;str;/Ubuntu.ttf
 Dialog_BG_Color;tuple;(20, 20, 38)
 
 
-### Bottom Piano ###
-BottomPiano_BackgroundColor;tuple;(5, 5, 5, 255)
-#- Normal Notes
-BottomPiano_DefaultNoteBackgroundColor;tuple;(200, 200, 200, 255)
-BottomPiano_DefaultNoteTextColor;tuple;(5, 5, 5, 255)
-#- High Note
-BottomPiano_HighNoteBackgroundColor;tuple;(10, 10, 10, 255)
-BottomPiano_HighNoteTextColor;tuple;(200, 200, 200, 255)
-#- Selected Note
-
-BottomPiano_SelectedNoteBackgroundColor;tuple;(230, 230, 230, 255)
-BottomPiano_SelectedNoteTextColor;tuple;(25, 25, 25, 255)
-
-

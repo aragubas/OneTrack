@@ -23,15 +23,15 @@ from OneTrack.UnatachedDialog.MAIN.Screens import SaveFile as SaveFileScreen
 from OneTrack.UnatachedDialog.MAIN.Screens import DialogOkOnly as DialogOkOnlyScreen
 from OneTrack.UnatachedDialog.MAIN.Screens import Settings as DialogSettingsScreen
 from OneTrack.MAIN import UI
-RootDefaultContents = None
 
 class Process():
-    def __init__(self, pPID, pProcessName, pROOT_MODULE, pInitArgs):
+    def __init__(self, pPID, pProcessName, pROOT_MODULE, pInitArgs, pProcessIndex):
         self.PID = pPID
         self.NAME = pProcessName
         self.ROOT_MODULE = pROOT_MODULE
         self.IS_GRAPHICAL = True
         self.INIT_ARGS = pInitArgs
+        self.ProcessIndex = pProcessIndex
         self.DISPLAY = pygame.Surface((300, 100))
         self.LAST_SURFACE = self.DISPLAY.copy()
         self.APPLICATION_HAS_FOCUS = True
@@ -39,14 +39,18 @@ class Process():
         self.FULLSCREEN = False
         self.TITLEBAR_RECTANGLE = pygame.Rect(self.POSITION[0], self.POSITION[1], self.DISPLAY.get_width(), 15)
         self.TITLEBAR_TEXT = "OneTrack Dialog"
-        self.WindowDragEnable = False
-        self.WINDOW_OPACITY = 255
         self.ICON = None
+        self.Running = True
+        self.Timer = pygame.time.Clock()
+        self.WINDOW_DRAG_ENABLED = False
+        self.Initialized = False
+
+        Core.RegisterToCoreAccess(self)
+
+        self.Initialize()
 
     def Initialize(self):
-        global RootDefaultContents
-
-        RootDefaultContents = None
+        self.RootDefaultContents = None
         # Focus to this window
         Core.wmm.WindowManagerSignal(self, 0)
 
@@ -78,29 +82,41 @@ class Process():
         if self.OperationType == "OPEN":
             self.SelectedModuleMode = LoadFileScreen.Screen(self)
 
-        if self.OperationType == "SAVE":
+        elif self.OperationType == "SAVE":
             self.SelectedModuleMode = SaveFileScreen.Screen(self)
 
-        if self.OperationType == "DIALOG_OK":
+        elif self.OperationType == "DIALOG_OK":
             self.SelectedModuleMode = DialogOkOnlyScreen.Screen(self)
 
-        if self.OperationType == "DIALOG_SETTINGS":
+        elif self.OperationType == "DIALOG_SETTINGS":
             self.SelectedModuleMode = DialogSettingsScreen.Screen(self)
+
+        else:
+            raise Exception("Invalid Operation Type")
 
         self.POSITION = (Core.MAIN.ScreenWidth / 2 - self.DISPLAY.get_width() / 2, Core.MAIN.ScreenHeight / 2 - self.DISPLAY.get_height() / 2)
 
-        RootDefaultContents = self.RootProcess.DefaultContents
+        self.RootDefaultContents = self.RootProcess.DefaultContents
+        if self.RootDefaultContents is None:
+            raise Exception("Fatal Error")
+        print("A ceira é quanto?\nA ceira é {0}".format(self.RootDefaultContents))
+
         try:
             self.BGColor = UI.ThemesManager_GetProperty("Dialog_BG_Color")
-
 
         except:
             self.BGColor = (16, 14, 18)
 
-    def Draw(self):
-        global RootDefaultContents
+        self.Initialized = True
 
-        if RootDefaultContents.Get_RegKey("/options/looking_glass", bool):
+    def Draw(self):
+        if not self.Initialized:
+            self.DISPLAY.fill(self.BGColor)
+
+            self.DefaultContents.FontRender(self.DISPLAY, "/Ubuntu.ttf", 18, "Loading...", (255, 255, 255), 5, 5)
+            return self.DISPLAY
+
+        if self.RootDefaultContents.Get_RegKey("/options/looking_glass", bool):
             self.DISPLAY.blit(Fx.Simple_BlurredRectangle(Core.MAIN.DISPLAY, (self.POSITION[0], self.POSITION[1], self.DISPLAY.get_width(), self.DISPLAY.get_height())), (0, 0))
 
         else:
@@ -111,13 +127,21 @@ class Process():
         return self.DISPLAY
 
     def Update(self):
-        self.SelectedModuleMode.Update()
+        while self.Running:
+            if not self.Initialized:
+                continue
+
+            self.Timer.tick(100)
+            self.SelectedModuleMode.Update()
 
     def CloseDialog(self):
         Core.wmm.WindowManagerSignal(self, 1)
         Core.wmm.WindowManagerSignal(self.RootProcess, 0)
 
     def EventUpdate(self, event):
+        if not self.Initialized:
+            return
+
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_ESCAPE:
                 self.CloseDialog()

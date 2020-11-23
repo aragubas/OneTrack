@@ -90,7 +90,6 @@ def SaveMusicData(FilePath):
 
     ProjectDataFile = ""
 
-    # Write the DataFile Header
     ProjectDataFile += "#region,METADATA\n" + \
                        "BPM:" + str(var.BPM) + "\n" + \
                        "Rows:" + str(var.Rows) + "\n" +  \

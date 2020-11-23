@@ -26,7 +26,7 @@ from OneTrack.MAIN import UI
 from OneTrack.MAIN.Screens.Editor import InstanceVar as var
 
 class Process():
-    def __init__(self, pPID, pProcessName, pROOT_MODULE, pInitArgs):
+    def __init__(self, pPID, pProcessName, pROOT_MODULE, pInitArgs, pProcessIndex):
         self.PID = pPID
         self.NAME = pProcessName
         self.ROOT_MODULE = pROOT_MODULE
@@ -41,16 +41,25 @@ class Process():
         self.TITLEBAR_TEXT = "OneTrack"
         self.WindowDragEnable = False
         self.DeleteInstanceOnFirstCycle = False
+        self.Running = True
+        self.Timer = pygame.time.Clock()
         self.DialogPID = -1
         self.DefaultContents = CntMng.ContentManager()
         self.ICON = None
+        self.WINDOW_DRAG_ENABLED = False
+        self.ProcessIndex = pProcessIndex
+        self.FPS = 60
+
+        self.Initialize()
+
+        Core.RegisterToCoreAccess(self)
 
     def CheckForAnotherInstances(self):
         # Check if there is not another instance of OneTrack
-        for process in Core.MAIN.ProcessList:
+        for process in Core.ProcessAccess:
             if process.PID != self.PID:
                 if process.IS_GRAPHICAL and process.FULLSCREEN == self.FULLSCREEN:
-                    if process.EXECUTABLE_PATH == self.EXECUTABLE_PATH:
+                    if process.TITLEBAR_TEXT == self.TITLEBAR_TEXT:
                         # Another instance detected
                         self.DialogPID = self.GreyDialog("Multiple instance detection", "OneTrack does not support multiple instances.\n\nOnly 1 instance of OneTrack is allowed.", "warn")
                         self.DeleteInstanceOnFirstCycle = True
@@ -115,15 +124,23 @@ class Process():
         return self.DISPLAY
 
     def Update(self):
-        if self.DeleteInstanceOnFirstCycle and not self.DialogPID in Core.MAIN.ProcessList_PID:
-            Core.MAIN.KillProcessByPID(self.PID)
+        while self.Running:
+            self.Timer.tick(self.FPS)
 
-        if not self.APPLICATION_HAS_FOCUS and var.AwaysUpdate is False:
-            return
+            if self.DeleteInstanceOnFirstCycle and self.DialogPID not in Core.MAIN.ProcessList_PID:
+                Core.MAIN.KillProcessByPID(self.PID)
 
-        self.CurrentScreenToUpdate.Update()
+            if not self.APPLICATION_HAS_FOCUS and var.AwaysUpdate is False:
+                continue
 
-        LagIndicator.Update()
+            self.CurrentScreenToUpdate.Update()
+
+            LagIndicator.Update()
+
+            if var.PlayMode:
+                self.FPS = 60
+            else:
+                self.FPS = 75
 
     def EventUpdate(self, event):
         self.CurrentScreenToUpdate.EventUpdate(event)
@@ -134,3 +151,10 @@ class Process():
                 UI.ContentManager.ReloadRegistry()
                 UI.ThemesManager_LoadTheme(self.DefaultContents.Get_RegKey("/selected_theme"))
 
+    def SIG_KILL(self):
+        self.Running = False
+        self.DefaultContents.StopAllChannels()
+        self.DefaultContents.StopLongOperations = True
+        del self.CurrentScreenToUpdate
+        del self
+        print("OneTrack : ProcessKillSwitch received.")

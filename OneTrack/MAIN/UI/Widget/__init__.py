@@ -214,7 +214,7 @@ class Widget_PianoKeys:
             self.Surface = pygame.Surface((self.Rectangle[2], self.Rectangle[3]))
 
         # -- Render Background -- #
-        self.Surface.fill(UI.ThemesManager_GetProperty("BottomPiano_BackgroundColor"))
+        self.Surface.fill((190, 190, 190))
         Shape.Shape_Rectangle(self.Surface, (100, 100, 100), (0, 0, self.Rectangle[2], self.Rectangle[3]), 5)
 
         for i in range(12):
@@ -225,8 +225,8 @@ class Widget_PianoKeys:
             Height = 25
             X = i * (Width + 2)
             Y = self.Rectangle[3] - Height
-            BackgroundColor = UI.ThemesManager_GetProperty("BottomPiano_DefaultNoteBackgroundColor")
-            TextColor = UI.ThemesManager_GetProperty("BottomPiano_DefaultNoteTextColor")
+            BackgroundColor = (100, 105, 155)
+            TextColor = (0, 5, 100)
             IsHighNote = False
 
             if "#" in NoteLabel:
@@ -235,15 +235,15 @@ class Widget_PianoKeys:
                 Width = 35
                 X -= 2
                 Y = 0
-                BackgroundColor = UI.ThemesManager_GetProperty("BottomPiano_HighNoteBackgroundColor")
-                TextColor = UI.ThemesManager_GetProperty("BottomPiano_HighNoteTextColor")
+                BackgroundColor = (10, 15, 25)
+                TextColor = (200, 205, 255)
                 IsHighNote = True
 
             TextX = X + (Width / 2 - UI.ContentManager.GetFont_width("/PressStart2P.ttf", 12, NoteLabel) / 2)
 
             if self.LastNote == i:
-                BackgroundColor = UI.ThemesManager_GetProperty("BottomPiano_SelectedNoteBackgroundColor")
-                TextColor = UI.ThemesManager_GetProperty("BottomPiano_SelectedNoteTextColor")
+                BackgroundColor = (200, 205, 255)
+                TextColor = (0, 0, 0)
 
             if not IsHighNote:
                 Shape.Shape_Rectangle(self.Surface, BackgroundColor, (X, Y, Width, Height), 0, 0, 5, 5)
@@ -255,10 +255,41 @@ class Widget_PianoKeys:
         DISPLAY.blit(self.Surface, (self.Rectangle[0], self.Rectangle[1]))
 
     def GetNote_ByIndex(self, i):
-        NoteByIndexFile = "/note_by_index/{0}".format(str(i))
+        if i == 0:
+            return "C"
 
-        if UI.ContentManager.KeyExists(NoteByIndexFile):
-            return UI.ContentManager.Get_RegKey(NoteByIndexFile, str)
+        elif i == 1:
+            return "C#"
+
+        elif i == 2:
+            return "D"
+
+        elif i == 3:
+            return "D#"
+
+        elif i == 4:
+            return "E"
+
+        elif i == 5:
+            return "F"
+
+        elif i == 6:
+            return "F#"
+
+        elif i == 7:
+            return "G"
+
+        elif i == 8:
+            return "G#"
+
+        elif i == 9:
+            return "A"
+
+        elif i == 10:
+            return "A#"
+
+        elif i == 11:
+            return "B"
 
     def Update(self):
         pass
@@ -268,10 +299,53 @@ class Widget_PianoKeys:
             self.LastNote = -1
 
         if event.type == pygame.KEYDOWN:
-            NoteByKeyPath = "/index_by_key/{0}".format(str(event.key))
+            # -- Note C -- #
+            if event.key == pygame.K_z:
+                self.LastNote = 0
 
-            if UI.ContentManager.KeyExists(NoteByKeyPath):
-                self.LastNote = UI.ContentManager.Get_RegKey(NoteByKeyPath, int)
+            # -- Note C# -- #
+            if event.key == pygame.K_s:
+                self.LastNote = 1
+
+            # -- Note D -- #
+            if event.key == pygame.K_x:
+                self.LastNote = 2
+
+            # -- Note D# -- #
+            if event.key == pygame.K_d:
+                self.LastNote = 3
+
+            # -- Note E -- #
+            if event.key == pygame.K_c:
+                self.LastNote = 4
+
+            # -- Note F -- #
+            if event.key == pygame.K_v:
+                self.LastNote = 5
+
+            # -- Note F# -- #
+            if event.key == pygame.K_g:
+                self.LastNote = 6
+
+            # -- Note G -- #
+            if event.key == pygame.K_b:
+                self.LastNote = 7
+
+            # -- Note G# -- #
+            if event.key == pygame.K_h:
+                self.LastNote = 8
+
+            # -- Note A -- #
+            if event.key == pygame.K_n:
+                self.LastNote = 9
+
+            # -- Note A# -- #
+            if event.key == pygame.K_j:
+                self.LastNote = 10
+
+            # -- Note B -- #
+            if event.key == pygame.K_m:
+                self.LastNote = 11
 
 class Widget_Button:
     def __init__(self, Text, FontSize, X, Y, WidgetID):
@@ -331,7 +405,6 @@ class Widget_Button:
 
         if not self.Active:
             self.IndicatorColor = UI.ThemesManager_GetProperty("Button_Inactive_IndicatorColor")
-
             return
 
         if self.ButtonState == 0:
