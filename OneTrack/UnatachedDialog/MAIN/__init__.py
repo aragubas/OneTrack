@@ -24,32 +24,11 @@ from OneTrack.UnatachedDialog.MAIN.Screens import DialogOkOnly as DialogOkOnlySc
 from OneTrack.UnatachedDialog.MAIN.Screens import Settings as DialogSettingsScreen
 from OneTrack.MAIN import UI
 
-class Process():
-    def __init__(self, pPID, pProcessName, pROOT_MODULE, pInitArgs, pProcessIndex):
-        self.PID = pPID
-        self.NAME = pProcessName
-        self.ROOT_MODULE = pROOT_MODULE
-        self.IS_GRAPHICAL = True
-        self.INIT_ARGS = pInitArgs
-        self.ProcessIndex = pProcessIndex
-        self.DISPLAY = pygame.Surface((300, 100))
-        self.LAST_SURFACE = self.DISPLAY.copy()
-        self.APPLICATION_HAS_FOCUS = True
-        self.POSITION = (50, 50)
-        self.FULLSCREEN = False
-        self.TITLEBAR_RECTANGLE = pygame.Rect(self.POSITION[0], self.POSITION[1], self.DISPLAY.get_width(), 15)
-        self.TITLEBAR_TEXT = "OneTrack Dialog"
-        self.ICON = None
-        self.Running = True
-        self.Timer = pygame.time.Clock()
-        self.WINDOW_DRAG_ENABLED = False
-        self.Initialized = False
-
-        Core.RegisterToCoreAccess(self)
-
-        self.Initialize()
-
+class Process(Core.Process):
     def Initialize(self):
+        print("Initialize OneTrack Dialog")
+        self.SetVideoMode(False, (400, 320))
+        self.SetTitle("OneTrack Dialog")
         self.RootDefaultContents = None
         # Focus to this window
         Core.wmm.WindowManagerSignal(self, 0)
@@ -99,7 +78,6 @@ class Process():
         self.RootDefaultContents = self.RootProcess.DefaultContents
         if self.RootDefaultContents is None:
             raise Exception("Fatal Error")
-        print("A ceira é quanto?\nA ceira é {0}".format(self.RootDefaultContents))
 
         try:
             self.BGColor = UI.ThemesManager_GetProperty("Dialog_BG_Color")
@@ -108,6 +86,8 @@ class Process():
             self.BGColor = (16, 14, 18)
 
         self.Initialized = True
+        self.Timer = pygame.time.Clock()
+        print("OneTrack Dialog initialized.")
 
     def Draw(self):
         if not self.Initialized:

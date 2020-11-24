@@ -25,35 +25,7 @@ from OneTrack.MAIN import LagIndicator
 from OneTrack.MAIN import UI
 from OneTrack.MAIN.Screens.Editor import InstanceVar as var
 
-class Process():
-    def __init__(self, pPID, pProcessName, pROOT_MODULE, pInitArgs, pProcessIndex):
-        self.PID = pPID
-        self.NAME = pProcessName
-        self.ROOT_MODULE = pROOT_MODULE
-        self.IS_GRAPHICAL = True
-        self.INIT_ARGS = pInitArgs
-        self.DISPLAY = pygame.Surface((Core.MAIN.ScreenWidth, Core.MAIN.ScreenHeight))
-        self.LAST_SURFACE = self.DISPLAY.copy()
-        self.APPLICATION_HAS_FOCUS = True
-        self.POSITION = (0, 0)
-        self.FULLSCREEN = True
-        self.TITLEBAR_RECTANGLE = pygame.Rect(self.POSITION[0], self.POSITION[1], self.DISPLAY.get_width(), 15)
-        self.TITLEBAR_TEXT = "OneTrack"
-        self.WindowDragEnable = False
-        self.DeleteInstanceOnFirstCycle = False
-        self.Running = True
-        self.Timer = pygame.time.Clock()
-        self.DialogPID = -1
-        self.DefaultContents = CntMng.ContentManager()
-        self.ICON = None
-        self.WINDOW_DRAG_ENABLED = False
-        self.ProcessIndex = pProcessIndex
-        self.FPS = 60
-
-        self.Initialize()
-
-        Core.RegisterToCoreAccess(self)
-
+class Process(Core.Process):
     def CheckForAnotherInstances(self):
         # Check if there is not another instance of OneTrack
         for process in Core.ProcessAccess:
@@ -67,14 +39,19 @@ class Process():
         return False
 
     def Initialize(self):
+        self.SetVideoMode(True, None, True)
+        self.SetTitle("OneTrack")
+        self.DeleteInstanceOnFirstCycle = False
+        self.Timer = pygame.time.Clock()
+        self.DialogPID = -1
+        self.FPS = 60
+        self.CurrentScreenToUpdate = Editor
         var.ProcessReference = self
 
         print("Initializing {0}...".format(self.TITLEBAR_TEXT))
 
-        # Initialize Variables
-        self.CurrentScreenToUpdate = Editor
-
         # Initialize Content Manager
+        self.DefaultContents = CntMng.ContentManager()
         self.DefaultContents.SetSourceFolder("OneTrack_data/")
         self.DefaultContents.SetFontPath("fonts")
         self.DefaultContents.SetImageFolder("img")
@@ -94,6 +71,8 @@ class Process():
         UI.ContentManager = self.DefaultContents
         var.DefaultContent = self.DefaultContents
 
+        # Initialize Variables
+
         # Load UI Theme
         try:
             UI.ThemesManager_LoadTheme(self.DefaultContents.Get_RegKey("/selected_theme"))
@@ -105,7 +84,7 @@ class Process():
 
         MAIN.ReceiveCommand(0, 60)
 
-        self.TITLEBAR_TEXT = "OneTrack v{0}".format(self.DefaultContents.Get_RegKey("/version"))
+        self.SetTitle("OneTrack v{0}".format(self.DefaultContents.Get_RegKey("/version")))
 
         var.LoadDefaultValues()
         Editor.Initialize()

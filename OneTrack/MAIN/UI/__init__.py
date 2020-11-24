@@ -108,6 +108,10 @@ class EditableNumberView:
         self.YOffset = 0
         self.FontSize = FontSize
 
+    def SetValueInString(self, NewValue):
+        self.Value = NewValue
+        self.SplitedAlgarims = list(self.Value)
+
     def Render(self, DISPLAY):
         for i, Algarims in enumerate(self.SplitedAlgarims):
             if self.IsActive:
@@ -768,7 +772,15 @@ class TrackColection:
 
                 if event.key == pygame.K_F1:
                     if len(self.Tracks) > 1:
-                        self.Tracks[self.SelectedTrack] = TrackBlock((var.ProcessReference.DefaultContents.Get_RegKey("/default/pitch_value").zfill(5), var.ProcessReference.DefaultContents.Get_RegKey("/default/note_duration").zfill(5)))
+                        TrackBlockInQuestion = self.Tracks[self.SelectedTrack]
+
+                        TrackBlockInQuestion.Active = True
+                        TrackBlockInQuestion.FrequencyNumber.SetValueInString(ContentManager.Get_RegKey("/default/pitch_value").zfill(5))
+
+                        TrackBlockInQuestion.Active = True
+                        TrackBlockInQuestion.DurationNumber.SetValueInString(ContentManager.Get_RegKey("/default/note_duration").zfill(5))
+
+
 
                 if event.key == pygame.K_F2:
                     if len(self.Tracks) < 24:

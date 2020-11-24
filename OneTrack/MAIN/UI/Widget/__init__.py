@@ -37,10 +37,11 @@ class Widget_Controller:
             widget.Render(DISPLAY)
 
         if not self.LastInteractionID == -1:
-            self.WidgetCollection[self.LastInteractionID].InteractionType = None
+            try:
+                self.WidgetCollection[self.LastInteractionID].InteractionType = None
 
-        self.LastInteractionID = -1
-        self.LastInteractionType = None
+            except IndexError:
+                print("Can't set property to unexistent widget.")
 
     def Append(self, Widget):
         self.WidgetCollection.append(Widget)
@@ -49,6 +50,9 @@ class Widget_Controller:
             widget.Update()
 
     def Update(self):
+        self.LastInteractionID = -1
+        self.LastInteractionType = None
+
         self.Active = pygame.Rect(self.Rectangle[0] + self.ClickOffset[0], self.Rectangle[1] + self.ClickOffset[1], self.Rectangle[2], self.Rectangle[3]).collidepoint((pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1]))
 
         if not self.Active:
