@@ -14,14 +14,14 @@
 #   limitations under the License.
 #
 #
-import pygame
+import pygame, traceback
 from OneTrack import MAIN as Main
 from OneTrack.MAIN import UI
 from Applications.OneTrack.MAIN.Screens.Editor import InstanceVar as var
 
 from System.Core import MAIN
 from System.Core import Utils
-from System.Core import SHAPES
+from System.Core import Shape
 
 LagIndicatorSurface = pygame.Surface
 LagTextWidth = 0
@@ -29,14 +29,19 @@ LagTextHeight = 0
 LagTextColor = ()
 LagEnabled = False
 Alpha = 0
+FPS = 0
 FlashingAnimation = Utils.AnimationController
+ProcessInstanceRefence = None
 
-def Initialize():
+def Initialize(self):
     global LagIndicatorSurface
     global LagTextWidth
     global LagTextHeight
     global LagTextColor
     global FlashingAnimation
+    global ProcessInstanceRefence
+
+    ProcessInstanceRefence = self
 
     LagTextWidth = UI.ContentManager.GetFont_width("/PressStart2P.ttf", 14, "LAG")
     LagTextHeight = UI.ContentManager.GetFont_height("/PressStart2P.ttf", 14, "LAG")
@@ -50,29 +55,31 @@ def Draw(DISPLAY):
     global LagTextColor
     global LagEnabled
     global Alpha
+    global FPS
 
     if not LagEnabled:
         return
 
-    if var.ProcessReference is None:
-        return
-
-    LagText = "LAG: " + Utils.FormatNumber(var.ProcessReference.Timer.get_fps(), 2)
+    LagText = "LAG: " + Utils.FormatNumber(FPS, 2)
     LagTextWidth = UI.ContentManager.GetFont_width("/PressStart2P.ttf", 14, LagText)
     LagTextHeight = UI.ContentManager.GetFont_height("/PressStart2P.ttf", 14, LagText)
 
-    SHAPES.Shape_Rectangle(DISPLAY, (0, 0, 0), (5 - 2, 5 - 2, LagTextWidth + 4, LagTextHeight + 4), 0, 3)
-    UI.ContentManager.FontRender(DISPLAY, "/PressStart2P.ttf", 14, LagText, LagTextColor, 5, 5, 24, 24, S)
+    Shape.Shape_Rectangle(DISPLAY, (0, 0, 0), (5 - 2, 5 - 2, LagTextWidth + 4, LagTextHeight + 4), 0, 3)
+    UI.ContentManager.FontRender(DISPLAY, "/PressStart2P.ttf", 14, LagText, LagTextColor, 5, 5)
 
 def Update():
     global Alpha
     global LagEnabled
     global LagTextColor
     global FlashingAnimation
+    global FPS
 
-    FPS = MAIN.clock.get_fps()
+    if ProcessInstanceRefence is None:
+        return
 
-    if FPS >= 58:
+    FPS = ProcessInstanceRefence.CalcFPS
+
+    if FPS >= 57:
         Alpha = 0
 
     else:

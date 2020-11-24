@@ -45,9 +45,8 @@ class Process(Core.Process):
         self.Timer = pygame.time.Clock()
         self.DialogPID = -1
         self.FPS = 60
+        self.CalcFPS = 0
         self.CurrentScreenToUpdate = Editor
-        var.ProcessReference = self
-
         print("Initializing {0}...".format(self.TITLEBAR_TEXT))
 
         # Initialize Content Manager
@@ -86,9 +85,10 @@ class Process(Core.Process):
 
         self.SetTitle("OneTrack v{0}".format(self.DefaultContents.Get_RegKey("/version")))
 
+        var.ProcessReference = self
         var.LoadDefaultValues()
         Editor.Initialize()
-        LagIndicator.Initialize()
+        LagIndicator.Initialize(self)
 
     def GreyDialog(self, Title, Text, Icon="none"):
         var.AwaysUpdate = False
@@ -103,8 +103,11 @@ class Process(Core.Process):
         return self.DISPLAY
 
     def Update(self):
+        Ceira = Core.Utils.FPS()
+
         while self.Running:
-            self.Timer.tick(self.FPS)
+            Delta = (1000 / (self.FPS + 10)) / 1000
+            time.sleep(Delta)
 
             if self.DeleteInstanceOnFirstCycle and self.DialogPID not in Core.MAIN.ProcessList_PID:
                 Core.MAIN.KillProcessByPID(self.PID)
@@ -119,7 +122,9 @@ class Process(Core.Process):
             if var.PlayMode:
                 self.FPS = 60
             else:
-                self.FPS = 75
+                self.FPS = 100
+
+            self.CalcFPS = Ceira()
 
     def EventUpdate(self, event):
         self.CurrentScreenToUpdate.EventUpdate(event)
