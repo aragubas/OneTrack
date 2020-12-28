@@ -2,15 +2,13 @@
 OneTrack is a 2-Bit ish Tracker program made with [Taiyou Framework](https://github.com/aragubas/taiyou-framework)
 
 ### Instalation Guide
-Download the lasted build of OneTrack compacted inside a "Taiyou Application Packpage"
-And install it using Built-In Packpage Installer (present on new Taiyou Framework Version)
+1. Installing via Taiyou Packpage System:
+First, download OneTrack_packpage.zip file, them drop it into Taiyou/User/<your_username>/Packpages/
+Then, Open Taiyou Packpage installer and install it.
 
-## Place it inside a folder called ``OneTrack`` on the Root Directory of Taiyou Framework
-**warning, this is case sensetive**
-Then, go to the file "Selected.txt" and type ``OneTrack``
- 
+
 ### Required Packpages
-It just requires Taiyou Framework
+It just requires an Taiyou Framework Installation
 
 
 ### Stable Versions at avaliable in Itch.io!!
