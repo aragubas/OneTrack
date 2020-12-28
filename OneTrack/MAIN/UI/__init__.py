@@ -736,7 +736,7 @@ class TrackColection:
             for track in self.Tracks:
                 track.EventUpdate(event)
 
-        if event.type == pygame.KEYDOWN:
+        if event.type == pygame.KEYUP:
             if event.key == pygame.K_SPACE:
                 if not self.PlayMode:
                     self.PlayMode = True

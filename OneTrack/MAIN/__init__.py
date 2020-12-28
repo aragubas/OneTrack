@@ -14,7 +14,7 @@
 #   limitations under the License.
 #
 #
-import pygame, os, pickle, io, time, traceback
+import pygame, os, pickle, io, time, traceback, threading
 import System.Core as Core
 from System.Core import CntMng
 from System.Core import MAIN
@@ -26,18 +26,6 @@ from OneTrack.MAIN import UI
 from OneTrack.MAIN.Screens.Editor import InstanceVar as var
 
 class Process(Core.Process):
-    def CheckForAnotherInstances(self):
-        # Check if there is not another instance of OneTrack
-        for process in Core.ProcessAccess:
-            if process.PID != self.PID:
-                if process.IS_GRAPHICAL and process.FULLSCREEN == self.FULLSCREEN:
-                    if process.TITLEBAR_TEXT == self.TITLEBAR_TEXT:
-                        # Another instance detected
-                        self.DialogPID = self.GreyDialog("Multiple instance detection", "OneTrack does not support multiple instances.\n\nOnly 1 instance of OneTrack is allowed.", "warn")
-                        self.DeleteInstanceOnFirstCycle = True
-                        return True
-        return False
-
     def Initialize(self):
         self.SetVideoMode(True, None, True)
         self.SetTitle("OneTrack")
@@ -61,16 +49,11 @@ class Process(Core.Process):
 
         self.DefaultContents.InitSoundSystem()
 
-        if self.CheckForAnotherInstances():
-            return
-
         self.ICON = self.DefaultContents.GetImage("/icon.png")
 
         # Set the default content manager for the UI
         UI.ContentManager = self.DefaultContents
         var.DefaultContent = self.DefaultContents
-
-        # Initialize Variables
 
         # Load UI Theme
         try:
@@ -99,15 +82,10 @@ class Process(Core.Process):
 
         LagIndicator.Draw(self.DISPLAY)
 
-        self.LAST_SURFACE = self.DISPLAY.copy()
-        return self.DISPLAY
-
     def Update(self):
-        Ceira = Core.Utils.FPS()
-
+        Clock = pygame.time.Clock()
         while self.Running:
-            Delta = (1000 / (self.FPS + 10)) / 1000
-            time.sleep(Delta)
+            Clock.tick(self.FPS)
 
             if self.DeleteInstanceOnFirstCycle and self.DialogPID not in Core.MAIN.ProcessList_PID:
                 Core.MAIN.KillProcessByPID(self.PID)
@@ -124,18 +102,12 @@ class Process(Core.Process):
             else:
                 self.FPS = 100
 
-            self.CalcFPS = Ceira()
+            self.CalcFPS = Clock.get_fps()
 
     def EventUpdate(self, event):
         self.CurrentScreenToUpdate.EventUpdate(event)
 
-        if event.type == pygame.KEYUP:
-            if event.key == 1073741895:
-                print("Theme & RegKeys reloaded")
-                UI.ContentManager.ReloadRegistry()
-                UI.ThemesManager_LoadTheme(self.DefaultContents.Get_RegKey("/selected_theme"))
-
-    def SIG_KILL(self):
+    def WhenKilled(self):
         self.Running = False
         self.DefaultContents.StopAllChannels()
         self.DefaultContents.StopLongOperations = True

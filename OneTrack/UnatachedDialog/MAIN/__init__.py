@@ -14,7 +14,7 @@
 #   limitations under the License.
 #
 #
-import pygame
+import pygame, threading
 import System.Core as Core
 from System.Core import Fx
 from System.Core import CntMng
@@ -103,8 +103,6 @@ class Process(Core.Process):
             self.DISPLAY.fill(self.BGColor)
 
         self.SelectedModuleMode.Draw(self.DISPLAY)
-
-        return self.DISPLAY
 
     def Update(self):
         while self.Running:
