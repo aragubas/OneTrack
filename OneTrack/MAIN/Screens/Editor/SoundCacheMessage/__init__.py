@@ -23,12 +23,16 @@ from OneTrack.MAIN import UI
 
 MessageSeenDelay = 0
 LoadingAnimationFrame = 0
+SetDefaultCursorTick = False
+SetDefaultCursorTickEnable = False
 
 def Initialize():
     pass
 
 def Draw(DISPLAY):
     global LoadingAnimationFrame
+
+    SetCursor()
     if not var.GenerateSoundCache and not var.GenerateSoundCache_MessageSeen:
         return
 
@@ -47,8 +51,34 @@ def Draw(DISPLAY):
     UI.ContentManager.ImageRender(DISPLAY, "/loading_anim/cursor_{0}.png".format(LoadingAnimationFrame), Area[0] + 2, Area[1] + 2, Area[3] - 4, Area[3] - 4, True)
 
 
+def SetCursor():
+    global SetDefaultCursorTick
+    global SetDefaultCursorTickEnable
+
+    if not SetDefaultCursorTick and SetDefaultCursorTickEnable:
+        SetDefaultCursorTick = True
+        SetDefaultCursorTickEnable = False
+        var.ProcessReference.SetCursor(0)
+        print("OneTrack.SetCursor : Set to Default Cursor")
+
+    if not var.GenerateSoundCache and not var.GenerateSoundCache_MessageSeen and not SetDefaultCursorTick:
+        if not SetDefaultCursorTickEnable:
+            SetDefaultCursorTickEnable = True
+            SetDefaultCursorTick = False
+
+            print("Reset SetDefaultCursor")
+
+    if var.GenerateSoundCache_MessageSeen and var.GenerateSoundCache:
+        SetDefaultCursorTickEnable = False
+        SetDefaultCursorTick = False
+        var.ProcessReference.SetCursor(1)
+
+        print("Set to Loading Cursor")
+
+
 def Update():
     global MessageSeenDelay
+
     if not var.GenerateSoundCache and not var.GenerateSoundCache_MessageSeen:
         return
 

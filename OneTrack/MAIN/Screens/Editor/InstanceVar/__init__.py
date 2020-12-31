@@ -40,4 +40,4 @@ DefaultContent = CntMng.ContentManager
 def LoadDefaultValues():
     global Volume
 
-    Volume = DefaultContent.Get_RegKey("/options/VolumeMultiplier", float)
+    Volume = float(DefaultContent.Get_RegKey("/options/VolumeMultiplier"))

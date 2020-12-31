@@ -83,7 +83,7 @@ class Screen:
 
         # SmoothScrolling Option
         if self.WidgetController.LastInteractionID == 0:
-            if var.DefaultContent.Get_RegKey("/options/smooth_scroll", bool):
+            if var.DefaultContent.Get_RegKey("/options/smooth_scroll").lower() == "true":
                 var.DefaultContent.Write_RegKey("/options/smooth_scroll", "False")
             else:
                 var.DefaultContent.Write_RegKey("/options/smooth_scroll", "True")
@@ -91,7 +91,7 @@ class Screen:
 
         # Disabled Block Color
         if self.WidgetController.LastInteractionID == 2:
-            if var.DefaultContent.Get_RegKey("/options/disabled_block_color", bool):
+            if var.DefaultContent.Get_RegKey("/options/disabled_block_color").lower() == "true":
                 var.DefaultContent.Write_RegKey("/options/disabled_block_color", "False")
             else:
                 var.DefaultContent.Write_RegKey("/options/disabled_block_color", "True")
@@ -99,7 +99,7 @@ class Screen:
 
         # Trackpointer Animation
         if self.WidgetController.LastInteractionID == 4:
-            if var.DefaultContent.Get_RegKey("/options/trackpointer_animation", bool):
+            if var.DefaultContent.Get_RegKey("/options/trackpointer_animation").lower() == "true":
                 var.DefaultContent.Write_RegKey("/options/trackpointer_animation", "False")
             else:
                 var.DefaultContent.Write_RegKey("/options/trackpointer_animation", "True")
@@ -185,7 +185,7 @@ class Screen:
 
         # Per-Track Scroll
         if self.WidgetController.LastInteractionID == 15:
-            if var.DefaultContent.Get_RegKey("/options/per_track_scroll", bool):
+            if var.DefaultContent.Get_RegKey("/options/per_track_scroll").lower() == "true":
                 var.DefaultContent.Write_RegKey("/options/per_track_scroll", "False")
             else:
                 var.DefaultContent.Write_RegKey("/options/per_track_scroll", "True")
@@ -193,7 +193,7 @@ class Screen:
 
         # Looking Glass Option
         if self.WidgetController.LastInteractionID == 17:
-            if var.DefaultContent.Get_RegKey("/options/looking_glass", bool):
+            if var.DefaultContent.Get_RegKey("/options/looking_glass").lower() == "true":
                 var.DefaultContent.Write_RegKey("/options/looking_glass", "False")
             else:
                 var.DefaultContent.Write_RegKey("/options/looking_glass", "True")
@@ -201,7 +201,7 @@ class Screen:
 
         # Block Trackpointer Option
         if self.WidgetController.LastInteractionID == 19:
-            if var.DefaultContent.Get_RegKey("/options/block_trackpointer", bool):
+            if var.DefaultContent.Get_RegKey("/options/block_trackpointer").lower() == "true":
                 var.DefaultContent.Write_RegKey("/options/block_trackpointer", "False")
             else:
                 var.DefaultContent.Write_RegKey("/options/block_trackpointer", "True")

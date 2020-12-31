@@ -285,7 +285,7 @@ def LoadMusicData(FileName):
                 block.Update()
                 block.ReRender()
 
-    if FileImportedFromOlderVersion and not var.ProcessReference.DefaultContents.Get_RegKey("/dialog/imported_older_version/show_once", bool):
+    if FileImportedFromOlderVersion and not var.ProcessReference.DefaultContents.Get_RegKey("/dialog/imported_older_version/show_once").lower() == "true":
         var.ProcessReference.GreyDialog(var.ProcessReference.DefaultContents.Get_RegKey("/dialog/imported_older_version/title"), var.ProcessReference.DefaultContents.Get_RegKey("/dialog/imported_older_version/text"))
         var.ProcessReference.DefaultContents.Write_RegKey("/dialog/imported_older_version/show_once", "True")
 

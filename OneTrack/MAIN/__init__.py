@@ -27,7 +27,7 @@ from OneTrack.MAIN.Screens.Editor import InstanceVar as var
 
 class Process(Core.Process):
     def Initialize(self):
-        self.SetVideoMode(True, None, True)
+        self.SetVideoMode(True, (800, 600), False)
         self.SetTitle("OneTrack")
         self.DeleteInstanceOnFirstCycle = False
         self.Timer = pygame.time.Clock()
@@ -109,6 +109,8 @@ class Process(Core.Process):
 
     def WhenKilled(self):
         self.Running = False
+        self.KillDrawThread()
+        del self.DRAW_THEREAD
         self.DefaultContents.StopAllChannels()
         self.DefaultContents.StopLongOperations = True
         del self.CurrentScreenToUpdate

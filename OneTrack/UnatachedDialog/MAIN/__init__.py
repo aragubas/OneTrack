@@ -96,7 +96,7 @@ class Process(Core.Process):
             self.DefaultContents.FontRender(self.DISPLAY, "/Ubuntu.ttf", 18, "Loading...", (255, 255, 255), 5, 5)
             return self.DISPLAY
 
-        if self.RootDefaultContents.Get_RegKey("/options/looking_glass", bool):
+        if self.RootDefaultContents.Get_RegKey("/options/looking_glass").lower() == "true":
             self.DISPLAY.blit(Fx.Simple_BlurredRectangle(Core.MAIN.DISPLAY, (self.POSITION[0], self.POSITION[1], self.DISPLAY.get_width(), self.DISPLAY.get_height())), (0, 0))
 
         else:

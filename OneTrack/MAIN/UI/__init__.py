@@ -269,7 +269,7 @@ class TrackBlock:
         # Fill the Background
         self.BlockSurface.fill(ThemesManager_GetProperty("BackgroundColor"))
 
-        if var.DefaultContent.Get_RegKey("/options/disabled_block_color", bool):
+        if var.DefaultContent.Get_RegKey("/options/disabled_block_color").lower() in ("true"):
             if not self.RootActivated or not self.Active:
                 self.FrequencyNumber.InactiveColor = True
                 self.DurationNumber.InactiveColor = True
@@ -427,7 +427,7 @@ def GetWaveTypeByWaveCode(pWaveCode):
     if pWaveCode == "SINE":
         return "sine"
 
-    print("Invalid Sinewave type: ({0})".format(WaveformCommand))
+    print("Invalid Sinewave type: ({0})".format(pWaveCode))
     return "square"
 
 
@@ -500,7 +500,7 @@ class TrackColection:
             if track.Active:
                 # -- Set the Track Scroll -- #
                 if not var.PlayMode:
-                    if var.DefaultContent.Get_RegKey("/options/per_track_scroll", bool):
+                    if var.DefaultContent.Get_RegKey("/options/per_track_scroll").lower() == "true":
                         if self.Active:
                             self.UpdateTrackScroll(track)
                     else:
@@ -511,7 +511,7 @@ class TrackColection:
 
             # -- Render the Track Pointer -- #
             if self.Active and track.Instance == self.SelectedTrack and not var.PlayMode:
-                if var.DefaultContent.Get_RegKey("/options/trackpointer_animation", bool):
+                if var.DefaultContent.Get_RegKey("/options/trackpointer_animation").lower() in ("true"):
                     self.TargetTrackpointerHeight = track.Rectangle[3] - (abs(self.Scroll - self.TargetScroll) / self.ScrollAnimationScale)
 
                     if self.TrackpointerHeight > self.TargetTrackpointerHeight:
@@ -523,10 +523,10 @@ class TrackColection:
                     self.TrackpointerHeight = track.Rectangle[3]
 
                 # Render Trackpointer
-                if var.DefaultContent.Get_RegKey("/options/block_trackpointer", bool):
+                if var.DefaultContent.Get_RegKey("/options/block_trackpointer").lower() == "true":
                     var.DefaultContent.ImageRender(DISPLAY, "/pointer.png", self.Rectangle[0] - 12, self.Scroll + track.Rectangle[1], max(0, self.TrackpointerHeight - 1), track.Rectangle[3], SmoothScaling=True)
                 else:
-                    Shape.Shape_Rectangle(DISPLAY, ThemesManager_GetProperty("TrackPointerColor"), (abs(self.Rectangle[0] - 10), abs(self.Scroll + track.Rectangle[1]), max(0, self.TrackpointerHeight - 8), abs(track.Rectangle[3])))
+                    Shape.Shape_Rectangle(DISPLAY, ThemesManager_GetProperty("TrackPointerColor"), (abs(self.Rectangle[0] - 10), abs(self.Scroll + track.Rectangle[1]), max(0, self.TrackpointerHeight - 8), abs(track.Rectangle[3])), DontUseCache=True)
 
             if self.Scroll + track.Rectangle[1] >= DISPLAY.get_height() + track.TextHeight or self.Scroll + track.Rectangle[1] <= -track.TextHeight:
                 continue
@@ -535,7 +535,7 @@ class TrackColection:
             track.Render(DISPLAY)
 
     def UpdateTrackScroll(self, track):
-        if var.DefaultContent.Get_RegKey("/options/smooth_scroll", bool):
+        if var.DefaultContent.Get_RegKey("/options/smooth_scroll").lower() in ("true"):
             self.TargetScroll = self.Rectangle[3] / 2 - track.Rectangle[3] - track.Rectangle[1]
 
             if self.Scroll > self.TargetScroll:
@@ -575,7 +575,8 @@ class TrackColection:
             self.TargetTrackpointerHeight = 0
             self.TrackpointerHeight = 0
 
-        self.ScrollAnimationScale = var.DefaultContent.Get_RegKey("/options/animation_scale", int)
+        self.ScrollAnimationScale = int(var.DefaultContent.Get_RegKey("/options/animation_scale"))
+
         i = -1
         for track in self.Tracks:
             i += 1
@@ -589,7 +590,7 @@ class TrackColection:
             #  Set Track Active State
             track.Active = track.Instance == self.SelectedTrack
 
-            if var.DefaultContent.Get_RegKey("/options/per_track_scroll", bool) and not var.PlayMode:
+            if var.DefaultContent.Get_RegKey("/options/per_track_scroll").lower() == "true" and not var.PlayMode:
                 track.Active = track.Instance == self.SelectedTrack and self.Active
 
             #  Align X
@@ -780,8 +781,6 @@ class TrackColection:
                         TrackBlockInQuestion.Active = True
                         TrackBlockInQuestion.DurationNumber.SetValueInString(ContentManager.Get_RegKey("/default/note_duration").zfill(5))
 
-
-
                 if event.key == pygame.K_F2:
                     if len(self.Tracks) < 24:
                         self.AddBlankTrack()
@@ -967,15 +966,10 @@ class TrackList:
                             SinewaveType = CollectionLastSinewaveForm
 
                             if collactions.TrackData[1].startswith("W"):
-                                print("    -Waveform Command Received")
-
                                 WaveformCommand = collactions.TrackData[1][1:]
                                 CollectionLastSinewaveForm = GetWaveTypeByWaveCode(WaveformCommand)
 
-                                print("    -Waveform has been set to: " + str(CollectionLastSinewaveForm))
-
                             if collactions.TrackData[1].startswith("D"):
-                                print("    -Duration Command Received")
                                 SplitedAgrs = list(collactions.TrackData[1])
                                 DurationTime = ""
 
@@ -984,23 +978,17 @@ class TrackList:
                                         DurationTime += arg
                                 CollectionLastDuration = int(DurationTime.replace("-", ""))
 
-                                print("    -Duration has been set to: " + str(CollectionLastDuration))
-
                             try:
                                 Freqn = int(collactions.TrackData[0])
                             except:
                                 Freqn = 0
-                            print("    -Frequency has been set to: " + str(Freqn))
 
                             try:
                                 SoundDuration = int(collactions.TrackData[1]) / var.BPM
                             except:
                                 SoundDuration = CollectionLastDuration / var.BPM
-                            print("    -Sound Duration has been set to: " + str(SoundDuration))
 
-                            print("Cache generating function started.")
                             ContentManager.GetTune_FromTuneCache(Freqn, SoundDuration, 44000, SinewaveType)
-                            print("Cache generating function ended.")
 
                         except ValueError:
                             continue
@@ -1393,10 +1381,10 @@ class VerticalListWithDescription:
                 BorderColor = ThemesManager_GetProperty("VerticalListWithDescription_Selected_BorderColor")
 
             # -- Background -- #
-            Shape.Shape_Rectangle(self.ListSurface, BackgroundColor, ItemRect)
+            Shape.Shape_Rectangle(self.ListSurface, BackgroundColor, ItemRect, DontUseCache=True)
 
             # -- Indicator Bar -- #
-            Shape.Shape_Rectangle(self.ListSurface, BorderColor, ItemRect, 1)
+            Shape.Shape_Rectangle(self.ListSurface, BorderColor, ItemRect, 1, DontUseCache=True)
 
             # -- Render Item Name -- #
             ContentManager.FontRender(self.ListSurface, ThemesManager_GetProperty("VerticalListWithDescription_ItemNameFont"), 14, itemNam, ItemNameFontColor, TextsX + ItemRect[0], ItemRect[1] + 5)
