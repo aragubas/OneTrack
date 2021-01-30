@@ -20,10 +20,10 @@ from OneTrack import MAIN as Main
 from OneTrack.MAIN.Screens import Editor
 from OneTrack.MAIN.UI import Widget as Widget
 from OneTrack.MAIN.Screens.Editor import InstanceVar as var
-from System.Core import Shape
-from System.Core import Fx
-from System.Core import AppData
-from System.Core import Utils
+import Library.CorePrimitives as Shape
+import Library.CoreEffects as Fx
+import Library.CorePaths as AppData
+import Library.CoreUtils as Utils
 from System.Core import CntMng
 from math import log2, pow
 
@@ -39,7 +39,7 @@ def ThemesManager_LoadTheme(ThemeName):
     ThemesList_Properties.clear()
     ThemesList_PropertyNames.clear()
 
-    print("OneTrack : Loading UI Theme '" + ThemeName + "'")
+    print("OneTrackUI : Loading UI Theme '" + ThemeName + "'")
     for key in var.DefaultContent.Get_RegKey("/theme/{0}".format(ThemeName)).splitlines():
         if key.startswith("#"):
             continue
@@ -427,7 +427,10 @@ def GetWaveTypeByWaveCode(pWaveCode):
     if pWaveCode == "SINE":
         return "sine"
 
-    print("Invalid Sinewave type: ({0})".format(pWaveCode))
+    if pWaveCode == "WQSI":
+        return "sine_square"
+
+    print("Invalid wave type: ({0})".format(pWaveCode))
     return "square"
 
 
@@ -1227,109 +1230,6 @@ class ButtonsBar:
     def EventUpdate(self, event):
         for button in self.ButtonsList:
             button.EventUpdate(event)
-
-
-class Window:
-    def __init__(self, Rectangle, Title, Resiziable, Movable=True):
-        self.WindowRectangle = Rectangle
-        self.Title = Title
-        self.TitleBarRectangle = pygame.Rect(self.WindowRectangle[0], self.WindowRectangle[1], self.WindowRectangle[2], 20)
-        self.ResizeRectangle = pygame.Rect(self.WindowRectangle[0] + self.WindowRectangle[3] - 16, self.WindowRectangle[1] + self.WindowRectangle[3] - 16, 16, 16)
-        self.Window_IsBeingGrabbed = False
-        self.Window_IsBeingResized = False
-        self.Window_MinimunW = Rectangle[2]
-        self.Window_MinimunH = Rectangle[3]
-        self.Resiziable = Resiziable
-        self.OriginalMinumunHeight = 0
-        self.OriginalResiziable = False
-        self.WindowSurface_Rect = (0, 0, 200, 200)
-        self.SurfaceSizeFixed = False
-        self.Moveable = Movable
-        self.Opacity = 255
-        self.WindowSurface = pygame.Surface((5, 5))
-        self.LastWindowRect = pygame.Rect((0, 0, 0, 0))
-
-    def Render(self, DISPLAY):
-        # -- Window Rectangle -- #
-        self.WindowRectangle[0] = self.TitleBarRectangle[0]
-        self.WindowRectangle[1] = self.TitleBarRectangle[1]
-        # -- Title Bar Rectangle -- #
-        self.TitleBarRectangle = pygame.Rect(self.WindowRectangle[0], self.WindowRectangle[1], self.WindowRectangle[2], 20)
-
-        # -- Resize Button Rectangle -- #
-        if self.Resiziable:
-            self.ResizeRectangle = pygame.Rect(self.WindowRectangle[0] + self.WindowRectangle[2] - 10,
-                                               self.WindowRectangle[1] + self.WindowRectangle[3], 10, 10)
-        # -- Update Window Surface Destination -- #
-        self.WindowSurface_Rect = (self.WindowRectangle[0], self.WindowRectangle[1] + 20, self.WindowRectangle[2], self.WindowRectangle[3] - 20)
-
-        # -- Update Window Border -- #
-        if not self.Resiziable:
-            WindowBorderRectangle = self.WindowRectangle
-        else:
-            WindowBorderRectangle = (self.WindowRectangle[0], self.WindowRectangle[1], self.WindowRectangle[2], self.WindowRectangle[3] + 12)
-
-        # -- Draw the Window Blurred Background -- #
-        if not self.WindowRectangle == self.LastWindowRect:
-            self.LastWindowRect = self.WindowRectangle
-            self.WindowSurface = pygame.Surface((WindowBorderRectangle[2], WindowBorderRectangle[3]))
-        self.WindowSurface.set_alpha(self.Opacity)
-
-        BluredBackground = pygame.Surface((WindowBorderRectangle[2], WindowBorderRectangle[3]))
-        BluredBackground.blit(DISPLAY, (0, 0), self.WindowRectangle)
-        Fx.BlurredRectangle(BluredBackground, (0, 0, WindowBorderRectangle[2], WindowBorderRectangle[3]), 75, 100, (100, 100, 100))
-        self.WindowSurface.blit(BluredBackground, (0, 0))
-
-        # -- Draw the Resize Block -- #
-        if self.Resiziable:
-            ContentManager.ImageRender(self.WindowSurface, "/window/resize.png", self.WindowRectangle[2] - 12, self.WindowRectangle[3], self.ResizeRectangle[2], self.ResizeRectangle[3], True)
-
-        # -- Draw the window title -- #
-        Fx.BlurredRectangle(self.WindowSurface, (0, 0, self.TitleBarRectangle[2], self.TitleBarRectangle[3] + 2), 5, 100, (100, 100, 100))
-        ContentManager.FontRender(self.WindowSurface, "/Ubuntu_Thin.ttf", 20, self.Title, (250, 250, 255), self.TitleBarRectangle[2] / 2 - ContentManager.GetFont_width("/Ubuntu_Thin.ttf", 20, self.Title) / 2, -1)
-
-        # -- Draw the Window Border -- #
-        Shape.Shape_Rectangle(self.WindowSurface, (0, 0, 0), (0, 0, WindowBorderRectangle[2], WindowBorderRectangle[3]), 1)
-
-        DISPLAY.blit(self.WindowSurface, (self.WindowRectangle[0], self.WindowRectangle[1]))
-
-    def EventUpdate(self, event):
-        # -- Grab the Window -- #
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            if self.TitleBarRectangle.collidepoint(pygame.mouse.get_pos()):
-                self.Window_IsBeingGrabbed = True
-
-            if self.ResizeRectangle.collidepoint(pygame.mouse.get_pos()) and self.Resiziable:
-                self.Window_IsBeingResized = True
-        # -- Ungrab the Window -- #
-        if event.type == pygame.MOUSEBUTTONUP:
-            if self.Window_IsBeingResized:
-                self.Window_IsBeingResized = False
-
-            if self.Window_IsBeingGrabbed:
-                self.Window_IsBeingGrabbed = False
-
-        # -- Grab Window -- #
-        if self.Window_IsBeingGrabbed and self.Moveable:
-            self.TitleBarRectangle[0] = pygame.mouse.get_pos()[0] - self.WindowRectangle[2] / 2
-            self.TitleBarRectangle[1] = pygame.mouse.get_pos()[1] - self.TitleBarRectangle[3] / 2
-
-        # -- Resize Window -- #
-        if self.Window_IsBeingResized and self.Resiziable:
-            # -- Limit Window Size -- #
-            if self.WindowRectangle[2] >= self.Window_MinimunW:
-                self.WindowRectangle[2] = pygame.mouse.get_pos()[0] - self.WindowRectangle[0]
-
-            if self.WindowRectangle[3] >= self.Window_MinimunH:  # <- Resize the Window
-                self.WindowRectangle[3] = pygame.mouse.get_pos()[1] - self.WindowRectangle[1]
-
-        # -- Dont Allow the Window to be resized lower than Minimum Size -- #
-        if self.WindowRectangle[2] < self.Window_MinimunW:
-            self.WindowRectangle[2] = self.Window_MinimunW
-
-        if self.WindowRectangle[3] < self.Window_MinimunH:
-            self.WindowRectangle[3] = self.Window_MinimunH
-
 
 class VerticalListWithDescription:
     def __init__(self, Rectangle):

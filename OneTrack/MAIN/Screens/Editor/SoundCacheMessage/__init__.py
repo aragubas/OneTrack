@@ -19,6 +19,7 @@ import System.Core as Core
 from OneTrack.MAIN.Screens.Editor import InstanceVar as var
 from OneTrack import MAIN as Main
 from OneTrack.MAIN import UI
+from Library import CoreEffects as Fx
 
 
 MessageSeenDelay = 0
@@ -40,7 +41,7 @@ def Draw(DISPLAY):
 
     Area = pygame.Rect(DISPLAY.get_width() / 2 - (UI.ContentManager.GetFont_width("/PressStart2P.ttf", 14, GeneratingCacheMessage) + 27) / 2, 75, UI.ContentManager.GetFont_width("/PressStart2P.ttf", 14, GeneratingCacheMessage) + 27, UI.ContentManager.GetFont_height("/PressStart2P.ttf", 14, GeneratingCacheMessage) + 5)
 
-    Core.Fx.BlurredRectangle(DISPLAY, Area, 15, 150)
+    Fx.BlurredRectangle(DISPLAY, Area, 15, 150)
     UI.ContentManager.FontRender(DISPLAY, "/PressStart2P.ttf", 14, GeneratingCacheMessage, (255, 255, 255), Area[0] + Area[3] - 4 + 5, Area[1] + 3)
 
     # Draw the Loading Wax

@@ -18,21 +18,21 @@ import pygame, os, pickle, io, time, traceback, threading
 import System.Core as Core
 from System.Core import CntMng
 from System.Core import MAIN
-from System.Core import AppData
+from Library import CorePaths as AppData
 import System.Core as tge
 from OneTrack.MAIN.Screens import Editor
 from OneTrack.MAIN import LagIndicator
 from OneTrack.MAIN import UI
 from OneTrack.MAIN.Screens.Editor import InstanceVar as var
+from Library import CoreAccess
 
 class Process(Core.Process):
     def Initialize(self):
-        self.SetVideoMode(True, (800, 600), False)
+        self.SetVideoMode(True, (800, 600), True)
         self.SetTitle("OneTrack")
         self.DeleteInstanceOnFirstCycle = False
         self.Timer = pygame.time.Clock()
         self.DialogPID = -1
-        self.FPS = 60
         self.CalcFPS = 0
         self.CurrentScreenToUpdate = Editor
         print("Initializing {0}...".format(self.TITLEBAR_TEXT))
@@ -75,34 +75,30 @@ class Process(Core.Process):
 
     def GreyDialog(self, Title, Text, Icon="none"):
         var.AwaysUpdate = False
-        return Core.MAIN.CreateProcess("OneTrack/UnatachedDialog", "OneTrack Dialog", (var.ProcessReference, "DIALOG_OK", "{0};{1}".format(Title, Text), "icon:{0},".format(Icon)))
+        return CoreAccess.CreateProcess("OneTrack/UnatachedDialog", "OneTrack Dialog", (var.ProcessReference, "DIALOG_OK", "{0};{1}".format(Title, Text), "icon:{0},".format(Icon)))
 
     def Draw(self):
-        self.CurrentScreenToUpdate.GameDraw(self.DISPLAY)
+        self.CurrentScreenToUpdate.Draw(self.DISPLAY)
 
         LagIndicator.Draw(self.DISPLAY)
 
     def Update(self):
-        Clock = pygame.time.Clock()
-        while self.Running:
-            Clock.tick(self.FPS)
+        if self.DeleteInstanceOnFirstCycle and self.DialogPID not in CoreAccess.ProcessList_PID:
+            CoreAccess.KillProcessByPID(self.PID)
 
-            if self.DeleteInstanceOnFirstCycle and self.DialogPID not in Core.MAIN.ProcessList_PID:
-                Core.MAIN.KillProcessByPID(self.PID)
+        if not self.APPLICATION_HAS_FOCUS and var.AwaysUpdate is False:
+            return
 
-            if not self.APPLICATION_HAS_FOCUS and var.AwaysUpdate is False:
-                continue
+        self.CurrentScreenToUpdate.Update()
 
-            self.CurrentScreenToUpdate.Update()
+        LagIndicator.Update()
 
-            LagIndicator.Update()
+        if var.PlayMode:
+            self.UpdateFPS = 60
+        else:
+            self.UpdateFPS = 100
 
-            if var.PlayMode:
-                self.FPS = 60
-            else:
-                self.FPS = 100
-
-            self.CalcFPS = Clock.get_fps()
+        self.CalcFPS = self.UpdateClock.get_fps()
 
     def EventUpdate(self, event):
         self.CurrentScreenToUpdate.EventUpdate(event)

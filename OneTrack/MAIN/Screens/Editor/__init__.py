@@ -18,8 +18,9 @@ import pygame, os, pickle, io
 import System.Core as Core
 from System.Core import CntMng
 from System.Core import MAIN
-from System.Core import AppData
-from System.Core import Shape
+import Library.CorePaths as AppData
+import Library.CorePrimitives as Shape
+import Library.CoreUtils as Utils
 import System.Core as tge
 from OneTrack.MAIN import UI
 from OneTrack.MAIN import SaveFileDialog
@@ -29,6 +30,8 @@ from OneTrack.MAIN.Screens.Editor import EditorBar
 from OneTrack.MAIN.Screens.Editor import InstanceVar as var
 from OneTrack.MAIN.Screens.Editor import SoundCacheMessage
 import OneTrack.MAIN as Main
+from Library import CorePaths
+from Library import CoreAccess
 
 track_list = UI.TrackList
 
@@ -55,7 +58,7 @@ def Initialize():
 
     NewMusicFile()
 
-def GameDraw(DISPLAY):
+def Draw(DISPLAY):
     global track_list
     global TopBarControls
     global DropDownFileMenu
@@ -114,7 +117,10 @@ def SaveMusicData(FilePath):
 
         ProjectDataFile += "$end\n"
 
-    AppData.WriteAppData(FilePath, ProjectDataFile)
+    # Write the project file
+    SaveFile = open(FilePath, "w")
+    SaveFile.write(ProjectDataFile)
+    SaveFile.close()
 
 def LoadMusicData(FileName):
     global track_list
@@ -293,8 +299,7 @@ def NewMusicFile():
     global track_list
 
     track_list = UI.TrackList()
-    del track_list
-    tge.Utils.GarbageCollector_Collect()
+    Utils.GarbageCollector_Collect()
 
     # -- Unload the Current SoundCahce -- #
     UI.ContentManager.UnloadSoundTuneCache()
@@ -381,7 +386,7 @@ def DropDownButtonsActions_SettingsButton():
     DropDownFileMenu.SelectedItem = ""
     var.FileMenuEnabled = False
 
-    Core.MAIN.CreateProcess("OneTrack/UnatachedDialog", "OneTrack Dialog", (var.ProcessReference, "DIALOG_SETTINGS"))
+    CoreAccess.CreateProcess("OneTrack/UnatachedDialog", "OneTrack Dialog", (var.ProcessReference, "DIALOG_SETTINGS"))
 
 
 def EventUpdate(event):

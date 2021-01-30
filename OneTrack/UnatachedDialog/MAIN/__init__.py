@@ -16,13 +16,14 @@
 #
 import pygame, threading
 import System.Core as Core
-from System.Core import Fx
+from Library import CoreEffects as Fx
 from System.Core import CntMng
 from OneTrack.UnatachedDialog.MAIN.Screens import LoadFile as LoadFileScreen
 from OneTrack.UnatachedDialog.MAIN.Screens import SaveFile as SaveFileScreen
 from OneTrack.UnatachedDialog.MAIN.Screens import DialogOkOnly as DialogOkOnlyScreen
 from OneTrack.UnatachedDialog.MAIN.Screens import Settings as DialogSettingsScreen
 from OneTrack.MAIN import UI
+from Library import CoreWMControl
 
 class Process(Core.Process):
     def Initialize(self):
@@ -31,7 +32,7 @@ class Process(Core.Process):
         self.SetTitle("OneTrack Dialog")
         self.RootDefaultContents = None
         # Focus to this window
-        Core.wmm.WindowManagerSignal(self, 0)
+        CoreWMControl.WindowManagerSignal(self, 0)
 
         # Initialize Content Manager
         self.DefaultContents = CntMng.ContentManager()
@@ -105,16 +106,15 @@ class Process(Core.Process):
         self.SelectedModuleMode.Draw(self.DISPLAY)
 
     def Update(self):
-        while self.Running:
-            if not self.Initialized:
-                continue
+        if not self.Initialized:
+            return
 
-            self.Timer.tick(100)
-            self.SelectedModuleMode.Update()
+        self.Timer.tick(100)
+        self.SelectedModuleMode.Update()
 
     def CloseDialog(self):
-        Core.wmm.WindowManagerSignal(self, 1)
-        Core.wmm.WindowManagerSignal(self.RootProcess, 0)
+        CoreWMControl.WindowManagerSignal(self, 1)
+        CoreWMControl.WindowManagerSignal(self.RootProcess, 0)
 
     def EventUpdate(self, event):
         if not self.Initialized:

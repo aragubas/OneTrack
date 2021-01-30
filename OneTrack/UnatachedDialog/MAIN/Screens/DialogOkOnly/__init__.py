@@ -17,8 +17,7 @@
 import System.Core as Core
 import pygame
 from OneTrack.MAIN import UI
-from System.Core import Utils
-
+from Library import CoreUtils as Utils
 
 class Screen:
     def __init__(self, pRoot_Process):

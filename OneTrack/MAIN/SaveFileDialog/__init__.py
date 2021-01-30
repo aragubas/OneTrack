@@ -15,11 +15,13 @@
 #
 #
 import pygame
-from System.Core import Utils
+from Library import CoreUtils as Utils
+from Library import CoreEffects as Fx
 import System.Core as Core
 import OneTrack.MAIN.Screens.Editor as Main
 from OneTrack.MAIN.Screens.Editor import InstanceVar as var
-from System.Core import Fx
+from Library import CoreWMControl
+from Library import CoreAccess
 
 # -- Window's Controls -- #
 UnatachedDialogOpened = False
@@ -39,14 +41,14 @@ def Update():
         UnatachedDialogOpened = True
         Main.var.DisableControls = True
         Main.var.AwaysUpdate = True
-        OtherProcessPID = Core.MAIN.CreateProcess("OneTrack/UnatachedDialog", "OneTrack File Operation", (var.ProcessReference, "SAVE"))
+        OtherProcessPID = CoreAccess.CreateProcess("OneTrack/UnatachedDialog", "OneTrack File Operation", (var.ProcessReference, "SAVE"))
 
     # Operation has been completed
-    if not OtherProcessPID in Core.MAIN.ProcessList_PID:
+    if not OtherProcessPID in CoreAccess.ProcessAccess_PID:
         var.AwaysUpdate = False
         var.DisableControls = False
         Enabled = False
         UnatachedDialogOpened = False
 
-        Core.wmm.WindowManagerSignal(var.ProcessReference, 0)
+        CoreWMControl.WindowManagerSignal(var.ProcessReference, 0)
 

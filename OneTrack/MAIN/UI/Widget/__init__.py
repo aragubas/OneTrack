@@ -15,8 +15,8 @@
 #
 #
 import pygame
-from System.Core import Utils
-from System.Core import Shape
+import Library.CoreUtils as Utils
+import Library.CorePrimitives as Shape
 from OneTrack import MAIN as Main
 from OneTrack.MAIN import UI
 

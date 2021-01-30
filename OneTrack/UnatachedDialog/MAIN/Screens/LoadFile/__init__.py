@@ -17,7 +17,9 @@
 import System.Core as Core
 import pygame
 from OneTrack.MAIN import UI
-from System.Core import Utils
+from Library import CoreUtils as Utils
+from Library import CorePaths
+from Library import CoreWMControl
 
 class Screen:
     def __init__(self, pRootProcess):
@@ -65,8 +67,8 @@ class Screen:
             self.OptionsBar.ClickedButtonIndex = -1
 
             if not SelectedFile == "null":
-                self.RootProcess.RootProcess.CurrentScreenToUpdate.LoadMusicData(Core.GetAppDataFromAppName("OneTrack") + Core.TaiyouPath_CorrectSlash + SelectedFile)
-                Core.wmm.WindowManagerSignal(self.RootProcess, 1)
+                self.RootProcess.RootProcess.CurrentScreenToUpdate.LoadMusicData(CorePaths.GetAppDataFromAppName("OneTrack") + CorePaths.TaiyouPath_CorrectSlash + SelectedFile)
+                CoreWMControl.WindowManagerSignal(self.RootProcess, 1)
 
     def EventUpdate(self, event):
         self.FolderList.Update(event)
@@ -75,13 +77,13 @@ class Screen:
     def UpdateFileList(self):
         print("Load : Updating File List...")
         self.FolderList.ClearItems()
-        AllFilesInDir = Utils.Directory_FilesList(Core.GetAppDataFromAppName("OneTrack"))
+        AllFilesInDir = Utils.Directory_FilesList(CorePaths.GetAppDataFromAppName("OneTrack"))
 
         for file in AllFilesInDir:
             # Check if file is a valid OneTrack Project
             if file.endswith(".oneprj"):
                 FileAllPath = file
-                FileName = file.replace(Core.GetAppDataFromAppName("OneTrack"), "").replace(".oneprj", "")
+                FileName = file.replace(CorePaths.GetAppDataFromAppName("OneTrack"), "").replace(".oneprj", "")
 
                 ItemName = FileName[1:]
                 ItemDescription = "Saved on: {0}".format(FileAllPath)

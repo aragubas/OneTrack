@@ -20,8 +20,9 @@ from OneTrack.MAIN import UI
 from Applications.OneTrack.MAIN.Screens.Editor import InstanceVar as var
 
 from System.Core import MAIN
-from System.Core import Utils
-from System.Core import Shape
+import Library.CoreUtils as Utils
+import Library.CorePrimitives as Shape
+
 
 LagIndicatorSurface = pygame.Surface
 LagTextWidth = 0

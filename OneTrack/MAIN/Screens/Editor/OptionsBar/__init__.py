@@ -16,7 +16,7 @@
 #
 import pygame, re
 from System import Core
-from System.Core import Utils
+from Library import CoreUtils as Utils
 import OneTrack.MAIN as Main
 from OneTrack.MAIN import UI
 from OneTrack.MAIN.Screens import Editor
@@ -100,9 +100,9 @@ def UpdateChanger():
     Obj.Changer.Value = str(NewPatternValue)
     Obj.Active = True
 
-
     WidgetCollection.Active = True
     WidgetCollection.Update()
+
 
 NewBPMValue = 0
 NewPatternValue = 0

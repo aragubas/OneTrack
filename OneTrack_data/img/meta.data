@@ -1,5 +1,6 @@
 /logo.png:False
 /pointer.png:True
+/icon.png:True
 
 ## Loading Animation
 /loading_anim/cursor_1.png:True

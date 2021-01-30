@@ -17,7 +17,9 @@
 import System.Core as Core
 import pygame
 from OneTrack.MAIN import UI
-from System.Core import Utils
+from Library import CoreUtils as Utils
+from Library import CorePaths
+from Library import CoreWMControl
 
 class Screen:
     def __init__(self, pRoot_Process):
@@ -75,9 +77,9 @@ class Screen:
                 self.OptionsBar.ClickedButtonIndex = -1
 
                 if not SelectedFile == "null":
-                    self.RootProcess.RootProcess.CurrentScreenToUpdate.SaveMusicData(Core.GetAppDataFromAppName("OneTrack") + Core.TaiyouPath_CorrectSlash + SelectedFile)
+                    self.RootProcess.RootProcess.CurrentScreenToUpdate.SaveMusicData(CorePaths.GetAppDataFromAppName("OneTrack") + CorePaths.TaiyouPath_CorrectSlash + SelectedFile)
                     print("Music Data has been saved. on\n{0}".format(SelectedFile))
-                    Core.wmm.WindowManagerSignal(self.RootProcess, 1)
+                    CoreWMControl.WindowManagerSignal(self.RootProcess, 1)
 
             if self.OptionsBar.ClickedButtonIndex == 1:
                 self.EnterFileNameEnabled = True
@@ -88,10 +90,10 @@ class Screen:
                 # -- Write the File -- #
                 if not self.Inputbox_FileName.text == "":
                     self.Inputbox_FileName.text = self.Inputbox_FileName.text.replace(" ", "_")
-                    self.RootProcess.RootProcess.CurrentScreenToUpdate.SaveMusicData(Core.GetAppDataFromAppName("OneTrack") + Core.TaiyouPath_CorrectSlash + self.Inputbox_FileName.text)
+                    self.RootProcess.RootProcess.CurrentScreenToUpdate.SaveMusicData(CorePaths.GetAppDataFromAppName("OneTrack") + CorePaths.TaiyouPath_CorrectSlash + self.Inputbox_FileName.text)
 
                     print("Music Data has been created. on\n{0}".format(self.Inputbox_FileName.text))
-                    Core.wmm.WindowManagerSignal(self.RootProcess, 1)
+                    CoreWMControl.WindowManagerSignal(self.RootProcess, 1)
 
     def EventUpdate(self, event):
         self.OptionsBar.EventUpdate(event)
@@ -104,13 +106,13 @@ class Screen:
     def UpdateFileList(self):
         print("Save : Updating File List...")
         self.FolderList.ClearItems()
-        AllFilesInDir = Utils.Directory_FilesList(Core.GetAppDataFromAppName("OneTrack"))
+        AllFilesInDir = Utils.Directory_FilesList(CorePaths.GetAppDataFromAppName("OneTrack"))
 
         for file in AllFilesInDir:
             # Check if file is a valid OneTrack Project
             if file.endswith(".oneprj"):
                 FileAllPath = file
-                FileName = file.replace(Core.GetAppDataFromAppName("OneTrack"), "").replace(".oneprj", "")
+                FileName = file.replace(CorePaths.GetAppDataFromAppName("OneTrack"), "").replace(".oneprj", "")
 
                 ItemName = FileName[1:]
                 ItemDescription = "Saved on: {0}".format(FileAllPath)
