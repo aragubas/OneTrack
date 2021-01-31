@@ -74,8 +74,6 @@ def SetCursor():
         SetDefaultCursorTick = False
         var.ProcessReference.SetCursor(1)
 
-        print("Set to Loading Cursor")
-
 
 def Update():
     global MessageSeenDelay

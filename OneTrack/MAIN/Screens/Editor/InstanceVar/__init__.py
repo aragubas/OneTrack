@@ -34,8 +34,11 @@ SelectedTrack = 0
 PatternIsUpdating = False
 AwaysUpdate = False
 ProcessReference = None
-Volume = 0.1
+Volume = 0
 DefaultContent = CntMng.ContentManager
+
+# -- Project Settings -- #
+ProjectSetting_AutoBalanceVolume = False
 
 def LoadDefaultValues():
     global Volume

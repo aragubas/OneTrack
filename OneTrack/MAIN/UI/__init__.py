@@ -427,7 +427,7 @@ def GetWaveTypeByWaveCode(pWaveCode):
     if pWaveCode == "SINE":
         return "sine"
 
-    if pWaveCode == "WQSI":
+    if pWaveCode == "SQSI":
         return "sine_square"
 
     print("Invalid wave type: ({0})".format(pWaveCode))
@@ -451,6 +451,7 @@ class TrackColection:
         self.UpdatePatternsCache = False
         self.LastSineWave = "square"
         self.LastDefaultDuration = 20
+        self.LastVolume = 1.0
         self.TargetScroll = 0
         self.LastScrollValue = 0
         self.ScrollAnimationScale = 5
@@ -624,69 +625,69 @@ class TrackColection:
 
         var.PlayMode = self.PlayMode
 
+        # Play Mode
         if self.PlayMode:
             self.PlayMode_TrackDelay += 1
             CurrentTrackObj = self.Tracks[self.SelectedTrack]
+            # Beats per minute waiting
             BMP = 1000 / max(1, var.BPM)
 
             if self.PlayMode_TrackDelay >= BMP:
                 self.SelectedTrack += 1
                 self.PlayMode_TrackDelay = 0
 
-                # -- Play Command -- #
                 try:
                     # -- StopSoundChannels Command -- #
-                    if "-----" in CurrentTrackObj.TrackData[1]:
+                    if "-----" in CurrentTrackObj.TrackData[0]:
                         ContentManager.StopAllChannels()
 
-                    # -- Fade Command -- #
+                    # -- Fade Command -- # F---- 4 digits
                     elif CurrentTrackObj.TrackData[1].startswith("F"):
-                        SplitedAgrs = list(CurrentTrackObj.TrackData[1])
-                        FadeTime = ""
+                        FadeTime = CurrentTrackObj.TrackData[1][1:]
 
-                        for i, arg in enumerate(SplitedAgrs):
-                            if i > 1:
-                                FadeTime += arg
                         FadeTime = int(FadeTime.replace("-", ""))
-
                         ContentManager.FadeoutSound(self.PlayMode_LastSoundChannel, FadeTime)
 
-                    # -- Fade All Command -- #
+                    # -- Fade All Command -- # A---- 4 digits
                     elif CurrentTrackObj.TrackData[1].startswith("A"):
-                        SplitedAgrs = list(CurrentTrackObj.TrackData[1])
-                        FadeTime = ""
+                        FadeTime = CurrentTrackObj.TrackData[1][1:]
 
-                        for i, arg in enumerate(SplitedAgrs):
-                            if i > 1:
-                                FadeTime += arg
                         FadeTime = int(FadeTime.replace("-", ""))
-
                         ContentManager.FadeoutAllSounds(FadeTime)
 
-                    # -- Duration Command -- #
+                    # -- Duration Command -- # D---- 4 digits
                     elif CurrentTrackObj.TrackData[1].startswith("D"):
-                        SplitedAgrs = list(CurrentTrackObj.TrackData[1])
-                        DurationTime = ""
+                        DurationTime = CurrentTrackObj.TrackData[1][1:]
 
-                        for i, arg in enumerate(SplitedAgrs):
-                            if i > 1:
-                                DurationTime += arg
                         self.LastDefaultDuration = int(DurationTime.replace("-", ""))
 
-                    # -- Waveform Command -- #
+                    # -- Volume Command -- # V---- 4 digits
+                    elif CurrentTrackObj.TrackData[1].startswith("V"):
+                        Volume = CurrentTrackObj.TrackData[1][1:]
+
+                        # THE FRICKING SOLUTION
+                        VolumeValue = int(Volume.replace("-", "0"))
+                        if VolumeValue <= 100 and VolumeValue >= 0:
+                            VolumeValue = VolumeValue / 100
+                            print("Volume value was set to: " + str(VolumeValue))
+
+                        else:
+                            VolumeValue = 1
+                            print("Invalid volume value")
+
+                        self.LastVolume = VolumeValue
+                        ContentManager.SetChannelVolume(self.PlayMode_LastSoundChannel, self.LastVolume)
+
+                    # -- Waveform Command -- # X---- 4 digits
                     elif CurrentTrackObj.TrackData[1].startswith("W"):
                         WaveformCommand = CurrentTrackObj.TrackData[1][1:]
                         # X---- 4 Digits
                         self.LastSineWave = GetWaveTypeByWaveCode(WaveformCommand)
 
-                    # -- Pattern Jump Command -- #
+                    # -- Pattern Jump Command -- # J---- 4 digits
                     elif CurrentTrackObj.TrackData[1].startswith("J"):
-                        SplitedAgrs = list(CurrentTrackObj.TrackData[1])
-                        JmpTrackID = ""
+                        JmpTrackID = CurrentTrackObj.TrackData[1][1:]
 
-                        for i, arg in enumerate(SplitedAgrs):
-                            if i > 1:
-                                JmpTrackID += arg
                         JmpTrackID = int(JmpTrackID.replace("-", ""))
 
                         Editor.track_list.PatternJump(JmpTrackID)
@@ -698,23 +699,27 @@ class TrackColection:
                 except:
                     pass
 
+                # Define SoundTune variable
                 SoundTune = 0
 
-                # -- Convert the Time to the Correct Time -- #
+                # -- Convert the Sample Time to the Correct Time -- #
                 try:
                     SoundDuration = int(CurrentTrackObj.TrackData[1]) / var.BPM
                 except ValueError:
                     SoundDuration = self.LastDefaultDuration / var.BPM
 
+                # -- Get SoundTune value -- #
                 try:
                     SoundTune = int(CurrentTrackObj.TrackData[0])
                 except ValueError:
                     pass
 
-                # -- If not SoundTune is null, Play the Tune -- #
-                Volume = var.Volume / var.Patterns
+                # -- If AutoBalance is enabled, override volume command -- #
+                if var.ProjectSetting_AutoBalanceVolume:
+                    self.LastVolume = var.Volume / var.Patterns
 
-                CurrentPlayID = ContentManager.PlayTune(SoundTune, SoundDuration, Volume=Volume, FrequencyType=self.LastSineWave)
+                # -- Play the Tune -- #
+                CurrentPlayID = ContentManager.PlayTune(SoundTune, SoundDuration, Volume=self.LastVolume, FrequencyType=self.LastSineWave)
 
                 if not CurrentPlayID is None:
                     self.PlayMode_LastSoundChannel = CurrentPlayID
@@ -732,6 +737,7 @@ class TrackColection:
         self.PlayMode_CurrentTonePlayed = False
         self.PlayMode_LastSoundChannel = -1
         self.LastSineWave = "square"
+        self.LastVolume = 1.0
         var.SoundsBeingPlayedNow = 0
         var.PlayMode = False
 
@@ -740,7 +746,7 @@ class TrackColection:
             for track in self.Tracks:
                 track.EventUpdate(event)
 
-        if event.type == pygame.KEYUP:
+        if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
                 if not self.PlayMode:
                     self.PlayMode = True
@@ -920,6 +926,7 @@ class TrackList:
         PatternName_FontColor = ThemesManager_GetProperty("TrackSelectedPattern_FontColor")
         SelectedPatternText = "Pattern: {0}/{1}".format(self.CurrentPatternID, len(self.PatternList) - 1)
 
+        # Set the color for Playmode
         if var.PlayMode:
             PatternName_BackgroundColor = ThemesManager_GetProperty("TrackSelectedPattern_PlayMode_BackgroundColor")
             PatternName_FontColor = ThemesManager_GetProperty("TrackSelectedPattern_PlayMode_FontColor")
@@ -956,7 +963,7 @@ class TrackList:
 
         # -- Generate Sound Cache -- #
         if var.GenerateSoundCache and var.GenerateSoundCache_MessageSeen:
-            print("Generating SoundCache...")
+            print("OneTrack : Generating SoundCache...")
             for patterns in self.PatternList:
                 for track in patterns.Tracks:
                     CollectionLastSinewaveForm = "square"
@@ -968,17 +975,15 @@ class TrackList:
                             collactions.Active = True
                             SinewaveType = CollectionLastSinewaveForm
 
+                            # Set the Waveform
                             if collactions.TrackData[1].startswith("W"):
                                 WaveformCommand = collactions.TrackData[1][1:]
                                 CollectionLastSinewaveForm = GetWaveTypeByWaveCode(WaveformCommand)
 
+                            # Set the default duration
                             if collactions.TrackData[1].startswith("D"):
-                                SplitedAgrs = list(collactions.TrackData[1])
-                                DurationTime = ""
+                                DurationTime = collactions.TrackData[1][1:]
 
-                                for i, arg in enumerate(SplitedAgrs):
-                                    if i > 1:
-                                        DurationTime += arg
                                 CollectionLastDuration = int(DurationTime.replace("-", ""))
 
                             try:
