@@ -1,5 +1,5 @@
 # OneTrack
-OneTrack is a 2-Bit ish Tracker program made with [Taiyou Framework](https://github.com/aragubas/taiyou-framework)
+OneTrack is a 8-Bit ish Chiptune Composer made with [Taiyou Framework](https://github.com/aragubas/taiyou-framework)
 
 ### Instalation Guide
 1. Installing via Taiyou Packpage System:
